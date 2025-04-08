@@ -2,7 +2,7 @@ import express from 'express';
 
 const router = express.Router();
 
-// Placeholder for notification-related routes
-// TODO: define routes here in the future
+// Placeholder for member-related routes
+// TODO: define routes like GET /members, POST /members, etc., here in the future
 
 export default router;
