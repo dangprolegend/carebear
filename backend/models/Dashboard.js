@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const dashboardSchema = new mongoose.Schema({
   userID: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -7,4 +7,5 @@ const dashboardSchema = new mongoose.Schema({
   created_timestamp: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model('Dashboard', dashboardSchema);
+const Dashboard = mongoose.model('Dashboard', dashboardSchema);
+export default Dashboard;
