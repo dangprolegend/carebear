@@ -7,7 +7,6 @@ import {auth} from '@/config/FirebaseConfig';
 import { getAuth, signInWithPopup } from "firebase/auth";
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect } from 'react';
