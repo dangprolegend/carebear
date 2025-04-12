@@ -20,7 +20,7 @@ export default function SignUp() {
 
     // Google Auth Request
     const [request, response, promptAsync] = Google.useAuthRequest({
-        iosClientId: "241948802661-etf4auehg5q8bbg567p7vij33aiavdns.apps.googleusercontent.com",
+        iosClientId: Constants.expoConfig?.extra?.IOS_CLIENT_ID,
         webClientId: Constants.expoConfig?.extra?.WEB_CLIENT_ID, // For Expo Go
     });
     useEffect(() => {
