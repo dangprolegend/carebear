@@ -1,4 +1,4 @@
-import {View, Text, StyleSheet, TextInput, TouchableOpacity} from 'react-native';
+import {View, Text, StyleSheet, TextInput, TouchableOpacity, Button} from 'react-native';
 import React from 'react';
 import Colors from '@/constants/Colors';
 import {useRouter} from 'expo-router';
@@ -8,43 +8,38 @@ import { getAuth, signInWithPopup } from "firebase/auth";
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import * as Google from 'expo-auth-session/providers/google';
+import * as WebBrowser from 'expo-web-browser';
+import { useEffect } from 'react';
+WebBrowser.maybeCompleteAuthSession();
 
 export default function SignUp() {
     const [email,setEmail] = React.useState('');
     const [password,setPassword] = React.useState('');
     const router= useRouter();
 
-    React.useEffect(() => {
-        GoogleSignin.configure({
-            // Get this from Google Cloud Console
-            webClientId: Constants.expoConfig?.extra?.WEB_CLIENT_ID,
-        });
-    }, []);
-
-    const signInWithGoogle = async () => {
-        try {
-            // Check if running on web platform
-            if (Platform.OS === 'web') {
-                // Use Firebase popup sign-in for web
-                const provider = new GoogleAuthProvider();
-                const userCredential = await signInWithPopup(auth, provider);
-                console.log('Signed in with Google!', userCredential.user);
-                router.push('/login/signUp');
-            } else {
-                // Use Google Sign-In for native platforms
-                await GoogleSignin.hasPlayServices();
-                const userInfo = await GoogleSignin.signIn();
-                const { accessToken } = await GoogleSignin.getTokens();
-                const googleCredential = GoogleAuthProvider.credential(null, accessToken);
-                const userCredential = await signInWithCredential(auth, googleCredential);
-                console.log('Signed in with Google!', userCredential.user);
-                router.push('/login/signUp');
+    // Google Auth Request
+    const [request, response, promptAsync] = Google.useAuthRequest({
+        iosClientId: "241948802661-etf4auehg5q8bbg567p7vij33aiavdns.apps.googleusercontent.com",
+        webClientId: Constants.expoConfig?.extra?.WEB_CLIENT_ID, // For Expo Go
+    });
+    useEffect(() => {
+        if (response?.type === 'success') {
+            const { authentication } = response;
+            if (authentication?.accessToken) {
+                const googleCredential = GoogleAuthProvider.credential(null, authentication.accessToken);
+                signInWithCredential(auth, googleCredential)
+                    .then((userCredential) => {
+                        console.log('Signed in with Google!', userCredential.user);
+                        router.push('/login/signUp'); // Navigate to home screen
+                    })
+                    .catch((error) => {
+                        console.error('Google Sign-In Error:', error);
+                        alert('Failed to sign in with Google');
+                    });
             }
-        } catch (error) {
-            console.error('Google Sign-In Error:', error);
-            alert('Failed to sign in with Google');
         }
-    };
+    }, [response]);
 
 
     const OnCreateAccount = async () => {
@@ -93,12 +88,11 @@ export default function SignUp() {
                 <Text style={styles.buttonText}>Create Account</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-                style={[styles.button, styles.googleButton]} 
-                onPress={signInWithGoogle}
-            >
-                <Text style={styles.buttonText}>Sign in with Google</Text>
-            </TouchableOpacity>
+            <Button
+                disabled={!request}
+                title="Sign in with Google"
+                onPress={() => promptAsync()}
+            />
         </View>
     );
 }
