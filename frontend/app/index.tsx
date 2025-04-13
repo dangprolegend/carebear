@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-const index = () => {
+const Index = () => {
   const router = useRouter();
   return (
     <View style={styles.container}>
@@ -11,7 +11,7 @@ const index = () => {
     </View>
   );
 }
-export default index;
+export default Index;
 
 const styles = StyleSheet.create({
   container: {
