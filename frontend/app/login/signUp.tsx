@@ -1,4 +1,5 @@
-import {View, Text, StyleSheet, TextInput, TouchableOpacity, Button} from 'react-native';
+import {View, Text, StyleSheet, TextInput, Button} from 'react-native';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 import React from 'react';
 import Colors from '@/constants/Colors';
 import {useRouter} from 'expo-router';
