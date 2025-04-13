@@ -1,12 +1,8 @@
 import { useRouter } from 'expo-router';
-import {View, Text, StyleSheet} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-import React, { useEffect } from 'react';
 
+import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 const Index = () => {
-  useEffect(() => {
-    console.log("Dangdz");
-  }, []);
+
   const router = useRouter();
   return (
     <View style={styles.container}>
