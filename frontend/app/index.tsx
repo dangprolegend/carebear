@@ -3,7 +3,7 @@ import {View, Text, StyleSheet} from 'react-native';
 import {TouchableOpacity} from 'react-native-gesture-handler';
 import React, { useEffect } from 'react';
 
-const Index = () => {
+export default function Index() {
   useEffect(() => {
     console.log("Dangdz");
   }, []);
@@ -17,7 +17,6 @@ const Index = () => {
     </View>
   );
 }
-export default Index;
 
 const styles = StyleSheet.create({
   container: {
