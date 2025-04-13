@@ -7,11 +7,10 @@ import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredentia
 import {auth} from '@/config/FirebaseConfig';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
-import { useEffect } from 'react';
-import {
-    WEB_CLIENT_ID,
-    IOS_CLIENT_ID
-  } from '@env';
+import { useEffect } from 'react'
+
+
+
 WebBrowser.maybeCompleteAuthSession();
 
 export default function SignUp() {
@@ -21,8 +20,8 @@ export default function SignUp() {
     
     // Google Auth Request
     const [request, response, promptAsync] = Google.useAuthRequest({
-        iosClientId: IOS_CLIENT_ID,
-        webClientId: WEB_CLIENT_ID,
+        iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
+        webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
     });
     useEffect(() => {
         if (response?.type === 'success') {
