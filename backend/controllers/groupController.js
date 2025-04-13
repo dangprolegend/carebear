@@ -19,13 +19,13 @@ export const createGroup = async (req, res) => {
 
 // GET /groups/:groupId
 export const getGroup = async (req, res) => {
-    const { groupId } = req.params;
-    if (!groupId) {
+    const { groupID } = req.params;
+    if (!groupID) {
         return res.status(400).json({ message: "Group ID is required" });
     }
 
     try {
-        const group = await Group.findById(groupId);
+        const group = await Group.findById(groupID);
         if (!group) {
             return res.status(404).json({ message: "Group not found" });
         }
@@ -38,14 +38,14 @@ export const getGroup = async (req, res) => {
 
 // GET /groups/:groupID/members
 export const getGroupMembers = async (req, res) => {
-    const { groupId } = req.params;
-    if (!groupId) {
+    const { groupID } = req.params;
+    if (!groupID) {
         return res.status(400).json({ message: "Group ID is required" });
     }
 
     try {
-        const members = await Group.findById(groupId)
-                                .populate('userID', 'name email');
+        const members = await Member.find({ groupID: groupID })
+                                    .populate('userID', 'name email');
         if (!members) {
             return res.status(404).json({ message: "Members not found" });
         }
