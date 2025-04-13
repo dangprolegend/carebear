@@ -6,6 +6,7 @@ import connectDB from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import groupRoutes from './routes/groupRoutes.js';
+import memberRoutes from './routes/memberRoutes.js';
 
 // Database connection
 connectDB();
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/groups', memberRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
