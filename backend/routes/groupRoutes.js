@@ -1,8 +1,10 @@
 import express from 'express';
+import { createGroup, getGroup, getGroupMembers } from '../controllers/groupController.js';
 
 const router = express.Router();
 
-// Placeholder for group-related routes
-// TODO: define routes like GET /groups, POST /groups, etc., here in the future
+router.post('/', createGroup);
+router.get('/:groupID', getGroup); 
+router.get('/:groupID/members', getGroupMembers);
 
-export default router;
+export default router;  
