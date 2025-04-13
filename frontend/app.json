@@ -43,6 +43,7 @@
       "typedRoutes": true
     },
     "extra": {
+      
       "router": {
         "origin": false
       },

@@ -2,7 +2,6 @@
 import { initializeApp } from "firebase/app";
 import {getAuth} from "firebase/auth";
 import { GoogleAuthProvider } from "firebase/auth";
-import Constants from 'expo-constants';
 
 import {
     FIREBASE_API_KEY,

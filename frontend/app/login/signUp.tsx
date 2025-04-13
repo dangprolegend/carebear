@@ -4,23 +4,24 @@ import Colors from '@/constants/Colors';
 import {useRouter} from 'expo-router';
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
 import {auth} from '@/config/FirebaseConfig';
-import { getAuth, signInWithPopup } from "firebase/auth";
-import { Platform } from 'react-native';
-import Constants from 'expo-constants';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect } from 'react';
+import {
+    WEB_CLIENT_ID,
+    IOS_CLIENT_ID
+  } from '@env';
 WebBrowser.maybeCompleteAuthSession();
 
 export default function SignUp() {
     const [email,setEmail] = React.useState('');
     const [password,setPassword] = React.useState('');
     const router= useRouter();
-
+    
     // Google Auth Request
     const [request, response, promptAsync] = Google.useAuthRequest({
-        iosClientId: Constants.expoConfig?.extra?.IOS_CLIENT_ID,
-        webClientId: Constants.expoConfig?.extra?.WEB_CLIENT_ID, // For Expo Go
+        iosClientId: IOS_CLIENT_ID,
+        webClientId: WEB_CLIENT_ID,
     });
     useEffect(() => {
         if (response?.type === 'success') {
