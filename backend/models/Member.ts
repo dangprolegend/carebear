@@ -1,12 +1,13 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
+import { IMember } from '../types/models';
 
-const memberSchema = new mongoose.Schema({
-  userID: {
+const memberSchema: Schema = new Schema({
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  groupID: {
+  group: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Group',
     required: true
@@ -17,5 +18,5 @@ const memberSchema = new mongoose.Schema({
     enum: ['admin', 'caregiver', 'carereceiver']}
 });
 
-const Member = mongoose.model('Member', memberSchema);
+const Member = mongoose.model<IMember>('Member', memberSchema);
 export default Member;
