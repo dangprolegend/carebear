@@ -1,40 +1,59 @@
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
-const Index = () => {
-
+export default function WelcomeScreen() {
   const router = useRouter();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Care Bear</Text>
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/login/signUp')}>
-        <Text style={styles.buttonText}>Go to Sign Up</Text>
+      <Text style={styles.title}>Welcome to Care Bear! 🐻</Text>
+
+      <TouchableOpacity 
+        style={styles.button}
+        onPress={() => router.push('/(public)/login')}
+      >
+        <Text style={styles.buttonText}>I have an account</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.button, styles.secondaryButton]}
+        onPress={() => router.push('/(public)/login/signUp')}
+      >
+        <Text style={styles.buttonText}>Create new account</Text>
       </TouchableOpacity>
     </View>
   );
 }
-export default Index;
 
 const styles = StyleSheet.create({
   container: {
-    flex:1, 
+    flex: 1,
     justifyContent: 'center',
-    flexDirection: 'column',
-    alignItems: 'center'
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
   },
-  text:{
-    fontSize: 20,
-    color: 'black' ,
+  title: {
+    fontSize: 32,
     fontWeight: 'bold',
+    marginBottom: 40,
+    textAlign: 'center',
   },
   button: {
     backgroundColor: '#0a7ea4',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 30,
+    marginVertical: 10,
+    width: '80%',
+    alignItems: 'center',
+  },
+  secondaryButton: {
+    backgroundColor: '#e7e7e7',
   },
   buttonText: {
     color: 'white',
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });
