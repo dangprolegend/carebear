@@ -4,15 +4,15 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 
 // Import database connection
-import connectDB from './config/db.js';
+import connectDB from './config/db';
 
 // Import routes
-import userRoutes from './routes/userRoutes.js';
-import groupRoutes from './routes/groupRoutes.js';
-import memberRoutes from './routes/memberRoutes.js';
-import taskRoutes from './routes/taskRoutes.js';
-import notificationRoutes from './routes/notificationRoutes.js';
-import dashboardRoutes from './routes/dashboardRoutes.js';
+import userRoutes from './routes/userRoutes';
+import groupRoutes from './routes/groupRoutes';
+import memberRoutes from './routes/memberRoutes';
+import taskRoutes from './routes/taskRoutes';
+import notificationRoutes from './routes/notificationRoutes';
+import dashboardRoutes from './routes/dashboardRoutes';
 
 // Load environment variables
 dotenv.config();
