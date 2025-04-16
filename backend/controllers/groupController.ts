@@ -112,7 +112,8 @@ export const deleteGroup = async (req: TypedRequest<any, GroupParams>, res: Resp
 // Get all groups for a user
 export const getUserGroups = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
   try {
-    const members = await Member.find({ user: req.params.id }).populate('group');
+    const members = await Member.find({ userID: req.params.id }).populate('group');
+    console.log(members)
     const groups = members.map(member => member.group);
     res.json(groups);
   } catch (err: any) {
