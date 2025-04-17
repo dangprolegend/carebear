@@ -14,9 +14,9 @@ export interface IGroup extends Document {
 }
 
 export interface IMember extends Document {
-  user: Types.ObjectId | string; // Reference to User _id
-  group: Types.ObjectId | string; // Reference to Group _id
-  role: 'admin' | 'caregiver' | 'carereceiver';
+  userID: Types.ObjectId | string; // Reference to User _id
+  groupID: Types.ObjectId | string; // Reference to Group _id
+  role: string;
 }
 
 export interface ITask extends Document {

@@ -3,11 +3,11 @@ import { createGroup, getAllGroups, getGroup, updateGroup, deleteGroup, getUserG
 
 const router: Router = express.Router();
 
-router.post('/', createGroup);
-router.get('/', getAllGroups);
+router.post('/:userID', createGroup);    // Migrated
+router.get('/', getAllGroups);           // Migrated
 // Moving the specific route '/user/:id' before the general '/:id' route
-router.get('/user/:id', getUserGroups); 
-router.get('/:id', getGroup);
-router.put('/:id', updateGroup);
-router.delete('/:id', deleteGroup);
+router.get('/user/:userID', getUserGroups);  // Migrated
+router.get('/:groupID', getGroup);            // Migrated
+router.put('/:groupID', updateGroup);         // Migrated
+router.delete('/:groupID', deleteGroup);      // Migrated
 export default router;
