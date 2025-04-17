@@ -1,6 +1,7 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
+import { IMember } from '../types/models';
 
-const memberSchema = new mongoose.Schema({
+const memberSchema: Schema = new Schema({
   userID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -17,5 +18,5 @@ const memberSchema = new mongoose.Schema({
     enum: ['admin', 'caregiver', 'carereceiver']}
 });
 
-const Member = mongoose.model('Member', memberSchema);
+const Member = mongoose.model<IMember>('Member', memberSchema);
 export default Member;
