@@ -2,12 +2,12 @@ import mongoose, { Schema } from 'mongoose';
 import { IMember } from '../types/models';
 
 const memberSchema: Schema = new Schema({
-  user: {
+  userID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  group: {
+  groupID: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Group',
     required: true
