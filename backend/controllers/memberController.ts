@@ -4,8 +4,8 @@ import User from '../models/User';
 import { TypedRequest } from '../types/express';
 
 interface MemberBody {
-  user: string;  // Changed from userID to user
-  group: string;  // Changed from groupID to group
+  userID: string;  // Changed from userID to user
+  groupID: string;  // Changed from groupID to group
   role: 'admin' | 'caregiver' | 'carereceiver';
 }
 
@@ -20,17 +20,17 @@ interface GroupMembersParams {
 // Add a member to a group
 export const addMember = async (req: TypedRequest<MemberBody>, res: Response): Promise<void> => {
   try {
-    const { user, group, role } = req.body;
+    const { userID, groupID, role } = req.body;
     
     // Check if member already exists
-    const existingMember = await Member.findOne({ user, group });
+    const existingMember = await Member.findOne({ userID, groupID });
     if (existingMember) {
       res.status(400).json({ message: 'User is already a member of this group' });
       return;
     }
     
     // Create new member
-    const newMember = new Member({ user, group, role });
+    const newMember = new Member({ userID, groupID, role });
     await newMember.save();
     
     res.status(201).json(newMember);
