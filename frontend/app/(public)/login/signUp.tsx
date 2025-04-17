@@ -1,5 +1,5 @@
 import {View, Text, StyleSheet, TextInput, Button} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Gesture, TouchableOpacity} from 'react-native-gesture-handler';
 import React from 'react';
 import Colors from '@/constants/Colors';
 import {useRouter} from 'expo-router';
@@ -7,9 +7,7 @@ import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredentia
 import {auth} from '@/config/FirebaseConfig';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
-import { useEffect } from 'react'
-
-
+import { useEffect } from 'react';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -31,7 +29,7 @@ export default function SignUp() {
                 signInWithCredential(auth, googleCredential)
                     .then((userCredential) => {
                         console.log('Signed in with Google!', userCredential.user);
-                        router.push('/login/signUp'); // Navigate to home screen
+                        router.push('/home'); // Navigate to home screen
                     })
                     .catch((error) => {
                         console.error('Google Sign-In Error:', error);
@@ -91,7 +89,13 @@ export default function SignUp() {
             <Button
                 disabled={!request}
                 title="Sign in with Google"
-                onPress={() => promptAsync()}
+                onPress={async () => {
+                    try {
+                      await promptAsync();
+                    } catch (error) {
+                      console.error('Google Sign-In Error:', error);
+                    }
+                }}
             />
         </View>
     );
