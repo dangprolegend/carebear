@@ -126,3 +126,25 @@ export const getUserGroups = async (req: TypedRequest<any, { userID: string }>, 
     res.status(500).json({ error: err.message });
   }
 };
+
+// Added: Get all members of a group
+export const getGroupMembers = async (req: TypedRequest<any, GroupParams>, res: Response): Promise<void> => {
+  const { groupID } = req.params;
+    if (!groupID) {
+        res.status(400).json({ message: "Group ID is required" });
+        return;
+    }
+
+    try {
+        const members = await Member.find({ groupID: groupID })
+                                    .populate('userID', 'name email');
+        if (!members) {
+            res.status(404).json({ message: "Members not found" });
+            return;
+        }
+        res.status(200).json(members);
+    } catch (error: any) {
+        console.error("Error in fetching group members", error.message);
+        res.status(400).json({ success: false, error: error.message });
+    }
+};

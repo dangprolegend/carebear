@@ -39,15 +39,7 @@ export const addMember = async (req: TypedRequest<MemberBody>, res: Response): P
   }
 };
 
-// Get all members of a group
-export const getGroupMembers = async (req: TypedRequest<any, GroupMembersParams>, res: Response): Promise<void> => {
-  try {
-    const members = await Member.find({ group: req.params.id }).populate('user');
-    res.json(members);
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-};
+
 
 // Update a member's role
 export const updateMember = async (req: TypedRequest<{ role: 'admin' | 'caregiver' | 'carereceiver' }, MemberParams>, res: Response): Promise<void> => {
