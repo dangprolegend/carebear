@@ -1,12 +1,11 @@
 import express, { Router } from 'express';
-import { addMember, updateMember, removeMember, getUserMemberships } from '../controllers/memberController';
+import { addMember, updateMember, removeMember } from '../controllers/memberController';
 
 const router: Router = express.Router();
 
-router.post('/', addMember);
+router.post('/:groupID/members', addMember); // Migrated
 // Moving specific routes before the pattern-matching route
-router.get('/user/:id', getUserMemberships);
-router.put('/:id', updateMember);
-router.delete('/:id', removeMember);
+router.put('/:groupID/members/:userID', updateMember); // Migrated
+router.delete('/:groupID/members/:userID', removeMember); // Migrated
 
 export default router;
