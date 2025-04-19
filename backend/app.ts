@@ -33,7 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 // Define routes
 app.use('/api/users', userRoutes);
 app.use('/api/groups', groupRoutes);
-app.use('/api/members', memberRoutes);
+app.use('/api/groups', memberRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
