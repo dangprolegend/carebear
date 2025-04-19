@@ -4,10 +4,7 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "dev": "npx tsx app.ts",
-    "build": "tsc",
-    "start": "node dist/app.js",
-    "watch": "tsc -w"
+    "dev": "nodemon app.ts"
   },
   "keywords": [],
   "author": "",
