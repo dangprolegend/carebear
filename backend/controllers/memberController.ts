@@ -23,7 +23,7 @@ export const addMember = async (req: TypedRequest<MemberBody>, res: Response): P
     const { userID, groupID, role } = req.body;
     
     // Check if member already exists
-    const existingMember = await Member.findOne({ userID, groupID });
+    const existingMember = await Member.findOne({ userID, groupID, role });
     if (existingMember) {
       res.status(400).json({ message: 'User is already a member of this group' });
       return;
