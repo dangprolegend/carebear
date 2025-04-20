@@ -3,6 +3,7 @@ import Group from '../models/Group';
 import Member from '../models/Member';
 import { TypedRequest } from '../types/express';
 import mongoose from 'mongoose';
+import Task from '../models/Task';
 
 interface GroupBody {
   name: string;
@@ -147,4 +148,18 @@ export const getGroupMembers = async (req: TypedRequest<any, GroupParams>, res: 
         console.error("Error in fetching group members", error.message);
         res.status(400).json({ success: false, error: error.message });
     }
+};
+
+// Get all tasks in a group
+export const getGroupTasks = async (req: TypedRequest<any, GroupParams>, res: Response): Promise<void> => {
+  try {
+    const tasks = await Task.find({ group: req.params.id })
+      .populate('assignedTo')
+      .populate('assignedBy')
+      .sort({ deadline: 1 });
+    
+    res.json(tasks);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
 };

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
 import { TypedRequest } from '../types/express';
-import mongoose from 'mongoose';
+import Task from '../models/Task';
 
 interface UserBody {
   email: string;
@@ -72,6 +72,18 @@ export const deleteUser = async (req: TypedRequest<any, UserParams>, res: Respon
     }
     
     res.status(200).json({ message: 'User deleted successfully' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getUserTasks = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
+  try {
+    const tasks = await Task.find({ assignedTo: req.params.userID })
+      .populate('assignedBy', 'name')
+      .sort({ deadline: 1 });
+    
+    res.json(tasks);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
