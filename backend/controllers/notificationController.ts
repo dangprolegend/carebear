@@ -3,8 +3,8 @@ import Notification from '../models/Notification';
 import { TypedRequest } from '../types/express';
 
 interface NotificationBody {
-  user: string;  // Changed from userID to user
-  task: string;  // Changed from taskID to task
+  userID: string;  // Changed from userID to user
+  taskID: string;  // Changed from taskID to task
 }
 
 interface NotificationParams {
@@ -14,10 +14,10 @@ interface NotificationParams {
 // Create a new notification
 export const createNotification = async (req: TypedRequest<NotificationBody>, res: Response): Promise<void> => {
   try {
-    const { user, task } = req.body;
+    const { userID, taskID } = req.body;
     const newNotification = new Notification({
-      user,
-      task,
+      userID,
+      taskID,
       createdAt: new Date()
     });
     
@@ -44,7 +44,7 @@ export const getUserNotifications = async (req: TypedRequest<any, { id: string }
 // Delete a notification
 export const deleteNotification = async (req: TypedRequest<any, NotificationParams>, res: Response): Promise<void> => {
   try {
-    const notification = await Notification.findByIdAndDelete(req.params.id);
+    const notification = await Notification.findByIdAndDelete(req.params.notificationID);
     
     if (!notification) {
       res.status(404).json({ message: 'Notification not found' });
