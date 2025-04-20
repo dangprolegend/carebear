@@ -3,14 +3,12 @@ import {
   createNotification, 
   getUserNotifications, 
   deleteNotification,
-  markAsRead 
 } from '../controllers/notificationController';
 
 const router: Router = express.Router();
 
-router.post('/', createNotification);
-router.post('/read', markAsRead); 
-router.get('/user/:id', getUserNotifications); 
-router.delete('/:notificationID', deleteNotification);
+router.post('/', createNotification); // Done migrated
+router.get('/user/:userID', getUserNotifications); // Done migrated
+router.delete('/:notificationID', deleteNotification); // Done migrated
 
 export default router;
