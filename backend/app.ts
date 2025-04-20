@@ -13,6 +13,7 @@ import memberRoutes from './routes/memberRoutes';
 import taskRoutes from './routes/taskRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
+import authRoutes from './routes/authRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -31,9 +32,10 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Define routes
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/groups', groupRoutes);
-app.use('/api/members', memberRoutes);
+app.use('/api/groups', memberRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);

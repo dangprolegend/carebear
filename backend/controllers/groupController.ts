@@ -3,6 +3,7 @@ import Group from '../models/Group';
 import Member from '../models/Member';
 import { TypedRequest } from '../types/express';
 import mongoose from 'mongoose';
+import Task from '../models/Task';
 
 interface GroupBody {
   name: string;
@@ -122,6 +123,42 @@ export const getUserGroups = async (req: TypedRequest<any, { userID: string }>, 
     const members = await Member.find({userID: userID}).populate('groupID').exec()
     const groups = members.map(member => member.groupID);
     res.json(groups);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Added: Get all members of a group
+export const getGroupMembers = async (req: TypedRequest<any, GroupParams>, res: Response): Promise<void> => {
+  const { groupID } = req.params;
+    if (!groupID) {
+        res.status(400).json({ message: "Group ID is required" });
+        return;
+    }
+
+    try {
+        const members = await Member.find({ groupID: groupID })
+                                    .populate('userID', 'name email');
+        if (!members) {
+            res.status(404).json({ message: "Members not found" });
+            return;
+        }
+        res.status(200).json(members);
+    } catch (error: any) {
+        console.error("Error in fetching group members", error.message);
+        res.status(400).json({ success: false, error: error.message });
+    }
+};
+
+// Get all tasks in a group
+export const getGroupTasks = async (req: TypedRequest<any, GroupParams>, res: Response): Promise<void> => {
+  try {
+    const tasks = await Task.find({ group: req.params.id })
+      .populate('assignedTo')
+      .populate('assignedBy')
+      .sort({ deadline: 1 });
+    
+    res.json(tasks);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
