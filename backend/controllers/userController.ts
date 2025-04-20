@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import User from '../models/User';
 import { TypedRequest } from '../types/express';
 import Task from '../models/Task';
+import Notification from '../models/Notification';
+import Dashboard from '../models/Dashboard';
 
 interface UserBody {
   email: string;
@@ -88,3 +90,38 @@ export const getUserTasks = async (req: TypedRequest<any, { id: string }>, res: 
     res.status(500).json({ error: err.message });
   }
 };
+
+export const getUserNotifications = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
+  try {
+    const notifications = await Notification.find({ userID: req.params.userID })
+      .populate('taskID', 'description')
+      .sort({ createdAt: -1 });
+    
+    res.json(notifications);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get dashboard metrics for a user
+// export const getUserMetrics = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
+//   try {
+//     // Tasks completed over time
+//     const completedTasks = await Task.find({
+//       assignedTo: req.params.userID,
+//       status: 'done'
+//     }).sort({ updatedAt: 1 });
+    
+//     // Get all dashboard entries for this user
+//     const metrics = await Dashboard.find({ user: req.params.userID })
+//       .populate('taskID', 'description')
+//       .sort({ created_timestamp: -1 });
+    
+//     res.json({
+//       completedTasks: completedTasks.length,
+//       metrics
+//     });
+//   } catch (err: any) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
