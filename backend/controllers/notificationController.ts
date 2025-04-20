@@ -44,7 +44,7 @@ export const getUserNotifications = async (req: TypedRequest<any, { id: string }
 // Delete a notification
 export const deleteNotification = async (req: TypedRequest<any, NotificationParams>, res: Response): Promise<void> => {
   try {
-    const notification = await Notification.findByIdAndDelete(req.params.id);
+    const notification = await Notification.findByIdAndDelete(req.params.notificationID);
     
     if (!notification) {
       res.status(404).json({ message: 'Notification not found' });
