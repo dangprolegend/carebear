@@ -1,8 +1,8 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from 'mongoose';
+import { ITask } from '../types/models';
 
-const taskSchema = new mongoose.Schema({
-  userID: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // Creator
-  groupID: { type: mongoose.Schema.Types.ObjectId, ref: 'Group' },
+const taskSchema: Schema = new Schema({
+  groupID: { type: mongoose.Schema.Types.ObjectId, ref: 'Group' }, 
   assignedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   status: { type: String, enum: ['pending', 'in-progress', 'done'], default: 'pending' },
@@ -11,5 +11,5 @@ const taskSchema = new mongoose.Schema({
   priority: { type: String, enum: ['low', 'medium', 'high'], default: 'medium' }
 });
 
-const Task = mongoose.model('Task', taskSchema);
+const Task = mongoose.model<ITask>('Task', taskSchema);
 export default Task;
