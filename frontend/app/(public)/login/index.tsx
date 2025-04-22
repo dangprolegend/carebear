@@ -16,6 +16,7 @@ import {
 import { auth } from '@/config/FirebaseConfig';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
+import debounce from 'lodash.debounce';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -30,9 +31,11 @@ export default function Login() {
     webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
   });
 
-  // ✅ Handle Google Auth
+  
   useEffect(() => {
-    const handleGoogleAuth = async () => {
+    const debouncedhandleGoogleAuth = debounce(async () => {
+      // console.log('Debounced function executed'); 
+      // use this to test if debounce is working
       if (response?.type === 'success') {
         setLoading(true);
         try {
@@ -75,9 +78,9 @@ export default function Login() {
           setLoading(false);
         }
       }
-    };
+    },500);
 
-    handleGoogleAuth();
+    debouncedhandleGoogleAuth();
   }, [response]);
 
   const handleLogin = async () => {

@@ -8,6 +8,7 @@ import {auth} from '@/config/FirebaseConfig';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect } from 'react';
+import debounce from 'lodash.debounce';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -59,7 +60,9 @@ export default function SignUp() {
     }, [response]);
 
 
-    const OnCreateAccount = async () => {
+    const debouncedOnCreateAccount = debounce(async () => {
+        // console.log('Debounced function executed');
+         // use this to test if debounce is working
         if (!email || !password) {
             alert('Please fill in all fields');
             return;
@@ -68,7 +71,7 @@ export default function SignUp() {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             console.log('Account created!', userCredential.user);
-            router.push('/login/signUp'); // Navigate to home screen after successful signup
+            router.push('/home'); // Navigate to home screen after successful signup
         } catch (error: any) {
             if (error.code === 'auth/email-already-in-use') {
                 alert('Email already in use');
@@ -81,7 +84,7 @@ export default function SignUp() {
                 alert('Error creating account');
             }
         }
-    };
+    },500);
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Sign Up</Text>
@@ -101,7 +104,7 @@ export default function SignUp() {
                 onChangeText={setPassword}
             />
             
-            <TouchableOpacity style={styles.button} onPress={OnCreateAccount}>
+            <TouchableOpacity style={styles.button} onPress={debouncedOnCreateAccount}>
                 <Text style={styles.buttonText}>Create Account</Text>
             </TouchableOpacity>
 
