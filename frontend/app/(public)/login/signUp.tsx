@@ -27,7 +27,26 @@ export default function SignUp() {
             if (authentication?.accessToken) {
                 const googleCredential = GoogleAuthProvider.credential(null, authentication.accessToken);
                 signInWithCredential(auth, googleCredential)
-                    .then((userCredential) => {
+                    .then(async (userCredential) => {
+                        const user = userCredential.user;
+                        const idToken = await user.getIdToken();
+
+                        const body = {
+                            authId: user.uid,
+                            email: user.email,
+                            name: user.displayName ?? 'No Name', 
+                            image: user.photoURL ??  "https://example.com/default.jpg"
+                        }
+                        const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}/auth/signup`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(body),
+                        });
+
+                        const resData = await res.json();
+                      
                         console.log('Signed in with Google!', userCredential.user);
                         router.push('/home'); // Navigate to home screen
                     })
