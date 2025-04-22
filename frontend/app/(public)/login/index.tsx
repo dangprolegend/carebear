@@ -56,7 +56,7 @@ export default function Login() {
           };
 
           // POST to backend
-          const res = await fetch('http://localhost:3000/api/users/login', {
+          const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
