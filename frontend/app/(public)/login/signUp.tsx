@@ -37,7 +37,7 @@ export default function SignUp() {
                             name: user.displayName || 'No Name', 
                             image: user.photoURL ||  "https://example.com/default.jpg"
                         }
-                        const res = await fetch('http://localhost:3000/api/users/signup', {
+                        const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}/auth/signup`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
