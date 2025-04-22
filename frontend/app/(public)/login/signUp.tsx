@@ -34,8 +34,8 @@ export default function SignUp() {
                         const body = {
                             authId: user.uid,
                             email: user.email,
-                            name: user.displayName || 'No Name', 
-                            image: user.photoURL ||  "https://example.com/default.jpg"
+                            name: user.displayName ?? 'No Name', 
+                            image: user.photoURL ??  "https://example.com/default.jpg"
                         }
                         const res = await fetch(`${process.env.EXPO_PUBLIC_API_BASE_URL}/auth/signup`, {
                             method: 'POST',

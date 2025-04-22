@@ -51,8 +51,8 @@ export default function Login() {
           const body = {
             authID: user.uid,
             email: user.email,
-            name: user.displayName || 'No Name',
-            image: user.photoURL || 'https://example.com/default.jpg',
+            name: user.displayName ?? 'No Name',
+            image: user.photoURL ?? 'https://example.com/default.jpg',
           };
 
           // POST to backend
