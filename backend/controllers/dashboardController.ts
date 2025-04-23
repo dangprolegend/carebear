@@ -4,19 +4,21 @@ import Task from '../models/Task';
 import { TypedRequest } from '../types/express';
 
 interface DashboardMetricBody {
-  userID: string;  // Changed from userID to user
-  taskID: string;  // Changed from taskID to task
+  userID: string; 
+  metric: string;
+  metric_unit: string;
   metric_value: number;
 }
 
 // Add metric data to dashboard
 export const addMetric = async (req: TypedRequest<DashboardMetricBody>, res: Response): Promise<void> => {
   try {
-    const { userID, taskID, metric_value } = req.body;
+    const { userID, metric, metric_unit, metric_value } = req.body;
     
     const newMetric = new Dashboard({
       userID,
-      taskID,
+      metric,
+      metric_unit,
       metric_value,
       created_timestamp: new Date()
     });
