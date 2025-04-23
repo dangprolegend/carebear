@@ -1,13 +1,15 @@
-import {View, Text, StyleSheet, TextInput, Button} from 'react-native';
+import {View, Text, StyleSheet, TextInput, Button, Platform } from 'react-native';
 import {Gesture, TouchableOpacity} from 'react-native-gesture-handler';
 import React from 'react';
 import Colors from '@/constants/Colors';
 import {useRouter} from 'expo-router';
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import {auth} from '@/config/FirebaseConfig';
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential, getAuth, FacebookAuthProvider } from 'firebase/auth';
+import { auth, app } from '@/config/FirebaseConfig';
 import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { useEffect } from 'react';
+import { onFacebookButtonPressAndroid, onFacebookButtonPressIOS } from '@/utils/facebookAuth';
+  
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -82,6 +84,22 @@ export default function SignUp() {
             }
         }
     };
+
+    // const SignInWithFB = async () => {
+    //     const result = await LoginManager.logInWithPermissions(['public_profile', 'email']);
+    //     if (result.isCancelled) {
+    //         throw new Error('User cancelled the login process');
+    //     }
+    //     const data = await AccessToken.getCurrentAccessToken();
+    //     if (!data) {
+    //         throw new Error('Something went wrong obtaining access token');
+    //     }
+    //     const auth = getAuth(app)
+    //     const credential = FacebookAuthProvider.credential(data.accessToken);
+    //     const user = await signInWithCredential(auth, credential);
+    //     console.log('Signed in with Facebook!', user);
+    // }
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Sign Up</Text>
@@ -115,6 +133,10 @@ export default function SignUp() {
                       console.error('Google Sign-In Error:', error);
                     }
                 }}
+            />
+            <Button
+                title="Sign in with Facebook"
+                onPress={Platform.OS === "ios" ? () => onFacebookButtonPressIOS().then(() => console.log('Signed in with Facebook!')) : () => onFacebookButtonPressAndroid().then(() => console.log('Signed in with Facebook!'))}
             />
         </View>
     );
