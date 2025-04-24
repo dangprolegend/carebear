@@ -20,7 +20,7 @@ export default function HomeScreen() {
         style={{ height: 100, aspectRatio: 1, borderRadius: 100 }}
       />
       <Text style={{ fontSize: 24, fontWeight: 'bold' }}>
-        Hey {user?.firstName}!
+        Hey {user?.firstName} 🐻
       </Text>
 
       <Text style={{ fontSize: 16 }}>Only authenticated Care Bear users can see this 😛</Text>
