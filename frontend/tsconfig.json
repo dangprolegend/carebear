@@ -5,8 +5,10 @@
     "jsx": "react-jsx",
     "types": ["react", "react-native"],
     "strict": true,
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@assets/*": ["./assets/*"]
     }
   },
   "include": [

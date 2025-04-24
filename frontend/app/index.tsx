@@ -1,26 +1,16 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, TouchableOpacity, StyleSheet, Button } from 'react-native';
+import { Link, useRouter } from 'expo-router';
+import { useAuth } from '@clerk/clerk-expo';
 
 export default function WelcomeScreen() {
-  const router = useRouter();
+  const { isSignedIn } = useAuth();
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome to Care Bear! 🐻</Text>
-
-      <TouchableOpacity 
-        style={styles.button}
-        onPress={() => router.push('/(public)/login')}
-      >
-        <Text style={styles.buttonText}>I have an account</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.button, styles.secondaryButton]}
-        onPress={() => router.push('/(public)/login/signUp')}
-      >
-        <Text style={styles.buttonText}>Create new account</Text>
-      </TouchableOpacity>
+      <Text>{isSignedIn ? 'Authenticated' : 'Not authenticated'}</Text>
+      <Link href='/sign-in'>Go to sign in</Link>
+      <Link href='/(protected)'>Go to Protected Screens</Link>
     </View>
   );
 }
