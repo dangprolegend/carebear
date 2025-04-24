@@ -43,6 +43,19 @@ export const getUserNotifications = async (req: TypedRequest<any, { id: string }
   }
 };
 
+
+// Get notification by notificationID
+export const getNotificationByID = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
+  try {
+    const notificationID = new mongoose.Types.ObjectId(req.params.notificationID);
+    const notifications = await Notification.findById(notificationID);
+    
+    res.json(notifications);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // Delete a notification
 // Done migrated
 export const deleteNotification = async (req: TypedRequest<any, NotificationParams>, res: Response): Promise<void> => {
@@ -59,3 +72,25 @@ export const deleteNotification = async (req: TypedRequest<any, NotificationPara
     res.status(500).json({ error: err.message });
   }
 };
+
+// Update a notification by notificationID
+export const updateNotification = async (req: TypedRequest<any, NotificationParams>, res: Response): Promise<void> => {
+  try {
+    const notification = await Notification.findByIdAndUpdate(
+      req.params.notificationID,
+      {
+        userID: req.body.userID,
+        taskID: req.body.taskID,
+    },
+      { new: true }
+    );
+    if (!notification) {
+      res.status(404).json({ message: 'Notification not found' });
+      return;
+    }
+    res.json(notification);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
