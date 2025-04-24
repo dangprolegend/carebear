@@ -89,7 +89,7 @@ import {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
-        <Text style={styles.title}>Sign in</Text>
+        <Text style={styles.title}>Welcome back!</Text>
   
         <View style={styles.form}>
           <CustomInput
@@ -115,9 +115,9 @@ import {
         </View>
   
         <CustomButton text='Sign in' onPress={handleSubmit(onSignIn)} />
-  
+ 
         <Link href='/sign-up' style={styles.link}>
-          Don't have an account? Sign up
+          New here? Sign up
         </Link>
   
         <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 'auto' }}>
