@@ -70,7 +70,7 @@ export default function SignInWith({ strategy }: SignInWithProps) {
     <Pressable onPress={onPress}>
       <Image
         source={strategyIcons[strategy]}
-        style={{ width: 62, height: 62 }}
+        style={{ width: 40, height: 40 }}
         resizeMode='contain'
       />
     </Pressable>
