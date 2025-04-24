@@ -1,13 +1,13 @@
-import {Slot} from 'expo-router';
-import { SafeAreaView } from 'react-native';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import { Slot } from 'expo-router';
+import { ClerkProvider } from '@clerk/clerk-expo';
+import { tokenCache } from '@clerk/clerk-expo/token-cache';
 
-export default function RootLayout(){
+export default function RootLayout() {
+  console.log('Root layout');
+
   return (
-    <GestureHandlerRootView style={{flex: 1}}>
-      <SafeAreaView style={{flex: 1}}>
-        <Slot />
-      </SafeAreaView>
-    </GestureHandlerRootView>
-  )
+    <ClerkProvider tokenCache={tokenCache}>
+      <Slot />
+    </ClerkProvider>
+  );
 }
