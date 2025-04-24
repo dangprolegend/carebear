@@ -1,4 +1,3 @@
-import CustomButton from './CustomButton';
 import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
 import { useEffect, useCallback } from 'react';

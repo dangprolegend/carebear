@@ -108,7 +108,7 @@ import {
   
         <CustomButton text='Sign up' onPress={handleSubmit(onSignUp)} />
         <Link href='/sign-in' style={styles.link}>
-          Already have an account? Sign in
+          Already created an account? Sign in
         </Link>
   
         <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 'auto' }}>
