@@ -10,7 +10,7 @@ export default function WelcomeScreen() {
       <Text style={styles.title}>Welcome to Care Bear! 🐻</Text>
       <Text>{isSignedIn ? 'Authenticated' : 'Not authenticated'}</Text>
       <Link href='/sign-in'>Go to sign in</Link>
-      <Link href='/(protected)'>Go to Protected Screens</Link>
+      {isSignedIn && <Link href='/(protected)'>Go to protected screens</Link>}
     </View>
   );
 }
