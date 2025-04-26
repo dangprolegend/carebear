@@ -1,19 +1,20 @@
 /** @type {import('tailwindcss').Config} */
 
 module.exports = {
-  // presets: [require("nativewind/preset")], // Preset should usually come first
   content: [
-    // Add the app directory pattern
     "./app/**/*.{js,jsx,ts,tsx}",
-    // Keep other patterns if they are relevant to your structure
-    "./screens/**/*.{js,jsx,ts,tsx}", // Remove if you don't have a 'screens' folder
     "./components/**/*.{js,jsx,ts,tsx}",
-    // If your root App file is outside 'app', keep this:
-    "./App.{js,jsx,ts,tsx}",
   ],
-  presets: [require("nativewind/preset")], // It's common practice to list presets first or after content
+  presets: [require("nativewind/preset")],
   theme: {
     extend: {
+      fontFamily: {
+        
+        'lato-light': ['Lato-Light'],
+        'lato-black': ['Lato-Black'],
+        'montserrat-alt-black': ['MontserratAlternates-Black'],
+       
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
@@ -50,17 +51,11 @@ module.exports = {
         },
       },
       borderWidth: {
-        hairline: 1, // Use a numeric value directly
+        hairline: 1,
       },
       keyframes: {
-        'accordion-down': {
-          from: { height: '0' },
-          to: { height: 'var(--radix-accordion-content-height)' },
-        },
-        'accordion-up': {
-          from: { height: 'var(--radix-accordion-content-height)' },
-          to: { height: '0' },
-        },
+        'accordion-down': { from: { height: '0' }, to: { height: 'var(--radix-accordion-content-height)' } },
+        'accordion-up': { from: { height: 'var(--radix-accordion-content-height)' }, to: { height: '0' } },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',

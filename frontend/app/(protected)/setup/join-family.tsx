@@ -14,15 +14,10 @@ export default function JoinFamilyScreen() {
     // TODO: Add logic to validate groupId and attempt to join the group via API call.
     router.navigate('/setup/congrats');
   };
-  const handleCreateGroup = () => {
-    console.log("Navigate to Create Family Group screen");
-    router.navigate('/(protected)/admin/create-family');
-  };
-
   return (
     <View className="flex-1 flex-col">
       {/* Form title */}
-      <Text className="mb-8 text-4xl font-bold text-foreground text-center">
+      <Text className="mb-8 text-3xl font-bold text-foreground">
         Join your Family Group
       </Text>
 

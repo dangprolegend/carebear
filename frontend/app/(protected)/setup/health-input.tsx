@@ -31,7 +31,7 @@ export default function HealthInputScreen() {
   return (
     <View>
       {/* Form title */}
-      <Text className="mb-8 text-4xl font-bold text-foreground text-center">
+      <Text className="mb-8 text-3xl font-bold text-foreground">
         Your Health input
       </Text>
 

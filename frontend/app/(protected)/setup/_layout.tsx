@@ -5,24 +5,38 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '~/components/ui/button';
 
 const setupSteps = [
-  'account', // "Set up your Account"
-  'health-input', // "health input screen"
-  'join-family', // "family group join/..."
-  'congrats', //  "congrats screen"
+  'account',
+  'health-input',
+  'join-family',
+  'create-family' ,
+  'members-input',
+  'congrats',
 ];
 
 interface SetupProgressIndicatorProps {
-  totalSteps: number;
-  currentStepIndex: number;
+  currentStepIndex: number; 
 }
 
-function SetupProgressIndicator({ totalSteps, currentStepIndex }: SetupProgressIndicatorProps) {
+function SetupProgressIndicator({ currentStepIndex }: SetupProgressIndicatorProps) {
+    const totalVisibleDots = 5;
+    const lastVisibleDotIndex = totalVisibleDots - 1; 
+
+    const nonNegativeIndex = Math.max(0, currentStepIndex);
+
+    let activeVisibleDotIndex;
+    if (nonNegativeIndex >= lastVisibleDotIndex) {
+      activeVisibleDotIndex = lastVisibleDotIndex;
+    } else {
+      activeVisibleDotIndex = nonNegativeIndex;
+    }
+
   return (
     <View className="mb-8 flex flex-row items-center justify-center space-x-1 p-4"> {/* scroll dot*/}
-      {Array.from({ length: totalSteps }).map((_, index) => {
-        const isActive = index === currentStepIndex;
+      {Array.from({ length: totalVisibleDots }).map((_, index) => {
+        // Check if the current dot being rendered matches the calculated active index
+        const isActive = index === activeVisibleDotIndex;
         const widthClass = isActive ? 'w-6' : 'w-2';
-        const bgClass = isActive ? 'bg-primary dark:bg-primary' : 'bg-gray-300 dark:bg-gray-600'; // Added dark:bg-primary
+        const bgClass = isActive ? 'bg-primary dark:bg-primary' : 'bg-gray-300 dark:bg-gray-600';
 
         return (
           <View
@@ -40,25 +54,30 @@ export default function SetupLayout() {
   const segments = useSegments();
 
   const currentSegment = segments[segments.length - 1] === 'setup'
-                         ? 'account' 
+                         ? 'account'
                          : segments[segments.length - 1];
 
   const currentStepIndex = setupSteps.indexOf(currentSegment ?? 'account');
   const totalSteps = setupSteps.length;
   const isJoinFamilyStep = currentSegment === 'join-family';
 
+  const safeCurrentStepIndex = currentStepIndex === -1 ? 0 : currentStepIndex;
+
   if (currentStepIndex === -1) {
-    console.warn(`Current segment "${currentSegment}" not found in setupSteps. Defaulting to first step.`);
+    console.warn(`Current segment "${currentSegment}" not found in setupSteps. Defaulting to first step visual.`);
+     console.log("Segments:", segments);
+     console.log("Calculated currentSegment:", currentSegment);
+     console.log("Result of indexOf:", currentStepIndex);
   }
 
-  const canGoBack = currentStepIndex > 0;
-  const isLastStep = currentStepIndex === totalSteps - 1;
+  const canGoBack = safeCurrentStepIndex > 0;
+  const isLastStep = safeCurrentStepIndex === totalSteps - 1;
 
   const handleBack = () => {
     if (canGoBack) {
-      const previousStep = setupSteps[currentStepIndex - 1];
+      const previousStep = setupSteps[safeCurrentStepIndex - 1];
       const path = `/setup/${previousStep}`;
-      router.navigate(path as any); 
+      router.navigate(path as any);
     } else {
       console.log("Already on the first page");
     }
@@ -66,33 +85,33 @@ export default function SetupLayout() {
 
   const handleNext = () => {
     if (!isLastStep) {
-      const nextStep = setupSteps[currentStepIndex + 1];
+      const nextStep = setupSteps[safeCurrentStepIndex + 1];
       const path = `/setup/${nextStep}`;
-      router.navigate(path as any); 
+      console.log(`Navigating from ${currentSegment} to ${path}`);
+      router.navigate(path as any);
     } else {
       console.log("Setup Complete! Navigating away...");
-      router.replace('/home'); 
+      router.replace('/home');
     }
   };
 
   const handleCreateGroup = () => {
     console.log("Navigate to Create Family Group screen from layout");
-    router.navigate('/(protected)/admin/create-family');
+    router.navigate('/setup/create-family');
   };
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
-      <View className="flex-1 p-6 pt-12">
+      <View className="flex-1 p-7">
         <SetupProgressIndicator
-          totalSteps={totalSteps}
-          currentStepIndex={currentStepIndex}
+          currentStepIndex={safeCurrentStepIndex}
         />
 
-        <View className="flex-1 pt-12">
+        <View className="flex-1 pt-2">
           <Slot />
         </View>
 
-        <View className="flex flex-row justify-between items-center pt-4 pb-12">
+        <View className="flex flex-row justify-between items-center pb-12 ">
           <Button
             variant="outline"
             size="lg"
