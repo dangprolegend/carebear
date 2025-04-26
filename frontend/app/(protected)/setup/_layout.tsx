@@ -19,11 +19,10 @@ interface SetupProgressIndicatorProps {
 
 function SetupProgressIndicator({ currentStepIndex }: SetupProgressIndicatorProps) {
     const totalVisibleDots = 5;
-    const lastVisibleDotIndex = totalVisibleDots - 1; 
-
     const nonNegativeIndex = Math.max(0, currentStepIndex);
-
+    const lastVisibleDotIndex = totalVisibleDots - 1;
     let activeVisibleDotIndex;
+
     if (nonNegativeIndex >= lastVisibleDotIndex) {
       activeVisibleDotIndex = lastVisibleDotIndex;
     } else {
@@ -31,17 +30,16 @@ function SetupProgressIndicator({ currentStepIndex }: SetupProgressIndicatorProp
     }
 
   return (
-    <View className="mb-8 flex flex-row items-center justify-center space-x-1 p-4"> {/* scroll dot*/}
+    <View className="mb-8 flex flex-row items-center justify-center space-x-6 gap-2 p-4">
       {Array.from({ length: totalVisibleDots }).map((_, index) => {
-        // Check if the current dot being rendered matches the calculated active index
         const isActive = index === activeVisibleDotIndex;
-        const widthClass = isActive ? 'w-6' : 'w-2';
-        const bgClass = isActive ? 'bg-primary dark:bg-primary' : 'bg-gray-300 dark:bg-gray-600';
+        const widthClass = isActive ? 'w-8' : 'w-4';
+        const bgClass = isActive ? 'bg-primary dark:bg-primary' : 'bg-gray-300 dark:bg-gray-200';
 
         return (
           <View
             key={index}
-            className={`h-2 rounded-full ${widthClass} ${bgClass}`}
+            className={`h-4 w-4 rounded-full ${widthClass} ${bgClass}`}
           />
         );
       })}
@@ -111,7 +109,7 @@ export default function SetupLayout() {
           <Slot />
         </View>
 
-        <View className="flex flex-row justify-between items-center pb-12 ">
+        <View className="flex flex-row justify-between items-center pb-12">
           <Button
             variant="outline"
             size="lg"

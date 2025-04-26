@@ -21,6 +21,12 @@ export default function WelcomeScreen() {
       >
         <Text style={styles.buttonText}>Create new account</Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.button, styles.secondaryButton]}
+        onPress={() => router.push('/(protected)/setup/account')}
+      >
+        <Text style={styles.buttonText}>Setup Your Account</Text>
+      </TouchableOpacity>
     </View>
   );
 }
