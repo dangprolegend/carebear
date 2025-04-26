@@ -14,7 +14,7 @@ export default function AccountSetupScreen() {
   return (
     // Container for just the content of this step
     <View>
-      <Text className="mb-8 text-4xl font-bold text-foreground ">
+      <Text className="mb-8 text-3xl font-bold text-foreground">
         Set up your Account
       </Text>
       <View className="mb-6">
