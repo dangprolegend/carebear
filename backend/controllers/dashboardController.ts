@@ -83,11 +83,11 @@ export const deleteMetric = async (req: TypedRequest<any, { id: string }>, res: 
     const metrics = await Dashboard.findByIdAndDelete(req.params.metricID);
     
     if (!metrics) {
-      res.status(404).json({ message: 'Notification not found' });
+      res.status(404).json({ message: 'Metric not found' });
       return;
     }
     
-    res.json({ message: 'Notification deleted successfully' });
+    res.json({ message: 'Metric deleted successfully' });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
