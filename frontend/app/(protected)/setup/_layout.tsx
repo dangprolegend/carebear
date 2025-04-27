@@ -11,6 +11,7 @@ const setupSteps = [
   'create-family' ,
   'members-input',
   'congrats',
+  'dashboard'
 ];
 
 interface SetupProgressIndicatorProps {
