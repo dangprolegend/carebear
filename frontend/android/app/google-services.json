@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "241948802661",
+    "project_id": "carebearvtmp2025",
+    "storage_bucket": "carebearvtmp2025.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241948802661:android:106faef3600b79807e508c",
+        "android_client_info": {
+          "package_name": "carebare.group4.com"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "241948802661-9g9n61dgulurrufnpcmpmc39q1ffpitm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "carebare.group4.com",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "241948802661-emqumm6r8nsdtospvrrq5gl194gle3qe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3qSL-z30iVc6woiIvgs1LNnHB7ekeEc4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "241948802661-emqumm6r8nsdtospvrrq5gl194gle3qe.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "241948802661-etf4auehg5q8bbg567p7vij33aiavdns.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "carebare.group4.com"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
