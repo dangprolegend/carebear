@@ -1,22 +1,24 @@
 import { Response } from 'express';
 import Dashboard from '../models/Dashboard';
-import Task from '../models/Task';
 import { TypedRequest } from '../types/express';
+import mongoose from 'mongoose';
 
 interface DashboardMetricBody {
-  userID: string;  // Changed from userID to user
-  taskID: string;  // Changed from taskID to task
+  userID: string; 
+  metric: string;
+  metric_unit: string;
   metric_value: number;
 }
 
 // Add metric data to dashboard
 export const addMetric = async (req: TypedRequest<DashboardMetricBody>, res: Response): Promise<void> => {
   try {
-    const { userID, taskID, metric_value } = req.body;
+    const { userID, metric, metric_unit, metric_value } = req.body;
     
     const newMetric = new Dashboard({
       userID,
-      taskID,
+      metric,
+      metric_unit,
       metric_value,
       created_timestamp: new Date()
     });
@@ -28,26 +30,64 @@ export const addMetric = async (req: TypedRequest<DashboardMetricBody>, res: Res
   }
 };
 
-// Get dashboard metrics for a group
-export const getGroupMetrics = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
+// Get dashboard metrics by userID
+export const getMetricByUserID = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
   try {
-    const completedTasks = await Task.find({
-      group: req.params.groupID,
-      status: 'done'
-    });
+    const userID = new mongoose.Types.ObjectId(req.params.userID);
+    const metrics = await Dashboard.find({ userID });
     
-    const pendingTasks = await Task.find({
-      group: req.params.groupID,
-      status: { $ne: 'done' }
-    });
+    res.json(metrics);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get dashboard metric by dashboardID
+export const getMetricByMetricID = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
+  try {
+    const metricID = new mongoose.Types.ObjectId(req.params.metricID);
+    const metrics = await Dashboard.findById(metricID);
     
-    res.json({
-      completedTasks: completedTasks.length,
-      pendingTasks: pendingTasks.length,
-      totalTasks: completedTasks.length + pendingTasks.length,
-      completionRate: completedTasks.length > 0 ? 
-        (completedTasks.length / (completedTasks.length + pendingTasks.length)) * 100 : 0
-    });
+    res.json(metrics);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Update dashboard metrics by dashboardID
+export const updateMetric = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
+  try {
+    const dashboard = await Dashboard.findByIdAndUpdate(
+      req.params.metricID,
+      {
+        userID: req.body.userID,
+        metric: req.body.metric,
+        metric_unit: req.body.metric_unit,
+        metric_value: req.body.metric_value
+    },
+      { new: true }
+    );
+    if (!dashboard) {
+      res.status(404).json({ message: 'Dashboard not found' });
+      return;
+    }
+    res.json(dashboard);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Delete dashboard metrics by dashboardID
+export const deleteMetric = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
+  try {
+    const metrics = await Dashboard.findByIdAndDelete(req.params.metricID);
+    
+    if (!metrics) {
+      res.status(404).json({ message: 'Metric not found' });
+      return;
+    }
+    
+    res.json({ message: 'Metric deleted successfully' });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
