@@ -1,9 +1,14 @@
 import { View, Text, Image, Button } from 'react-native';
 import { useAuth, useUser } from '@clerk/clerk-expo';
+import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
   const { user } = useUser();
+  const router = useRouter();
 
+  const navigateToLocation = () => {
+    router.push('/location');
+  };
   const { signOut } = useAuth();
 
   return (
@@ -24,7 +29,7 @@ export default function HomeScreen() {
       </Text>
 
       <Text style={{ fontSize: 16 }}>Only authenticated Care Bear users can see this 😛</Text>
-
+      <Button title='Go to Location' onPress={navigateToLocation} />
       <Button title='Sign out' onPress={() => signOut()} />
     </View>
   );

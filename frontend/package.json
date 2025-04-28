@@ -63,7 +63,9 @@
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "tailwindcss-react-native": "^1.7.10",
-    "zod": "^3.24.3"
+    "zod": "^3.24.3",
+    "expo-location": "~18.0.10",
+    "react-native-maps": "1.18.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
