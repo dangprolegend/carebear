@@ -218,7 +218,7 @@ export default function Dashboard() {
           {showYourHealth && (
             <View>
               {/* Health Metrics */}
-              <View className="flex-row flex-wrap justify-between">
+              <View className="flex-row flex-wrap justify-between mt-4">
                 <HealthMetric label="Sleep" value="81%" detail="6 hr 15 min / 8 hr" />
                 <HealthMetric label="Steps" value="81%" detail="9,500 / 10,000" />
                 <HealthMetric label="Weight" value="81%" detail="55 kg / 50 kg" />
