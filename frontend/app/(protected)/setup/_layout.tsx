@@ -10,8 +10,7 @@ const setupSteps = [
   'join-family',
   'create-family' ,
   'members-input',
-  'congrats',
-  'dashboard'
+  'congrats'
 ];
 
 interface SetupProgressIndicatorProps {
@@ -90,7 +89,7 @@ export default function SetupLayout() {
       router.navigate(path as any);
     } else {
       console.log("Setup Complete! Navigating away...");
-      router.replace('/home');
+      router.replace('/dashboard/dashboard');
     }
   };
 
