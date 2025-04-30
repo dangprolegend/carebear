@@ -17,6 +17,7 @@ import authRoutes from './routes/authRoutes';
 
 import { Webhook } from 'svix';
 import User from './models/User';
+import job from './config/cron';
 
 // Load environment variables
 dotenv.config();
@@ -27,6 +28,9 @@ connectDB();
 // Initialize Express app
 const app: Express = express();
 const PORT: number = parseInt(process.env.PORT || '5000');
+
+// cron job for render
+job.start();
 
 // Middleware
 app.use(cors());
