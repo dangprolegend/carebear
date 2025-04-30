@@ -32,8 +32,8 @@ const HealthMetric = ({ label, value, detail }: { label: string; value: string; 
 );
 
 export default function Dashboard() {
-  const [showTodaySchedule, setShowTodaySchedule] = useState(false);
-  const [showYourHealth, setShowYourHealth] = useState(false);
+  const [showTodaySchedule, setShowTodaySchedule] = useState(true);
+  const [showYourHealth, setShowYourHealth] = useState(true);
 
   const handleCalendarBackward = () => {
     console.log('Move calendar backward');
