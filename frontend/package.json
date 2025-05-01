@@ -43,7 +43,6 @@
     "expo-web-browser": "~14.0.2",
     "firebase": "^11.6.0",
     "lightningcss": "^1.29.3" ,
-    "lightningcss-react-native": "^1.29.3",
     "lucide-react": "^0.503.0",
     "lucide-react-native": "^0.503.0",
     "nativewind": "^4.1.23",
