@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, Pressable, Image } from 'react-native';
+import { View, Text, ScrollView, Image } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 
 const TaskItem = ({ time, title, detail, subDetail }: { time: string; title: string; detail: string; subDetail: string }) => (
@@ -31,17 +32,14 @@ const HealthMetric = ({ label, value, detail }: { label: string; value: string; 
   </View>
 );
 
-export default function Dashboard() {
+export default function MemberDashboard() {
+  const params = useLocalSearchParams();
+  const memberName = params.name as string;
+  const memberAge = params.age as string;
+  const memberStatus = params.status as string;
+  
   const [showTodaySchedule, setShowTodaySchedule] = useState(true);
   const [showYourHealth, setShowYourHealth] = useState(true);
-
-  const handleCalendarBackward = () => {
-    console.log('Move calendar backward');
-  };
-
-  const handleCalendarForward = () => {
-    console.log('Move calendar forward');
-  };
 
   const tasks = [
     { time: '8:00 am', title: 'Medicine 1', detail: '1 Tablet', subDetail: 'Take with water' },
@@ -50,35 +48,21 @@ export default function Dashboard() {
     { time: '12:00 pm', title: 'Lunch', detail: 'Healthy meal', subDetail: 'Include vegetables' },
     { time: '2:00 pm', title: 'Meeting', detail: '1 hr', subDetail: 'Discuss project updates' },
     { time: '4:00 pm', title: 'Snack', detail: 'Fruit', subDetail: 'Eat an apple' },
-    { time: '6:00 pm', title: 'Dinner', detail: 'Light meal', subDetail: 'Avoid heavy food' },
-    { time: '8:00 pm', title: 'Reading', detail: '30 min', subDetail: 'Read a book' },
   ];
 
   return (
-    <View className="flex-1 bg-white">
-      {/* Date and Calendar */}
-      <View className="px-4 flex-row items-center justify-between mb-4">
-        {/* Backward Triangle */}
-        <Pressable onPress={handleCalendarBackward}>
-          <View
-            style={{
-              width: 0,
-              height: 0,
-              borderTopWidth: 6,
-              borderBottomWidth: 6,
-              borderRightWidth: 6,
-              borderStyle: 'solid',
-              borderTopColor: 'transparent',
-              borderBottomColor: 'transparent',
-              borderRightColor: 'gray',
-            }}
-          />
-        </Pressable>
+    <View className="flex-1">
+      {/* Member Header */}
+      <View className="px-4 py-3">
+        <Text className="text-lg font-bold">{memberName}'s Dashboard</Text>
+        <Text className="text-sm text-gray-500">{memberAge} years • {memberStatus}</Text>
+      </View>
 
-        {/* Calendar Icon and Date */}
+      {/* Date Display */}
+      <View className="px-4 flex-row items-center justify-center my-4">
         <View className="flex-row items-center">
           <Image
-            source={require('../../../assets/icons/calendar.png')}
+            source={require('../../../../assets/icons/calendar.png')}
             style={{
               width: 20,
               height: 20,
@@ -87,26 +71,9 @@ export default function Dashboard() {
           />
           <Text className="text-center text-sm text-gray-600">05/13/2025</Text>
         </View>
-
-        {/* Forward Triangle */}
-        <Pressable onPress={handleCalendarForward}>
-          <View
-            style={{
-              width: 0,
-              height: 0,
-              borderTopWidth: 6,
-              borderBottomWidth: 6,
-              borderLeftWidth: 6,
-              borderStyle: 'solid',
-              borderTopColor: 'transparent',
-              borderBottomColor: 'transparent',
-              borderLeftColor: 'gray',
-            }}
-          />
-        </Pressable>
       </View>
 
-      {/* Calendar Days */}
+      {/* Calendar Days - Read-only version */}
       <View className="px-4">
         <View className="flex-row justify-between">
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => {
@@ -143,39 +110,31 @@ export default function Dashboard() {
       </View>
 
       <ScrollView className="flex-1 mt-4" contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* Today Schedule */}
+        {/* Today Schedule - Read-only */}
         <View className="px-4 mb-6">
-          <Pressable
-            onPress={() => setShowTodaySchedule(!showTodaySchedule)}
-            className="flex-row items-center bg-blue-100 p-3 rounded-lg justify-between"
-          >
+          <View className="flex-row items-center bg-blue-100 p-3 rounded-lg justify-between">
             <Text className="text-base font-semibold">Today Schedule</Text>
-            <View
-              style={{
-                width: 0,
-                height: 0,
-                borderTopWidth: 6,
-                borderBottomWidth: 6,
-                borderLeftWidth: 6,
-                borderStyle: 'solid',
-                borderTopColor: 'transparent',
-                borderBottomColor: 'transparent',
-                borderLeftColor: showTodaySchedule ? 'blue' : 'gray',
-              }}
-            />
-          </Pressable>
+            {showTodaySchedule && (
+              <View
+                style={{
+                  width: 0,
+                  height: 0,
+                  borderTopWidth: 6,
+                  borderBottomWidth: 6,
+                  borderLeftWidth: 6,
+                  borderStyle: 'solid',
+                  borderTopColor: 'transparent',
+                  borderBottomColor: 'transparent',
+                  borderLeftColor: 'blue',
+                }}
+              />
+            )}
+          </View>
           {showTodaySchedule && (
             <View className="bg-gray-100 rounded-lg p-4 mb-4">
               <View className="flex-row justify-between mb-2">
                 <Text className="text-sm font-medium">Today Tasks</Text>
-                <View className="flex-row space-x-2">
-                  <Pressable className="px-2 py-1 bg-white rounded-full">
-                    <Text className="text-xs">View</Text>
-                  </Pressable>
-                  <Pressable className="px-2 py-1 bg-white rounded-full">
-                    <Text className="text-xs">Edit</Text>
-                  </Pressable>
-                </View>
+                <Text className="text-xs text-gray-500">View-only mode</Text>
               </View>
 
               {/* Task List with Scrollable Limit */}
@@ -194,27 +153,26 @@ export default function Dashboard() {
           )}
         </View>
 
-        {/* Your Health */}
+        {/* Health Metrics - Read-only */}
         <View className="px-4">
-          <Pressable
-            onPress={() => setShowYourHealth(!showYourHealth)}
-            className="flex-row items-center bg-green-100 p-3 rounded-lg justify-between"
-          >
-            <Text className="text-base font-semibold">Your Health</Text>
-            <View
-              style={{
-                width: 0,
-                height: 0,
-                borderTopWidth: 6,
-                borderBottomWidth: 6,
-                borderLeftWidth: 6,
-                borderStyle: 'solid',
-                borderTopColor: 'transparent',
-                borderBottomColor: 'transparent',
-                borderLeftColor: showYourHealth ? 'green' : 'gray',
-              }}
-            />
-          </Pressable>
+          <View className="flex-row items-center bg-green-100 p-3 rounded-lg justify-between">
+            <Text className="text-base font-semibold">Health Metrics</Text>
+            {showYourHealth && (
+              <View
+                style={{
+                  width: 0,
+                  height: 0,
+                  borderTopWidth: 6,
+                  borderBottomWidth: 6,
+                  borderLeftWidth: 6,
+                  borderStyle: 'solid',
+                  borderTopColor: 'transparent',
+                  borderBottomColor: 'transparent',
+                  borderLeftColor: 'green',
+                }}
+              />
+            )}
+          </View>
           {showYourHealth && (
             <View>
               {/* Health Metrics */}
@@ -224,11 +182,6 @@ export default function Dashboard() {
                 <HealthMetric label="Weight" value="81%" detail="55 kg / 50 kg" />
                 <HealthMetric label="Workout" value="81%" detail="650 cal / 1 hr" />
               </View>
-
-              {/* Add more section */}
-              <Pressable className="flex-row items-center justify-center bg-gray-100 p-4 rounded-lg">
-                <Text className="text-sm text-gray-500">Add More</Text>
-              </Pressable>
             </View>
           )}
         </View>
