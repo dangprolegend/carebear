@@ -15,6 +15,10 @@ import notificationRoutes from './routes/notificationRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import authRoutes from './routes/authRoutes';
 
+import { Webhook } from 'svix';
+import User from './models/User';
+import job from './config/cron';
+
 // Load environment variables
 dotenv.config();
 
@@ -25,6 +29,9 @@ connectDB();
 const app: Express = express();
 const PORT: number = parseInt(process.env.PORT || '5000');
 
+// cron job for render
+job.start();
+
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -32,7 +39,7 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Define routes
-app.use('/api/auth', authRoutes);
+app.use('/api/webhooks', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/groups', memberRoutes);
