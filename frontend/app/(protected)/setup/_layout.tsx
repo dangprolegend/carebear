@@ -89,7 +89,7 @@ export default function SetupLayout() {
       router.navigate(path as any);
     } else {
       console.log("Setup Complete! Navigating away...");
-      router.replace('/dashboard/dashboard');
+      router.replace('/dashboard/mydashboard/dashboard');
     }
   };
 
