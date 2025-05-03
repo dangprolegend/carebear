@@ -2,14 +2,20 @@ import { View, Text, TouchableOpacity, Image, SafeAreaView } from 'react-native'
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
 import Welcome from '../assets/images/welcome.png';
+import { useEffect } from 'react';
 
 export default function WelcomeScreen() {
   const { isSignedIn } = useAuth();
   const router = useRouter();
 
+  useEffect(() => {
+    if (isSignedIn) {
+      router.push('/(protected)/dashboard/dashboard'); // Redirect to the home page if signed in
+    }
+  }, [isSignedIn, router]);
+
   if (isSignedIn) {
-    router.push('/(protected)/dashboard/dashboard'); // Redirect to the home page if signed in
-    return null; // Prevent rendering the rest of the component
+    return null; // Prevent rendering the rest of the component while redirecting
   }
 
   return (

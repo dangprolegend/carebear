@@ -71,12 +71,10 @@ export default function SignInWith({ strategy }: SignInWithProps) {
       onPress={onPress} 
       className="flex w-11 h-11 p-0 justify-center items-center aspect-square rounded-full border border-[#DDD]"
     >
-      <TouchableOpacity className=''>
         <Image
           source={strategyIcons[strategy]}
           className="w-4 h-4 flex-shrink-0 aspect-square"
         />
-      </TouchableOpacity>
     </Pressable>
   );
 }
