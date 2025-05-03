@@ -23,7 +23,7 @@ export default function DashboardLayout() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
+    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-2 bg-white">
         {/* Home Button */}
