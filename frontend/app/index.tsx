@@ -1,28 +1,37 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image, SafeAreaView } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
+import Welcome from '../assets/images/welcome.png';
 
 export default function WelcomeScreen() {
   const { isSignedIn } = useAuth();
   const router = useRouter();
 
+  if (isSignedIn) {
+    router.push('/(protected)/dashboard/dashboard'); // Redirect to the home page if signed in
+    return null; // Prevent rendering the rest of the component
+  }
+
   return (
-    <View className="flex-1 justify-center items-center p-5 bg-white">
-      <Text className="text-4xl font-bold mb-10 text-center">Welcome to Care Bear! 🐻</Text>
-      <TouchableOpacity
-        className="bg-[#0a7ea4] py-4 px-8 rounded-full mb-4 w-4/5 items-center"
-        onPress={() => router.push('/(auth)/sign-in')}
-      >
-        <Text className="text-white text-lg font-semibold">Go to sign in</Text>
-      </TouchableOpacity>
-      {isSignedIn && (
+    <SafeAreaView>
+      <View className="items-center justify-center h-screen bg-white">
+        <View className='flex flex-col items-center gap-20 w-[246px]'>
+          <Text className='font-montserrat-alt-black text-black text-center text-[40px] font-extrabold leading-[40px] tracking-[1.16px]'>
+            CareBear
+          </Text>
+          <Image source={Welcome} className="h-[269px] self-stretch aspect-[246/269]"/>
+
+          <Text className="text-black text-center font-lato-black text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">
+            For you and the ones you love
+        </Text>
+        </View>
         <TouchableOpacity
-          className="bg-[#0a7ea4] py-4 px-8 rounded-full w-4/5 items-center"
-          onPress={() => router.push('/(protected)/setup' as any)}
+          className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full mt-[68px]"
+          onPress={() => router.push('/(auth)/sign-in')}
         >
-          <Text className="text-white text-lg font-semibold">Go to protected screens</Text>
+          <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Let's Start</Text>
         </TouchableOpacity>
-      )}
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
