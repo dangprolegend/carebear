@@ -1,17 +1,12 @@
 import {
-    StyleSheet,
     Text,
-    KeyboardAvoidingView,
-    Platform,
     View,
-    Alert,
     Image,
     SafeAreaView,
     TouchableOpacity,
   } from 'react-native';
   import CustomInput from '@/components/CustomInput';
-  import CustomButton from '@/components/CustomButton';
-  import { Link } from 'expo-router';
+  import { Link, router } from 'expo-router';
 
   import Line from '../../assets/icons/line.png';
   
@@ -113,7 +108,7 @@ import {
           </View>
 
           <Text className=" text-black font-lato text-[16px] font-extrabold leading-9 tracking-[0.3px]">
-              Email
+              Password
           </Text>
           <View className='w-full mt-[8px]'>
             <CustomInput
@@ -123,15 +118,11 @@ import {
               secureTextEntry
               />
           </View>
-    
+
             {errors.root && (
               <Text style={{ color: 'crimson' }}>{errors.root.message}</Text>
             )}
-          
           </View>  
-        {/* <Link href='/sign-up' style={styles.link}>
-          New here? Sign up
-        </Link> */}
   
         {/* Sign in with social providers (Google, Facebook, Apple) */}
           <View className="flex flex-col items-start gap-8 self-stretch mt-[40px]">
@@ -158,9 +149,11 @@ import {
                   <Text className='text-black font-lato text-base font-light leading-6 tracking-[-0.1px]'>
                     Don't have an account? 
                   </Text>
-                  <Link href='/sign-up' className='text-[#0F172A] font-lato text-base font-extrabold leading-6 tracking-[-0.1px]'>
-                    Sign Up
-                  </Link>
+                  <TouchableOpacity onPress={() => router.push('/sign-up')}>
+                    <Text className='text-[#0F172A] font-lato text-base font-extrabold leading-6 tracking-[-0.1px]'>
+                      Sign Up
+                    </Text>
+                  </TouchableOpacity>
                 </View>
 
             </View>
