@@ -12,6 +12,7 @@ import {
   import { z } from 'zod';
   import { zodResolver } from '@hookform/resolvers/zod';  
   import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
+import { router } from 'expo-router';
   
   const verifySchema = z.object({
     code: z.string({ message: 'Code is required' }).length(6, 'Invalid code'),
@@ -50,6 +51,7 @@ import {
   
         if (signUpAttempt.status === 'complete') {
           setActive({ session: signUpAttempt.createdSessionId });
+          router.push('../(protected)/setup/health-input');
         } else {
           console.log('Verification failed');
           console.log(signUpAttempt);

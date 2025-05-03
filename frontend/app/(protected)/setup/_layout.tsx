@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '~/components/ui/button';
 
 const setupSteps = [
-  'account',
   'health-input',
   'join-family',
   'create-family' ,
@@ -52,10 +51,10 @@ export default function SetupLayout() {
   const segments = useSegments();
 
   const currentSegment = segments[segments.length - 1] === 'setup'
-                         ? 'account'
+                         ? 'health-input'
                          : segments[segments.length - 1];
 
-  const currentStepIndex = setupSteps.indexOf(currentSegment ?? 'account');
+  const currentStepIndex = setupSteps.indexOf(currentSegment ?? 'health-input');
   const totalSteps = setupSteps.length;
   const isJoinFamilyStep = currentSegment === 'join-family';
 
