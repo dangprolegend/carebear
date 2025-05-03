@@ -47,9 +47,11 @@ export default function DashboardLayout() {
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
       />
-      <SafeAreaView className="flex-1" edges={['top', 'left', 'right']}>
+      <SafeAreaView className="flex-1" edges={['left', 'right']}>
         {/* Header */}
-        <View className="flex-row items-center justify-between px-4 py-2">
+        <View 
+          className="flex-row items-center justify-between px-4 py-2"
+        >
           {/* Home Button */}
           <Pressable onPress={() => router.replace('/home')}>
             <MaterialIcons name="home" size={24} color="#362209" />
