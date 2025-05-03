@@ -1,14 +1,15 @@
 import React from 'react';
-import { View, Text, Pressable, Image } from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons'; // For Home and Notification icons
+import { MaterialIcons, Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const tabs = [
-  { name: 'Dashboard', route: '/dashboard/dashboard', icon: require('../../../assets/icons/dashboard.png') },
-  { name: 'Family Group', route: '/dashboard/family', icon: require('../../../assets/icons/family.png') },
-  { name: 'Safezone', route: '/dashboard/safezone', icon: require('../../../assets/icons/safezone.png') },
-  { name: 'Profile', route: '/dashboard/profile', icon: require('../../../assets/icons/profile.png') },
+  { name: 'Dashboard', route: '/dashboard/mydashboard/dashboard', icon: 'dashboard', iconType: 'MaterialCommunityIcons' },
+  { name: 'Family Group', route: '/dashboard/family/family', icon: 'home', iconType: 'Ionicons' },
+  { name: 'Safezone', route: '/dashboard/safezone/safezone', icon: 'map-marker-alt', iconType: 'FontAwesome5' },
+  { name: 'Profile', route: '/dashboard/profile/profile', icon: 'person', iconType: 'MaterialIcons' },
 ];
 
 export default function DashboardLayout() {
@@ -22,80 +23,100 @@ export default function DashboardLayout() {
     router.replace(route as any);
   };
 
+  const renderIcon = (icon: string, iconType: string, isActive: boolean) => {
+    const color = isActive ? '#1A0933' : '#777';
+    const size = 24;
+
+    switch (iconType) {
+      case 'Ionicons':
+        return <Ionicons name={icon as any} size={size} color={color} />;
+      case 'FontAwesome5':
+        return <FontAwesome5 name={icon as any} size={size} color={color} />;
+      default:
+        return <MaterialIcons name={icon as any} size={size} color={color} />;
+    }
+  };
+
   return (
-    <SafeAreaView className="flex-1 bg-background" edges={['left', 'right']}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-4 py-2 bg-white">
-        {/* Home Button */}
-        <Pressable onPress={() => router.replace('/home')}>
-          <MaterialIcons name="home" size={24} color="#362209" />
-        </Pressable>
-
-        {/* Dynamic Dashboard Title */}
-        <Text
-          className="text-lg font-bold text-[#362209]"
-          style={{
-            fontFamily: 'Lato',
-            fontSize: 18,
-            letterSpacing: 0.3,
-          }}
+    <View className="flex-1 relative">
+      {/* For LinearGradient, we use a combination of style prop for positioning (which is critical for gradients) 
+          while keeping the Tailwind approach for the rest of the components */}
+      <LinearGradient
+        colors={['#ED9E8F', '#FFDBC3', '#FEF6E3', '#FFFFFF']}
+        style={gradientStyles.background}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      />
+      <SafeAreaView className="flex-1" edges={['left', 'right']}>
+        {/* Header */}
+        <View 
+          className="flex-row items-center justify-between px-4 py-2"
         >
-          {activeTab}
-        </Text>
+          {/* Home Button */}
+          <Pressable onPress={() => router.replace('/home')}>
+            <MaterialIcons name="home" size={24} color="#362209" />
+          </Pressable>
 
-        {/* Notification Button */}
-        <Pressable onPress={() => console.log('Notification pressed')}>
-          <MaterialIcons name="notifications" size={24} color="#362209" />
-        </Pressable>
-      </View>
+          {/* Dynamic Dashboard Title */}
+          <Text
+            className="text-lg font-bold text-[#362209] font-['Lato'] text-[18px] tracking-[0.3px]"
+          >
+            {activeTab}
+          </Text>
 
-      <View className="flex-1">
-        {/* Main Content */}
+          {/* Notification Button */}
+          <Pressable onPress={() => console.log('Notification pressed')}>
+            <MaterialIcons name="notifications" size={24} color="#362209" />
+          </Pressable>
+        </View>
+
         <View className="flex-1">
-          <Slot />
-        </View>
+          {/* Main Content */}
+          <View className="flex-1 mb-16">
+            <Slot />
+          </View>
 
-        {/* Tab Navigation */}
-        <View className="flex-row justify-around bg-gray-100 p-4 border-t border-gray-300">
-          {tabs.map((tab) => {
-            const isActive = segments.join('/').includes(tab.route); // Check active tab
-            return (
-              <Pressable
-                key={tab.name}
-                onPress={() => handleTabPress(tab.route)}
-                className={`items-center px-4 py-2 rounded-lg ${
-                  isActive ? 'bg-[#F5E8D8]' : 'bg-transparent'
-                }`}
-              >
-                {/* Icon */}
-                <Image
-                  source={tab.icon}
-                  style={{
-                    width: 24,
-                    height: 24,
-                    tintColor: isActive ? '#362209' : 'gray',
-                    marginBottom: 4,
-                  }}
-                />
-                {/* Tab Name */}
-                <Text
-                  className={`text-sm ${
-                    isActive ? 'font-black text-[#362209]' : 'text-gray-700'
-                  }`}
-                  style={{
-                    fontFamily: 'Lato',
-                    fontSize: 14,
-                    letterSpacing: 0.3,
-                    textAlign: 'center',
-                  }}
-                >
-                  {tab.name}
-                </Text>
-              </Pressable>
-            );
-          })}
+          {/* Tab Navigation - Fixed at bottom */}
+          <View className="absolute bottom-0 left-0 right-0 bg-white shadow-lg">
+            <View className="flex-row justify-around items-center py-3 px-2">
+              {tabs.map((tab) => {
+                const isActive = segments.join('/').includes(tab.route); // Check active tab
+                return (
+                  <Pressable
+                    key={tab.name}
+                    onPress={() => handleTabPress(tab.route)}
+                    className={`items-center py-2 px-4 ${isActive ? 'rounded-lg bg-transparent overflow-hidden' : ''}`}
+                  >
+                    {/* Icon */}
+                    {renderIcon(tab.icon, tab.iconType, isActive)}
+                    
+                    {/* Tab Name */}
+                    <Text
+                      className={`text-xs mt-1 font-['Lato'] tracking-[0.3px] z-10 ${
+                        isActive ? 'font-bold text-[#1A0933]' : 'text-gray-500'
+                      }`}
+                    >
+                      {tab.name}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
+
+// We keep this minimal StyleSheet only for the gradient background
+// which requires native positioning to work correctly
+const gradientStyles = StyleSheet.create({
+  background: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  }
+});
