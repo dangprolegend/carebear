@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { Agenda } from 'react-native-calendars';
 import dayjs from 'dayjs';
 
@@ -16,7 +16,7 @@ export default function Dashboard() {
   const [items, setItems] = useState<{ [key: string]: CustomAgendaItem[] }>({});
   const [selectedDate, setSelectedDate] = useState(dayjs().format('YYYY-MM-DD'));
 
-  const loadItems = (day: any) => {
+  const loadItems = useCallback((day: any) => {
     const newItems: { [key: string]: CustomAgendaItem[] } = {};
 
     for (let i = -15; i < 15; i++) {
@@ -38,15 +38,11 @@ export default function Dashboard() {
     }
 
     setItems(newItems);
-  };
+  }, []);
 
-  const renderItem = (item: CustomAgendaItem) => (
-    <View className="bg-gray-100 p-4 rounded-lg mb-2">
-      <Text className="text-sm font-medium">{item.name}</Text>
-      {item.subDetail && <Text className="text-xs text-gray-500">{item.subDetail}</Text>}
-      {item.detail && <Text className="text-xs text-gray-400 mt-1">{item.detail}</Text>}
-    </View>
-  );
+  const renderItem = useCallback((item: CustomAgendaItem) => {
+    return <TaskItem item={item} />;
+  }, []);
 
   return (
     <View className="flex-1 bg-white">
@@ -77,7 +73,16 @@ export default function Dashboard() {
   );
 }
 
-// Reuse your HealthMetric component
+// ✅ Memoized Task Item
+const TaskItem = memo(({ item }: { item: CustomAgendaItem }) => (
+  <View className="bg-gray-100 p-4 rounded-lg mb-2">
+    <Text className="text-sm font-medium">{item.name}</Text>
+    {item.subDetail && <Text className="text-xs text-gray-500">{item.subDetail}</Text>}
+    {item.detail && <Text className="text-xs text-gray-400 mt-1">{item.detail}</Text>}
+  </View>
+));
+
+// ✅ Lightweight HealthMetric component
 const HealthMetric = ({ label, value, detail }: { label: string; value: string; detail: string }) => (
   <View className="w-[48%] bg-gray-100 p-4 rounded-lg mb-4">
     <Text className="text-sm font-medium">{label}</Text>
