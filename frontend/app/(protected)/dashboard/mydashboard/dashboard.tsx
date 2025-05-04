@@ -123,7 +123,15 @@ export default function Dashboard() {
       <View className="px-4 pt-4">
         {/* Calendar Strip */}
         <View className="flex-row items-center justify-between mt-6">
-          <MaterialIcons name="chevron-left" size={24} color="#666" />
+          <Pressable 
+            onPress={() => {
+              const newDate = new Date(selectedDate);
+              newDate.setDate(selectedDate.getDate() - 1);
+              setSelectedDate(newDate);
+            }}
+          >
+            <MaterialIcons name="chevron-left" size={24} color="#666" />
+          </Pressable>
           <View className="flex-row items-center">
             <MaterialIcons name="calendar-today" size={20} color="#666" />
             <Text className="ml-2">
@@ -134,7 +142,15 @@ export default function Dashboard() {
               })}
             </Text>
           </View>
-          <MaterialIcons name="chevron-right" size={24} color="#666" />
+          <Pressable 
+            onPress={() => {
+              const newDate = new Date(selectedDate);
+              newDate.setDate(selectedDate.getDate() + 1);
+              setSelectedDate(newDate);
+            }}
+          >
+            <MaterialIcons name="chevron-right" size={24} color="#666" />
+          </Pressable>
         </View>
 
         {/* Week Days */}
@@ -146,11 +162,12 @@ export default function Dashboard() {
           {Array.from({ length: 7 }).map((_, index) => {
             const date = new Date(selectedDate);
             date.setDate(date.getDate() - 3 + index);
-            const isSelected = index === 3;
+            const isSelected = date.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
 
             return (
               <Pressable
                 key={index}
+                onPress={() => setSelectedDate(new Date(date))}
                 className={`items-center mx-2 px-4 py-2 rounded-2xl ${
                   isSelected ? 'bg-blue-100' : ''
                 }`}
@@ -169,27 +186,46 @@ export default function Dashboard() {
 
       <ScrollView className="flex-1 mt-6">
         {/* Today Schedule */}
-        <View className="px-4 mb-6">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-semibold">Today Schedule</Text>
-            <View className="flex-row space-x-2">
-              <Pressable className="flex-row items-center px-3 py-1 bg-gray-100 rounded-full">
-                <MaterialIcons name="visibility" size={16} color="#666" />
-                <Text className="ml-1 text-sm text-gray-600">View</Text>
-              </Pressable>
-              <Pressable className="flex-row items-center px-3 py-1 bg-gray-100 rounded-full">
-                <MaterialIcons name="edit" size={16} color="#666" />
-                <Text className="ml-1 text-sm text-gray-600">Edit</Text>
-              </Pressable>
-            </View>
-          </View>
+          <View className="px-4 mb-6">
+            {/* Today Schedule Header */}
+            <Pressable
+              onPress={() => setShowTodaySchedule(!showTodaySchedule)}
+              className="flex-row items-center justify-between bg-orange-100 p-4 rounded-t-xl border-b border-gray-100"
+            >
+              <Text className="text-lg font-semibold">Today Schedule</Text>
+              <MaterialIcons 
+                name={showTodaySchedule ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
+                size={24} 
+                color="#666" 
+            />
+            </Pressable>
 
-          <View className="bg-white rounded-xl p-4">
-            {tasks.map((task, index) => (
-              <TaskItem key={index} {...task} />
-            ))}
+            {showTodaySchedule && (
+              <>
+                {/* View and Edit Buttons */}
+                <View className="flex-row justify-end space-x-2 mt-4 mb-2">
+                  <Pressable className="flex-row items-center px-3 py-1 bg-gray-100 rounded-full">
+                    <MaterialIcons name="visibility" size={16} color="#666" />
+                    <Text className="ml-1 text-sm text-gray-600">View</Text>
+                  </Pressable>
+                  <Pressable className="flex-row items-center px-3 py-1 bg-gray-100 rounded-full">
+                    <MaterialIcons name="edit" size={16} color="#666" />
+                    <Text className="ml-1 text-sm text-gray-600">Edit</Text>
+                  </Pressable>
+                </View>
+
+                {/* Today Schedule Content */}
+                <View className="bg-white rounded-xl p-4">
+                  {tasks.map((task, index) => (
+                    <TaskItem 
+                      key={index}
+                      {...task}
+                    />
+                  ))}
+                </View>
+              </>
+            )}
           </View>
-        </View>
 
         {/* Your Health Section */}
         <View className="px-4">
