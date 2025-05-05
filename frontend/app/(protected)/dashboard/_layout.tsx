@@ -6,7 +6,7 @@ import { MaterialIcons, Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const tabs = [
-  { name: 'Dashboard', route: '/dashboard/mydashboard/dashboard', icon: 'dashboard', iconType: 'MaterialCommunityIcons' },
+  { name: 'My Dashboard', route: '/dashboard/mydashboard/dashboard', icon: 'dashboard', iconType: 'MaterialCommunityIcons' },
   { name: 'Family Group', route: '/dashboard/family/family', icon: 'home', iconType: 'Ionicons' },
   { name: 'Safezone', route: '/dashboard/safezone/safezone', icon: 'map-marker-alt', iconType: 'FontAwesome5' },
   { name: 'Profile', route: '/dashboard/profile/profile', icon: 'person', iconType: 'MaterialIcons' },
@@ -41,16 +41,16 @@ export default function DashboardLayout() {
     <View className="flex-1 relative">
       {/* For LinearGradient, we use a combination of style prop for positioning (which is critical for gradients) 
           while keeping the Tailwind approach for the rest of the components */}
-      <LinearGradient
+      {/* <LinearGradient
         colors={['#ED9E8F', '#FFDBC3', '#FEF6E3', '#FFFFFF']}
         style={gradientStyles.background}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
-      />
+      /> */}
       <SafeAreaView className="flex-1" edges={['left', 'right']}>
         {/* Header */}
         <View 
-          className="flex-row items-center justify-between px-4 py-2"
+          className="flex-row items-center justify-between px-4"
         >
           {/* Home Button */}
           <Pressable onPress={() => router.replace('/home')}>
