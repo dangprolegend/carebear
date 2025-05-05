@@ -35,14 +35,13 @@ const groupTasksByTimeAndType = (tasks: Task[]): GroupedTask[] => {
   return Object.values(grouped);
 };
 
-// Update the TaskItem component
 const TaskGroup = ({ 
   time, 
   type = 'default',
   tasks
 }: { 
   time: string;
-  type?: string;  // Remove the strict type constraint
+  type?: string;
   tasks: Task[];
 }) => (
   <View className="mb-6">
@@ -56,14 +55,16 @@ const TaskGroup = ({
       )}
     </View>
 
-    {/* Tasks */}
-    <View className="ml-20">
+    {/* Tasks - Remove ml-20 to make tasks full width */}
+    <View className="space-y-4 w-full">
       {tasks.map((task, index) => (
         <View 
           key={index}
-          className={`p-4 rounded-lg border border-gray-100 mb-2 text-gray-500`}
+          className={`p-4 rounded-lg border border-gray-100 w-full ${
+            type === 'help' ? 'bg-brown-600' : 'bg-white'
+          }`}
         >
-          <View className="flex-row items-center">
+          <View className="flex-row items-center w-full">
             {task.checked ? (
               <MaterialIcons name="check-circle" size={20} color="#4CAF50" className="mr-2" />
             ) : (
