@@ -2,13 +2,13 @@ import { View, Text, Pressable, Image, ScrollView } from 'react-native';
 
 export default function Profile() {
   return (
-    <ScrollView className="flex-1 bg-white">
+    <ScrollView className="flex-1">
       {/* Header */}
 
       {/* Profile Section */}
-      <View className="bg-gray-200 h-32" />
+      <View className="h-32" />
       <View className="px-4 -mt-12">
-        <View className="bg-white p-4 rounded-lg shadow-md">
+        <View className="p-4 rounded-lg shadow-md">
           <View className="flex-row justify-between items-center">
             <View>
               <Text className="text-lg font-bold text-gray-800">Your Name</Text>
@@ -71,10 +71,10 @@ export default function Profile() {
             <Text className="text-sm font-medium text-gray-800">Automatic Tracking</Text>
             <View className="flex-row justify-between mt-4">
                 {[
-                    { label: 'Steps iPhone', icon: require('../../../assets/icons/steps.png') },
-                    { label: 'Apple Health', icon: require('../../../assets/icons/apple_health.png') },
-                    { label: 'Apple Watch', icon: require('../../../assets/icons/apple_watch.png') },
-                    { label: 'FitBit', icon: require('../../../assets/icons/fitbit.png') },
+                    { label: 'Steps iPhone', icon: require('../../../../assets/icons/steps.png') },
+                    { label: 'Apple Health', icon: require('../../../../assets/icons/apple_health.png') },
+                    { label: 'Apple Watch', icon: require('../../../../assets/icons/apple_watch.png') },
+                    { label: 'FitBit', icon: require('../../../../assets/icons/fitbit.png') },
                     ].map((item, index) => (
                     <View key={index} className="items-center">
                     {/* Grey Round Background */}
