@@ -5,11 +5,29 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import { Image } from 'react-native';
+
 const tabs = [
-  { name: 'My Dashboard', route: '/dashboard/mydashboard/dashboard', icon: 'dashboard', iconType: 'MaterialCommunityIcons' },
-  { name: 'Family Group', route: '/dashboard/family/family', icon: 'home', iconType: 'Ionicons' },
-  { name: 'Safezone', route: '/dashboard/safezone/safezone', icon: 'map-marker-alt', iconType: 'FontAwesome5' },
-  { name: 'Profile', route: '/dashboard/profile/profile', icon: 'person', iconType: 'MaterialIcons' },
+  { 
+    name: 'My Dashboard', 
+    route: '/dashboard/mydashboard/dashboard', 
+    icon: require('../../../assets/icons/dashboard.png')
+  },
+  { 
+    name: 'Family Group', 
+    route: '/dashboard/family/family', 
+    icon: require('../../../assets/icons/family.png')
+  },
+  { 
+    name: 'Safezone', 
+    route: '/dashboard/safezone/safezone', 
+    icon: require('../../../assets/icons/safezone.png')
+  },
+  { 
+    name: 'Profile', 
+    route: '/dashboard/profile/profile', 
+    icon: require('../../../assets/icons/profile.png')
+  },
 ];
 
 export default function DashboardLayout() {
@@ -23,30 +41,23 @@ export default function DashboardLayout() {
     router.replace(route as any);
   };
 
-  const renderIcon = (icon: string, iconType: string, isActive: boolean) => {
-    const color = isActive ? '#1A0933' : '#777';
-    const size = 24;
-
-    switch (iconType) {
-      case 'Ionicons':
-        return <Ionicons name={icon as any} size={size} color={color} />;
-      case 'FontAwesome5':
-        return <FontAwesome5 name={icon as any} size={size} color={color} />;
-      default:
-        return <MaterialIcons name={icon as any} size={size} color={color} />;
-    }
-  };
+  // Update the renderIcon function
+  const renderIcon = (icon: any, isActive: boolean) => {
+    return (
+      <Image 
+        source={icon}
+        style={{ 
+          width: 24, 
+          height: 24,
+          tintColor: isActive ? '#1A0933' : '#777'
+        }} 
+        resizeMode="contain"
+      />
+    );
+};
 
   return (
     <View className="flex-1 relative">
-      {/* For LinearGradient, we use a combination of style prop for positioning (which is critical for gradients) 
-          while keeping the Tailwind approach for the rest of the components */}
-      {/* <LinearGradient
-        colors={['#ED9E8F', '#FFDBC3', '#FEF6E3', '#FFFFFF']}
-        style={gradientStyles.background}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-      /> */}
       <SafeAreaView className="flex-1" edges={['left', 'right']}>
         {/* Header */}
         <View 
@@ -88,7 +99,7 @@ export default function DashboardLayout() {
                     className={`items-center py-2 px-4 ${isActive ? 'rounded-lg bg-transparent overflow-hidden' : ''}`}
                   >
                     {/* Icon */}
-                    {renderIcon(tab.icon, tab.iconType, isActive)}
+                    {renderIcon(tab.icon, isActive)}
                     
                     {/* Tab Name */}
                     <Text
