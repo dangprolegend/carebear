@@ -278,7 +278,7 @@ export default function Dashboard() {
           </View>
 
         {/* Your Health Section */}
-        <View className="px-4">
+        <View className="px-4 pb-6">
           <Pressable
             onPress={() => setShowYourHealth(!showYourHealth)}
             className="w-[393px] h-[56px] flex-row items-center justify-between border-t border-b border-gray-200 px-6 py-4"
@@ -292,7 +292,7 @@ export default function Dashboard() {
           </Pressable>
 
           {showYourHealth && (
-            <View className="mt-4">
+            <View className="mt-4 pb-6">
               <View className="flex-row flex-wrap justify-between">
                 <HealthMetric label="Sleep" value="81%" detail="6 hr 15 min / 8 hr" />
                 <HealthMetric label="Steps" value="81%" detail="9,500 / 10,000" />
