@@ -190,7 +190,7 @@ export default function Dashboard() {
             {/* Today Schedule Header */}
             <Pressable
               onPress={() => setShowTodaySchedule(!showTodaySchedule)}
-              className="flex-row items-center justify-between bg-orange-100 p-4 rounded-t-xl border-b border-gray-100"
+              className="w-[393px] h-[56px] flex-row items-center justify-between border-t border-b border-gray-200 px-6 py-4"
             >
               <Text className="text-lg font-semibold">Today Schedule</Text>
               <MaterialIcons 
