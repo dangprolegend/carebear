@@ -37,7 +37,7 @@ const groupTasksByTimeAndType = (tasks: Task[]): GroupedTask[] => {
 
 const TaskGroup = ({ 
   time, 
-  type = 'default',
+  type,
   tasks
 }: { 
   time: string;
@@ -49,41 +49,45 @@ const TaskGroup = ({
     <View className="flex-row items-center mb-2">
       <Text className="text-xs text-gray-500 w-20">{time}</Text>
       {type && (
-        <Text className={`text-xs text-gray-500 ml-2`}>
+        <Text className="text-xs text-gray-500 ml-2">
           {type.charAt(0).toUpperCase() + type.slice(1)}
         </Text>
       )}
     </View>
 
-    {/* Tasks - Remove ml-20 to make tasks full width */}
     <View className="space-y-4 w-full">
       {tasks.map((task, index) => (
         <View 
           key={index}
-          className={`p-4 rounded-lg border border-gray-100 w-full ${
-            type === 'help' ? 'bg-brown-600' : 'bg-white'
-          }`}
+          className="p-4 rounded-lg border-[1.5px] border-gray-300 w-full bg-[#F7F7F7]"
         >
-          <View className="flex-row items-center w-full">
-            {task.checked ? (
-              <MaterialIcons name="check-circle" size={20} color="#4CAF50" className="mr-2" />
-            ) : (
-              <Pressable className="w-5 h-5 border-2 border-gray-300 rounded mr-2" />
-            )}
-            <View className="flex-1">
-              <Text className={`text-sm font-medium ${
-                type === 'help' ? 'text-white' : 'text-gray-800'
-              }`}>{task.title}</Text>
-              {task.subDetail && (
-                <Text className={`text-xs mt-1 ${
-                  type === 'help' ? 'text-gray-200' : 'text-gray-500'
-                }`}>{task.subDetail}</Text>
-              )}
+          <View className="flex-row items-start justify-between w-full">
+            {/* Task Content */}
+            <View className="flex-1 mr-4">
+              {/* Title */}
+              <Text className="text-sm font-bold text-black">
+                {task.title}
+              </Text>
+              {/* Detail and SubDetail in same row */}
+              <View className="flex-row items-center mt-1">
+                {task.detail && (
+                  <Text className="text-xs text-gray-500">
+                    {task.detail}
+                  </Text>
+                )}
+                {task.subDetail && (
+                  <Text className="text-xs text-gray-500 ml-2">
+                    {task.subDetail}
+                  </Text>
+                )}
+              </View>
             </View>
-            {task.detail && (
-              <Text className={`text-xs ${
-                type === 'help' ? 'text-gray-200' : 'text-gray-500'
-              }`}>{task.detail}</Text>
+
+            {/* Checkbox moved to right */}
+            {task.checked ? (
+              <MaterialIcons name="check-circle" size={20} color="#4CAF50" />
+            ) : (
+              <Pressable className="w-5 h-5 border-2 border-gray-300 rounded bg-white" />
             )}
           </View>
         </View>
