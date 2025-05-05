@@ -118,9 +118,9 @@ export default function Dashboard() {
   ];
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <ScrollView className="flex-1 bg-gray-50">
       {/* Header */}
-      <View className="px-4 pt-4">
+      <View className="px-4">
         {/* Calendar Strip */}
         <View className="flex-row items-center justify-between mt-6">
           <Pressable 
@@ -154,37 +154,50 @@ export default function Dashboard() {
         </View>
 
         {/* Week Days */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
+        <View 
           className="mt-4"
         >
           {Array.from({ length: 7 }).map((_, index) => {
-            const date = new Date(selectedDate);
-            date.setDate(date.getDate() - 3 + index);
-            const isSelected = date.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
+          const date = new Date(selectedDate);
+          date.setDate(date.getDate() - 3 + index);
+          const isSelected = date.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
 
-            return (
-              <Pressable
-                key={index}
-                onPress={() => setSelectedDate(new Date(date))}
-                className={`items-center mx-2 px-4 py-2 rounded-2xl ${
-                  isSelected ? 'bg-blue-100' : ''
+          return (
+            <Pressable
+              key={index}
+              onPress={() => setSelectedDate(new Date(date))}
+              className={`w-[40px] h-[88px] items-center mx-2 p-2 space-y-1 ${
+                isSelected ? 
+                'bg-[#EBEBEB] rounded-[100px] border border-gray-200' : 
+                ''
+              }`}
+            >
+              <Text 
+                className={`w-[24px] h-6 text-center text-xs ${
+                  isSelected ? 'text-gray-800' : 'text-gray-500'
                 }`}
               >
-                <Text className={`text-xs ${isSelected ? 'text-blue-500' : 'text-gray-500'}`}>
-                  {date.toLocaleDateString('en-US', { weekday: 'short' })}
-                </Text>
-                <Text className={`text-sm mt-1 ${isSelected ? 'text-blue-500' : 'text-gray-500'}`}>
-                  {date.getDate()}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+                {date.toLocaleDateString('en-US', { weekday: 'short' })}
+              </Text>
+              <Text 
+                className={`w-[19px] h-6 text-center text-xs ${
+                  isSelected ? 'text-gray-800' : 'text-gray-500'
+                }`}
+              >
+                {date.getDate()}
+              </Text>
+              <View 
+                className={`w-[19px] h-6 rounded-full flex items-center justify-center ${
+                  isSelected ? 'bg-[#B0B0B0]' : 'bg-[#B0B0B0]'
+                }`} 
+              />
+            </Pressable>
+          );
+        })}
+        </View>
       </View>
 
-      <ScrollView className="flex-1 mt-6">
+      <View className="flex-1 mt-6">
         {/* Today Schedule */}
           <View className="px-4 mb-6">
             {/* Today Schedule Header */}
@@ -231,7 +244,7 @@ export default function Dashboard() {
         <View className="px-4">
           <Pressable
             onPress={() => setShowYourHealth(!showYourHealth)}
-            className="flex-row items-center justify-between bg-green-50 p-4 rounded-xl"
+            className="w-[393px] h-[56px] flex-row items-center justify-between border-t border-b border-gray-200 px-6 py-4"
           >
             <Text className="text-lg font-semibold">Your Health</Text>
             <MaterialIcons 
@@ -257,7 +270,7 @@ export default function Dashboard() {
             </View>
           )}
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
