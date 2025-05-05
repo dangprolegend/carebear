@@ -155,7 +155,7 @@ export default function Dashboard() {
 
         {/* Week Days */}
         <View 
-          className="mt-4"
+          className="flex-row items-center justify-between mt-4"
         >
           {Array.from({ length: 7 }).map((_, index) => {
           const date = new Date(selectedDate);
@@ -187,9 +187,7 @@ export default function Dashboard() {
                 {date.getDate()}
               </Text>
               <View 
-                className={`w-[19px] h-6 rounded-full flex items-center justify-center ${
-                  isSelected ? 'bg-[#B0B0B0]' : 'bg-[#B0B0B0]'
-                }`} 
+                className={`w-[19px] h-6 rounded-full flex items-center justify-center bg-[#B0B0B0]`} 
               />
             </Pressable>
           );
@@ -215,16 +213,19 @@ export default function Dashboard() {
 
             {showTodaySchedule && (
               <>
-                {/* View and Edit Buttons */}
-                <View className="flex-row justify-end space-x-2 mt-4 mb-2">
-                  <Pressable className="flex-row items-center px-3 py-1 bg-gray-100 rounded-full">
-                    <MaterialIcons name="visibility" size={16} color="#666" />
-                    <Text className="ml-1 text-sm text-gray-600">View</Text>
-                  </Pressable>
-                  <Pressable className="flex-row items-center px-3 py-1 bg-gray-100 rounded-full">
-                    <MaterialIcons name="edit" size={16} color="#666" />
-                    <Text className="ml-1 text-sm text-gray-600">Edit</Text>
-                  </Pressable>
+                {/* Today tasks text and View and Edit Buttons */}
+                <View className="flex-row justify-between items-center mt-4 mb-2 px-6">
+                  <Text className="text-base font-medium text-gray-800">Today Tasks</Text>
+                  <View className="flex-row space-x-2">
+                    <Pressable className="flex-row items-center px-3 py-1 bg-gray-100 rounded-full">
+                      <MaterialIcons name="visibility" size={16} color="#666" />
+                      <Text className="ml-1 text-sm text-gray-600">View</Text>
+                    </Pressable>
+                    <Pressable className="flex-row items-center px-3 py-1 bg-gray-100 rounded-full">
+                      <MaterialIcons name="edit" size={16} color="#666" />
+                      <Text className="ml-1 text-sm text-gray-600">Edit</Text>
+                    </Pressable>
+                  </View>
                 </View>
 
                 {/* Today Schedule Content */}
