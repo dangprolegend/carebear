@@ -3,58 +3,90 @@ import { useState, useEffect } from 'react';
 import * as Calendar from 'expo-calendar';
 import { MaterialIcons } from '@expo/vector-icons';
 
-// Task item component with timeline design
-const TaskItem = ({ 
-  time, 
-  title, 
-  detail, 
-  subDetail, 
-  type = 'default',
-  checked = false 
-}: { 
+// First, create a helper function to group tasks
+type Task = {
   time: string;
+  type?: string;  // Remove the strict type constraint
   title: string;
   detail?: string;
   subDetail?: string;
-  type?: 'default' | 'help' | 'meal';
   checked?: boolean;
+};
+
+type GroupedTask = {
+  time: string;
+  type?: string;  // Remove the strict type constraint
+  tasks: Task[];
+};
+
+const groupTasksByTimeAndType = (tasks: Task[]): GroupedTask[] => {
+  const grouped = tasks.reduce<Record<string, GroupedTask>>((acc, task) => {
+    const key = `${task.time}-${task.type || 'default'}`;
+    if (!acc[key]) {
+      acc[key] = {
+        time: task.time,
+        type: task.type,
+        tasks: []
+      };
+    }
+    acc[key].tasks.push(task);
+    return acc;
+  }, {});
+  return Object.values(grouped);
+};
+
+// Update the TaskItem component
+const TaskGroup = ({ 
+  time, 
+  type = 'default',
+  tasks
+}: { 
+  time: string;
+  type?: string;  // Remove the strict type constraint
+  tasks: Task[];
 }) => (
-  <View className="flex-row items-start mb-6">
-    {/* Time and Timeline */}
-    <View className="w-20">
-      <Text className="text-xs text-gray-500">{time}</Text>
-      <View className="absolute left-20 h-full w-[1px] bg-gray-200" />
-      <View className="absolute left-[77px] top-2 w-2 h-2 rounded-full bg-gray-400" />
+  <View className="mb-6">
+    {/* Time and Type Header */}
+    <View className="flex-row items-center mb-2">
+      <Text className="text-xs text-gray-500 w-20">{time}</Text>
+      {type && (
+        <Text className={`text-xs text-gray-500 ml-2`}>
+          {type.charAt(0).toUpperCase() + type.slice(1)}
+        </Text>
+      )}
     </View>
 
-    {/* Task Card */}
-    <View className="flex-1 ml-8">
-      <View className={`p-4 rounded-lg border border-gray-100 ${
-        type === 'help' ? 'bg-brown-600' : 'bg-white'
-      }`}>
-        <View className="flex-row items-center">
-          {checked ? (
-            <MaterialIcons name="check-circle" size={20} color="#4CAF50" className="mr-2" />
-          ) : (
-            <Pressable className="w-5 h-5 border-2 border-gray-300 rounded mr-2" />
-          )}
-          <View className="flex-1">
-            <Text className={`text-sm font-medium ${
-              type === 'help' ? 'text-white' : 'text-gray-800'
-            }`}>{title}</Text>
-            {subDetail && (
-              <Text className={`text-xs mt-1 ${
+    {/* Tasks */}
+    <View className="ml-20">
+      {tasks.map((task, index) => (
+        <View 
+          key={index}
+          className={`p-4 rounded-lg border border-gray-100 mb-2 text-gray-500`}
+        >
+          <View className="flex-row items-center">
+            {task.checked ? (
+              <MaterialIcons name="check-circle" size={20} color="#4CAF50" className="mr-2" />
+            ) : (
+              <Pressable className="w-5 h-5 border-2 border-gray-300 rounded mr-2" />
+            )}
+            <View className="flex-1">
+              <Text className={`text-sm font-medium ${
+                type === 'help' ? 'text-white' : 'text-gray-800'
+              }`}>{task.title}</Text>
+              {task.subDetail && (
+                <Text className={`text-xs mt-1 ${
+                  type === 'help' ? 'text-gray-200' : 'text-gray-500'
+                }`}>{task.subDetail}</Text>
+              )}
+            </View>
+            {task.detail && (
+              <Text className={`text-xs ${
                 type === 'help' ? 'text-gray-200' : 'text-gray-500'
-              }`}>{subDetail}</Text>
+              }`}>{task.detail}</Text>
             )}
           </View>
-          {detail && (
-            <Text className={`text-xs ${
-              type === 'help' ? 'text-gray-200' : 'text-gray-500'
-            }`}>{detail}</Text>
-          )}
         </View>
-      </View>
+      ))}
     </View>
   </View>
 );
@@ -106,15 +138,12 @@ export default function Dashboard() {
 
   // Example tasks with proper timeline format
   const tasks = [
-    { time: '8:00 am', title: 'Breakfast', type: 'meal' as const },
-    { time: '8:00 am', title: 'Medicine 1', detail: '1 Tablet', subDetail: 'after breakfast', checked: true },
-    { time: '8:00 am', title: 'Supplement 1', detail: '1 Tablet', subDetail: 'after breakfast' },
-    { time: '12:00 pm', title: 'Lunch', type: 'meal' as const },
-    { time: '12:00 pm', title: 'Supplement 1', detail: '1 Tablet', subDetail: 'after lunch' },
-    { time: '1:00 pm', title: 'Help Grandm...', detail: 'Bedroom', type: 'help' as const },
-    { time: '6:00 pm', title: 'Dinner', type: 'meal' as const },
-    { time: '6:00 pm', title: 'Medicine 2', detail: '1 Tablet', subDetail: 'after dinner' },
-    { time: '6:00 pm', title: 'Supplement 2', detail: '1 Tablet', subDetail: 'after dinner' },
+    { time: '8:00 am', type: 'Breakfast' as const, title: 'Medicine 1', detail: '1 Tablet', subDetail: 'after breakfast', checked: true },
+    { time: '8:00 am', type: 'Breakfast' as const, title: 'Supplement 1', detail: '1 Tablet', subDetail: 'after breakfast' },
+    { time: '12:00 pm', type: 'Lunch' as const, title: 'Supplement 1', detail: '1 Tablet', subDetail: 'after lunch' },
+    { time: '1:00 pm', type: 'Lunch' as const, title: 'Help Grandm...', detail: 'Bedroom'},
+    { time: '6:00 pm',  type: 'Dinner' as const, title: 'Medicine 2', detail: '1 Tablet', subDetail: 'after dinner' },
+    { time: '6:00 pm',  type: 'Dinner' as const, title: 'Supplement 2', detail: '1 Tablet', subDetail: 'after dinner' },
   ];
 
   return (
@@ -230,10 +259,12 @@ export default function Dashboard() {
 
                 {/* Today Schedule Content */}
                 <View className="bg-white rounded-xl p-4">
-                  {tasks.map((task, index) => (
-                    <TaskItem 
+                  {groupTasksByTimeAndType(tasks).map((group, index) => (
+                    <TaskGroup 
                       key={index}
-                      {...task}
+                      time={group.time}
+                      type={group.type}
+                      tasks={group.tasks}
                     />
                   ))}
                 </View>
