@@ -129,24 +129,3 @@ import { router, Stack } from 'expo-router';
       </>
     );
   }
-  
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      justifyContent: 'center',
-      padding: 20,
-      gap: 20,
-    },
-    form: {
-      gap: 5,
-    },
-    title: {
-      fontSize: 24,
-      fontWeight: '600',
-    },
-    link: {
-      color: '#4353FD',
-      fontWeight: '600',
-    },
-  });
