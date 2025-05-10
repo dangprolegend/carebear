@@ -2,12 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, TouchableOpacity } from 'react-native';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 import { Toggle } from '~/components/ui/toggle';
-import type { Option } from '@rn-primitives/select';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { router } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
+import axios from 'axios';
 
 export default function HealthInputScreen() {
   const { userId } = useAuth();
@@ -31,9 +30,37 @@ export default function HealthInputScreen() {
     setUnitSystem(newUnit);
   };
 
-  const handleSubmit = () => {
-    router.push('/setup/join-family');
-  }
+  const handleSubmit = async () => {
+    try {
+      if (!userId) {
+        alert('User is not authenticated.');
+        return;
+      }
+
+      // Step 1: Fetch userID using clerkID
+      const userResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/clerk/${userId}`);
+      const userID = userResponse.data.userID;
+      console.log('Fetching userID for clerkID:', userID);
+      
+
+      // Step 2: Update user information
+      const updateData = {
+        dateOfBirth: dob,
+        gender,
+        weight,
+        height,
+        firstName,
+        lastName,
+      };
+
+      await axios.patch(`https://carebear-backend.onrender.com/api/users/${userID}/onboarding`, updateData);
+      router.push('/setup/join-family');
+    } catch (error) {
+      console.error('Error updating user information:', error);
+      alert('Failed to update user information.');
+    }
+  };
+
   return (
     <View>
       {/* Form title */}
