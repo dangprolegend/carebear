@@ -1,80 +1,117 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, TouchableOpacity } from 'react-native';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
 import { Toggle } from '~/components/ui/toggle';
 import type { Option } from '@rn-primitives/select';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { router } from 'expo-router';
 
 export default function HealthInputScreen() {
+  const [open, setOpen] = useState(false);  
   const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>('metric');
   const [dob, setDob] = useState<string>('');
-  const [gender, setGender] = useState<Option | null>(null);
+  const [gender, setGender] = useState<string>('');
   const [weight, setWeight] = useState<string>('');
   const [height, setHeight] = useState<string>('');
 
-  const genderOptions: Option[] = [
-    { value: 'male', label: 'Male' },
-    { value: 'female', label: 'Female' },
-    { value: 'other', label: 'Other' },
-  ];
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>(''); 
 
-  const handleDobFocus = () => {
-    console.log("Trigger Date Picker");
-  };
+  const [genderOptions, setGenderOptions] = useState([
+    { label: 'Male', value: 'Male' },
+    { label: 'Female', value: 'Female' },
+    { label: 'Non-binary', value: 'Non-binary' },
+  ]);
 
   const handleUnitChange = (newUnit: 'metric' | 'imperial') => {
     setUnitSystem(newUnit);
   };
 
-
+  const handleSubmit = () => {
+    router.push('/setup/join-family');
+  }
   return (
     <View>
       {/* Form title */}
       <Text className="mb-8 text-3xl font-bold text-foreground">
-        Your Health input
+        Your Information
       </Text>
 
       {/* Form fields */}
+
+      <View className="mb-6 flex flex-row gap-4">
+        {/* First Name */}
+        <View className="flex-1">
+          <Label nativeID="firstName" className="mb-2 text-lg font-medium">
+            First Name
+          </Label>
+            <Input
+              nativeID="firstName"
+              placeholder="First Name"
+              value={firstName}
+              onChangeText={setFirstName}
+              className="p-3 text-gray-500" 
+            />
+        </View>
+        {/* Last Name */}
+        <View className="flex-1">
+          <Label nativeID="firstName" className="mb-2 text-lg font-medium">
+            Last Name
+          </Label>
+          <Input
+              nativeID="lastName"
+              placeholder="Last Name"
+              value={lastName}
+              onChangeText={setLastName}
+              className="p-3 text-gray-500" 
+            />
+        </View>
+      </View>
+
       <View className="mb-6 flex flex-row gap-4">
         {/* Date of Birth */}
         <View className="flex-1">
           <Label nativeID="dobLabel" className="mb-2 text-lg font-medium">
             Date of birth
           </Label>
-          <Pressable onPress={handleDobFocus}>
             <Input
               nativeID="dobLabel"
-              placeholder="MM/DD/YYYY"
+              placeholder="YYYY-MM-DD"
               value={dob}
-              editable={false}
+              onChangeText={setDob} 
               className="p-3 text-gray-500" 
             />
-          </Pressable>
         </View>
         {/* Gender */}
         <View className="flex-1">
           <Label nativeID="genderLabel" className="mb-2 text-lg font-medium">
             Gender
           </Label>
-          <Select
-            value={gender || { value: '', label: 'Select' }}
-            onValueChange={(option) => setGender(option as Option)}
-          >
-            <SelectTrigger nativeID="genderLabel">
-              <SelectValue
-                placeholder="Select"
-                className="text-gray-500" 
-              />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {genderOptions.map((option) => (
-                  <SelectItem key={option?.value ?? ''} value={option?.value ?? ''} label={option?.label ?? ''} />
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <DropDownPicker
+              open={open}
+              value={gender}
+              setValue={setGender}
+              items={genderOptions} 
+              setOpen={setOpen}
+              setItems={setGenderOptions}
+              placeholder="Select"
+              listMode="SCROLLVIEW"
+              multiple={false}
+              style={{
+                minHeight: 43,
+                borderWidth: 1,
+                borderColor: '#e5e5e5',
+                borderRadius: 6,
+                paddingHorizontal: 12,
+                backgroundColor: 'white',
+              }}
+              textStyle={{
+                fontSize: 16,
+                color: '#6b7280',
+              }}
+            />
         </View>
       </View>
 
@@ -131,6 +168,25 @@ export default function HealthInputScreen() {
           className="p-3 text-gray-500" 
         />
       </View>
+
+        <View className="flex flex-row justify-between items-start self-stretch mt-[56px]">
+            <TouchableOpacity 
+              disabled={true}
+              className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-[#DDD]"
+            >
+            <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
+              Back
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+            onPress={handleSubmit}
+          >
+            <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Next</Text>
+          </TouchableOpacity>
+        </View>
     </View>
+
   );
 }

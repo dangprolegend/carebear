@@ -8,7 +8,6 @@ const setupSteps = [
   'health-input',
   'join-family',
   'create-family' ,
-  'members-input',
   'congrats'
 ];
 
@@ -17,7 +16,7 @@ interface SetupProgressIndicatorProps {
 }
 
 function SetupProgressIndicator({ currentStepIndex }: SetupProgressIndicatorProps) {
-    const totalVisibleDots = 5;
+    const totalVisibleDots = 4;
     const nonNegativeIndex = Math.max(0, currentStepIndex);
     const lastVisibleDotIndex = totalVisibleDots - 1;
     let activeVisibleDotIndex;
@@ -107,38 +106,7 @@ export default function SetupLayout() {
         <View className="flex-1 pt-2">
           <Slot />
         </View>
-
-        <View className="flex flex-row justify-between items-center pb-12">
-          <Button
-            variant="outline"
-            size="lg"
-            onPress={handleBack}
-            disabled={!canGoBack}
-            className={`rounded-full px-10 py-3 ${!canGoBack ? 'opacity-50' : ''}`}
-          >
-            <Text>Back</Text>
-          </Button>
-
-          {isJoinFamilyStep ? (
-            <Button
-              variant="default"
-              size="lg"
-              onPress={handleCreateGroup}
-              className="rounded-full bg-foreground px-10 py-3"
-            >
-              <Text className="text-primary-foreground">Create Group</Text>
-            </Button>
-          ) : (
-            <Button
-              variant="default"
-              size="lg"
-              onPress={handleNext}
-              className="rounded-full bg-foreground px-10 py-3"
-            >
-              <Text className="text-primary-foreground">{isLastStep ? 'Finish' : 'Next'}</Text>
-            </Button>
-          )}
-        </View>
+        
       </View>
     </SafeAreaView>
   );
