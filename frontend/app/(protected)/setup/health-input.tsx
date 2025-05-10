@@ -7,8 +7,10 @@ import { Toggle } from '~/components/ui/toggle';
 import type { Option } from '@rn-primitives/select';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { router } from 'expo-router';
+import { useAuth } from '@clerk/clerk-expo';
 
 export default function HealthInputScreen() {
+  const { userId } = useAuth();
   const [open, setOpen] = useState(false);  
   const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>('metric');
   const [dob, setDob] = useState<string>('');
