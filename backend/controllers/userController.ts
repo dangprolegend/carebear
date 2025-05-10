@@ -16,6 +16,52 @@ interface UserParams {
   id: string; // Represents either MongoDB ObjectID or username
 }
 
+export const provideAdditionalUserInfo = async (req: any, res: any) => {
+  try {
+    const userID = req.params.userID;
+    const {
+      firstName,
+      lastName,
+      dateOfBirth,
+      gender,
+      weight,
+      height
+    } = req.body;
+
+    // Validate required fields
+    if (!firstName || !lastName || !dateOfBirth || !gender || !weight || !height) {
+      res.status(400).json({ message: 'Please fill out all fields to complete onboarding' });
+      return;
+    }
+
+    // Find user and update onboarding data
+    const updatedUser = await User.findByIdAndUpdate(
+      userID,
+      {
+        $set: {
+          firstName,
+          lastName,
+          dateOfBirth,
+          gender,
+          weight,
+          height
+        }
+      },
+      { new: true, runValidators: true }
+    );
+    
+    if (!updatedUser) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    
+    res.status(200).json({
+      message: 'Additional info saved successfully',
+      user: updatedUser
+    });
+  } catch (error: any) {}
+}
+
 export const getUser = async (req: TypedRequest<any, UserParams>, res: Response): Promise<void> => {
   try {
     const user = await User.findById(req.params.userID);
@@ -100,6 +146,31 @@ export const getUserNotifications = async (req: TypedRequest<any, { id: string }
     res.json(notifications);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+// Find user by clerkID
+export const getUserIdByClerkId = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { clerkID } = req.params;
+
+    if (!clerkID) {
+      res.status(400).json({ message: 'clerkID is required' });
+      return;
+    }
+
+    // Ensure clerkID is treated as a string
+    const user = await User.findOne({ clerkID: String(clerkID) });
+
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    res.status(200).json({ userID: user._id });
+  } catch (error: any) {
+    console.error('Error fetching user by clerkID:', error);
+    res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };
 

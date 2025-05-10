@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 // Import custom UI components
 import { Input } from '~/components/ui/input';
@@ -52,7 +52,23 @@ export default function JoinFamilyScreen() {
         </Button>
       </View>
 
-      
+      <View className="flex flex-row justify-between items-start self-stretch mt-[286px]">
+          <TouchableOpacity 
+            onPress={() => router.push('/setup/health-input')}
+            className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-[#DDD]"
+          >
+          <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
+            Back
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+          onPress={() => router.push('/setup/create-family')}
+        >
+          <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Create Group</Text>
+        </TouchableOpacity>
+      </View>
       
     </View>
   );

@@ -1,11 +1,9 @@
 import express, { Router } from 'express';
-import { getUser, updateUser, deleteUser, getUserTasks, getUserNotifications } from '../controllers/userController';
+import { getUser, provideAdditionalUserInfo, getUserIdByClerkId } from '../controllers/userController';
 
 const router: Router = express.Router();
 
 router.get('/:userID', getUser);  
-router.put('/:userID', updateUser);  
-router.delete('/:userID', deleteUser);  
-router.get('/:userID/tasks', getUserTasks);
-router.get('/:userID/notifications', getUserNotifications); 
+router.patch('/:userID/onboarding', provideAdditionalUserInfo);
+router.get('/clerk/:clerkID', getUserIdByClerkId);
 export default router;
