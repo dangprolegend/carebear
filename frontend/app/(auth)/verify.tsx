@@ -4,6 +4,8 @@ import {
     KeyboardAvoidingView,
     Platform,
     View,
+    SafeAreaView,
+    TouchableOpacity,
   } from 'react-native';
   import CustomInput from '@/components/CustomInput';
   import CustomButton from '@/components/CustomButton';
@@ -12,7 +14,7 @@ import {
   import { z } from 'zod';
   import { zodResolver } from '@hookform/resolvers/zod';  
   import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
-import { router } from 'expo-router';
+import { router, Stack } from 'expo-router';
   
   const verifySchema = z.object({
     code: z.string({ message: 'Code is required' }).length(6, 'Invalid code'),
@@ -72,24 +74,59 @@ import { router } from 'expo-router';
     };
   
     return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-      >
-        <Text style={styles.title}>Verify your email</Text>
+      <>
+          {/* Add this Stack.Screen component to hide the header */}
+          <Stack.Screen options={{ headerShown: false }} />
+    <SafeAreaView>
+        <View className="items-center justify-center h-screen bg-white">
+            <View className="flex flex-col items-start w-[345px]"> 
+              <Text className="text-black font-lato text-[32px] font-extrabold leading-9 tracking-[0.3px]">
+                  Verify Your Email
+              </Text> 
+
+              <View className='flex flex-col items-start gap-2 self-stretch p-0 mt-[78px]'>
+                  <Text className=" text-black font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">
+                    Verified Code
+                  </Text>
+          
+                <View className='w-full mt-[8px]'>
+                  <CustomInput
+                    control={control}
+                    name='code'
+                    placeholder='123456'
+                    autoFocus
+                    autoCapitalize='none'
+                    keyboardType='number-pad'
+                    autoComplete='one-time-code'
+                  />
+                </View>
+                <Text className='text-[14px] font-lato font-light leading-[24px] tracking-[-0.1px] text-[#5E5E5E]'>
+                  Please check your email and enter verification code
+                </Text>
+              </View>
+
+              <View className="flex flex-row justify-between items-start self-stretch mt-[286px]">
+                <TouchableOpacity 
+                  onPress={() => router.push('/sign-up')}
+                  className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-[#DDD]"
+                >
+                <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
+                  Back
+                </Text>
+              </TouchableOpacity>
+
+                <TouchableOpacity
+                    className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+                    onPress={handleSubmit(onVerify)}
+                  >
+                    <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Next</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View> 
   
-        <CustomInput
-          control={control}
-          name='code'
-          placeholder='123456'
-          autoFocus
-          autoCapitalize='none'
-          keyboardType='number-pad'
-          autoComplete='one-time-code'
-        />
-  
-        <CustomButton text='Verify' onPress={handleSubmit(onVerify)} />
-      </KeyboardAvoidingView>
+      </SafeAreaView>
+      </>
     );
   }
   
