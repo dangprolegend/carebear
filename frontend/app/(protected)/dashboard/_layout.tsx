@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { Slot, useRouter, useSegments } from 'expo-router';
+import { Slot, useRouter, useSegments, useGlobalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons, Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -10,7 +10,7 @@ import { Image } from 'react-native';
 const tabs = [
   { 
     name: 'My Dashboard', 
-    route: '/dashboard/mydashboard/dashboard', 
+    route: '/dashboard/mydashboard/dashboard',
     icon: require('../../../assets/icons/dashboard.png')
   },
   { 
@@ -32,10 +32,22 @@ const tabs = [
 
 export default function DashboardLayout() {
   const router = useRouter();
-  const segments = useSegments();
+  const segments = useSegments() as string[];
+  const searchParams = useGlobalSearchParams(); // Use this to access query parameters
 
-  // Determine the active tab based on the current route
-  const activeTab = tabs.find((tab) => segments.join('/').includes(tab.route))?.name || 'My Dashboard';
+  // Get the dynamic title based on current route and params
+  const getActiveTitle = () => {
+    // Check if we're on member dashboard
+    if (segments.includes('member-dashboard')) {
+      const name = searchParams.name as string | undefined; // Access the 'name' parameter
+      return name ? `${name}'s Dashboard` : 'Member Dashboard';
+    }
+
+    // Return regular tab name for other routes
+    return tabs.find((tab) => segments.join('/').includes(tab.route))?.name || 'My Dashboard';
+  };
+
+  const activeTitle = getActiveTitle();
 
   const handleTabPress = (route: string) => {
     router.replace(route as any);
@@ -72,7 +84,7 @@ export default function DashboardLayout() {
           <Text
             className="text-lg font-bold text-[#362209] font-['Lato'] text-[18px] tracking-[0.3px]"
           >
-            {activeTab}
+            {activeTitle}
           </Text>
 
           {/* Notification Button */}
