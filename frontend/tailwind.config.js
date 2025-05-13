@@ -9,11 +9,11 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        
+
         'lato-light': ['Lato-Light'],
         'lato-black': ['Lato-Black'],
         'montserrat-alt-black': ['MontserratAlternates-Black'],
-       
+        
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -48,6 +48,14 @@ module.exports = {
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
+        },
+        // Custom gradient colors
+        gradient: {
+          pink: '#ED9E8F',
+          peach: '#FFDBC3',
+          cream: '#FEF6E3',
+          white: '#FFFFFF',
+          dark: '#1A0933',
         },
       },
       borderWidth: {
