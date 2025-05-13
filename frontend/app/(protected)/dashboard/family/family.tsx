@@ -1,7 +1,7 @@
-import { View, Text, Pressable, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
+import { View, Text, Pressable, ScrollView, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import AddFamily from './add_family';
 
 // Define the FamilyMember type
