@@ -10,7 +10,7 @@ export default function WelcomeScreen() {
 
   useEffect(() => {
     if (isSignedIn) {
-      router.push('/(protected)/dashboard/dashboard'); // Redirect to the home page if signed in
+      router.push('/(protected)/dashboard/mydashboard/dashboard'); // Redirect to the home page if signed in
     }
   }, [isSignedIn, router]);
 
