@@ -1,11 +1,12 @@
 import express, { Router } from 'express';
-import { getUser, updateUser, deleteUser, getUserTasks, getUserNotifications } from '../controllers/userController';
+import { getUser, provideAdditionalUserInfo, getUserIdByClerkId } from '../controllers/userController';
+import { createGroup, joinGroup } from '../controllers/groupController';
 
 const router: Router = express.Router();
 
 router.get('/:userID', getUser);  
-router.put('/:userID', updateUser);  
-router.delete('/:userID', deleteUser);  
-router.get('/:userID/tasks', getUserTasks);
-router.get('/:userID/notifications', getUserNotifications); 
+router.patch('/:userID/onboarding', provideAdditionalUserInfo);
+router.get('/clerk/:clerkID', getUserIdByClerkId);
+router.post('/:userID/createGroup', createGroup);
+router.patch('/:userID/joinGroup', joinGroup); 
 export default router;

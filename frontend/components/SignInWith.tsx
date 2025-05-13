@@ -2,10 +2,10 @@ import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
 import { useEffect, useCallback } from 'react';
 import { useSSO } from '@clerk/clerk-expo';
-import { Pressable, Image } from 'react-native';
-import googleButton from '../assets/google.png';
-import appleButton from '../assets/apple.png';
-import facebookButton from '../assets/facebook.png';
+import { Pressable, Image, TouchableOpacity } from 'react-native';
+import googleButton from '../assets/images/google.png';
+import appleButton from '../assets/images/apple.png';
+import facebookButton from '../assets/images/facebook.png';
 
 export const useWarmUpBrowser = () => {
   useEffect(() => {
@@ -67,12 +67,14 @@ export default function SignInWith({ strategy }: SignInWithProps) {
   }, []);
 
   return (
-    <Pressable onPress={onPress}>
-      <Image
-        source={strategyIcons[strategy]}
-        style={{ width: 40, height: 40 }}
-        resizeMode='contain'
-      />
+    <Pressable 
+      onPress={onPress} 
+      className="flex w-11 h-11 p-0 justify-center items-center aspect-square rounded-full border border-[#DDD]"
+    >
+        <Image
+          source={strategyIcons[strategy]}
+          className="w-4 h-4 flex-shrink-0 aspect-square"
+        />
     </Pressable>
   );
 }
