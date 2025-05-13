@@ -1,9 +1,11 @@
+//@ts-nocheck
 import { Response } from 'express';
 import Group from '../models/Group';
 import Member from '../models/Member';
 import { TypedRequest } from '../types/express';
 import mongoose from 'mongoose';
 import Task from '../models/Task';
+import User from '../models/User';
 
 interface GroupBody {
   name: string;
@@ -18,35 +20,39 @@ interface CreateGroupBody extends GroupBody {
 }
 
 // Create a new group
-export const createGroup = async (req: TypedRequest<CreateGroupBody>, res: Response): Promise<void> => {
+export const createGroup = async (req: TypedRequest<{ name: string; userID: string }>, res: Response): Promise<void> => {
   try {
+    const { userID } = req.params
     const { name } = req.body;
-    
-    console.log('Creating group with data:', { name });
-    
-    // Create the group
-    const newGroup = new Group({ name });
-    const savedGroup = await newGroup.save();
-    
-    console.log('Group saved successfully:', savedGroup);
-    
-    // Add the creator as an admin member
-    const member = new Member({
-      userID: req.params.userID,
-      groupID: savedGroup._id,
-      role: 'admin'
+
+    // Create the group with the user as the admin
+    const newGroup = new Group({
+      name,
+      numberOfMembers: 1,
+      members: [{ user: userID, role: 'admin' }],
     });
-    
-    console.log('Creating member with data:', { userID: req.params.userID, groupID: savedGroup._id, role: 'admin' });
-    
-    await member.save();
-    
-    console.log('Member saved successfully');
-    
-    res.status(201).json(savedGroup);
+
+    const savedGroup = await newGroup.save();
+
+    // Update the user's groupID
+    const updatedUser = await User.findByIdAndUpdate(
+      userID,
+      { $set: { groupID: savedGroup._id } },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    res.status(201).json({
+      message: 'Group created successfully',
+      group: savedGroup,
+      user: updatedUser,
+    });
   } catch (err: any) {
     console.error('Error creating group:', err);
-    console.error('Error stack:', err.stack);
     res.status(500).json({ error: err.message });
   }
 };
@@ -160,6 +166,59 @@ export const getGroupTasks = async (req: TypedRequest<any, GroupParams>, res: Re
     
     res.json(tasks);
   } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Join a group
+export const joinGroup = async (req: any, res: any): Promise<void> => {
+  try {
+    const { groupID } = req.body;
+    const { userID } = req.params;
+    
+    // Find the group
+    const group = await Group.findById(groupID);
+
+    if (!group) {
+      res.status(404).json({ message: 'Group not found' });
+      return;
+    }
+
+    // Check if the user is already in the group
+    const isMember = group.members.some((member) => member.user.toString() === userID);
+    if (isMember) {
+      res.status(400).json({ message: 'User is already a member of the group' });
+      return;
+    }
+
+    // Determine the role (default to caregiver for now)
+    const role = 'caregiver'; // This can be updated later based on additional logic
+
+    // Add the user to the group's members array
+    group.members.push({ user: userID, role });
+    group.numberOfMembers += 1;
+
+    const updatedGroup = await group.save();
+
+    // Update the user's groupID
+    const updatedUser = await User.findByIdAndUpdate(
+      userID,
+      { $set: { groupID: groupID } },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    res.status(200).json({
+      message: 'User joined the group successfully',
+      group: updatedGroup,
+      user: updatedUser,
+    });
+  } catch (err: any) {
+    console.error('Error joining group:', err);
     res.status(500).json({ error: err.message });
   }
 };

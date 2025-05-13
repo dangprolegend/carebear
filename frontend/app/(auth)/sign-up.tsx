@@ -1,21 +1,22 @@
 import {
     StyleSheet,
     Text,
-    KeyboardAvoidingView,
-    Platform,
     View,
+    TouchableOpacity,
+    Image,
+    SafeAreaView,
   } from 'react-native';
   import CustomInput from '@/components/CustomInput';
-  import CustomButton from '@/components/CustomButton';
+  import Line from '../../assets/icons/line.png';
   
   import { useForm } from 'react-hook-form';
   import { z } from 'zod';
   import { zodResolver } from '@hookform/resolvers/zod';
-  import { Link, router } from 'expo-router';
+  import { Link, router, Stack } from 'expo-router';
   
   import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
   import SignInWith from '@/components/SignInWith';
-  
+
   const signUpSchema = z.object({
     email: z.string({ message: 'Email is required' }).email('Invalid email'),
     password: z
@@ -78,65 +79,83 @@ import {
     };
   
     return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-      >
-        <Text style={styles.title}>Create an account</Text>
-  
-        <View style={styles.form}>
-          <CustomInput
-            control={control}
-            name='email'
-            placeholder='Email'
-            autoFocus
-            autoCapitalize='none'
-            keyboardType='email-address'
-            autoComplete='email'
-          />
-  
-          <CustomInput
-            control={control}
-            name='password'
-            placeholder='Password'
-            secureTextEntry
-          />
-          {errors.root && (
-            <Text style={{ color: 'crimson' }}>{errors.root.message}</Text>
-          )}
-        </View>
-  
-        <CustomButton text='Sign up' onPress={handleSubmit(onSignUp)} />
-        <Link href='/sign-in' style={styles.link}>
-          Already created an account? Sign in
-        </Link>
-  
-        <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 'auto' }}>
-          <SignInWith strategy='oauth_google' />
-          <SignInWith strategy='oauth_facebook' />
-          <SignInWith strategy='oauth_apple' />
-        </View>
-      </KeyboardAvoidingView>
+      <>
+      {/* Add this Stack.Screen component to hide the header */}
+      <Stack.Screen options={{ headerShown: false }} />
+        <SafeAreaView> 
+          <View className="items-center justify-center h-screen bg-white">
+            <View className="flex flex-col items-start w-[345px]"> 
+              <Text className="text-black font-lato text-[32px] font-extrabold leading-9 tracking-[0.3px]">
+                  Set Up Your Account
+              </Text> 
+              <Text className="mt-[40px] text-black font-lato text-[16px] font-extrabold leading-9 tracking-[0.3px]">
+                Email
+              </Text>
+      
+            <View className='w-full mt-[8px]'>
+              <CustomInput
+                control={control}
+                name='email'
+                placeholder='abc@gmail.com'
+                autoFocus
+                autoCapitalize='none'
+                keyboardType='email-address'
+                autoComplete='email'
+              />
+            </View>
+
+            <Text className=" text-black font-lato text-[16px] font-extrabold leading-9 tracking-[0.3px]">
+                Password
+            </Text>
+            <View className='w-full mt-[8px]'>
+              <CustomInput
+                control={control}
+                name='password'
+                placeholder='•••••••••'
+                secureTextEntry
+                />
+            </View>
+
+              {errors.root && (
+                <Text style={{ color: 'crimson' }}>{errors.root.message}</Text>
+              )}
+             
+    
+          {/* Sign in with social providers (Google, Facebook, Apple) */}
+            <View className="flex flex-col items-start gap-8 self-stretch mt-[40px]">
+              <View className='flex flex-row justify-center items-center gap-2 self-stretch'>
+                <Image source={Line} className="w-[40px]"/>
+                <Text className="text-black font-lato text-base font-light leading-6 tracking-[-0.1px]">Or Continue With</Text>
+                <Image source={Line} className="w-[40px]"/>
+                </View>
+              <View style={{ flexDirection: 'row', gap: 32, marginHorizontal: 'auto' }}>
+                <SignInWith strategy='oauth_google' />
+                <SignInWith strategy='oauth_facebook' />
+                <SignInWith strategy='oauth_apple' />
+              </View>
+            </View>
+
+              <View className="flex flex-row justify-between items-start self-stretch mt-[56px]">
+                <TouchableOpacity 
+                  onPress={() => router.push('/sign-in')}
+                  className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-[#DDD]"
+                >
+                <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
+                  Back
+                </Text>
+              </TouchableOpacity>
+
+                <TouchableOpacity
+                    className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+                    onPress={handleSubmit(onSignUp)}
+                  >
+                    <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Next</Text>
+                  </TouchableOpacity>
+              </View>
+            </View> 
+            </View> 
+        </SafeAreaView>
+      </>
     );
   }
   
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      justifyContent: 'center',
-      padding: 20,
-      gap: 20,
-    },
-    form: {
-      gap: 5,
-    },
-    title: {
-      fontSize: 24,
-      fontWeight: '600',
-    },
-    link: {
-      color: '#4353FD',
-      fontWeight: '600',
-    },
-  });

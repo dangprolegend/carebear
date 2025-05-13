@@ -1,14 +1,14 @@
 import {
-    StyleSheet,
     Text,
-    KeyboardAvoidingView,
-    Platform,
     View,
-    Alert,
+    Image,
+    SafeAreaView,
+    TouchableOpacity,
   } from 'react-native';
   import CustomInput from '@/components/CustomInput';
-  import CustomButton from '@/components/CustomButton';
-  import { Link } from 'expo-router';
+  import { Link, router } from 'expo-router';
+
+  import Line from '../../assets/icons/line.png';
   
   import { useForm } from 'react-hook-form';
   import { z } from 'zod';
@@ -85,67 +85,80 @@ import {
     };
   
     return (
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.container}
-      >
-        <Text style={styles.title}>Welcome back!</Text>
+      <SafeAreaView> 
+         <View className="items-center justify-center h-screen bg-white">
+          <View className="flex flex-col items-start w-[345px]"> 
+            <Text className="text-black font-lato text-[32px] font-extrabold leading-9 tracking-[0.3px]">
+                Sign In
+            </Text> 
+            <Text className="mt-[40px] text-black font-lato text-[16px] font-extrabold leading-9 tracking-[0.3px]">
+              Email
+            </Text>
+    
+          <View className='w-full mt-[8px]'>
+            <CustomInput
+              control={control}
+              name='email'
+              placeholder='abc@gmail.com'
+              autoFocus
+              autoCapitalize='none'
+              keyboardType='email-address'
+              autoComplete='email'
+            />
+          </View>
+
+          <Text className=" text-black font-lato text-[16px] font-extrabold leading-9 tracking-[0.3px]">
+              Password
+          </Text>
+          <View className='w-full mt-[8px]'>
+            <CustomInput
+              control={control}
+              name='password'
+              placeholder='•••••••••'
+              secureTextEntry
+              />
+          </View>
+
+            {errors.root && (
+              <Text style={{ color: 'crimson' }}>{errors.root.message}</Text>
+            )}
+          </View>  
   
-        <View style={styles.form}>
-          <CustomInput
-            control={control}
-            name='email'
-            placeholder='Email'
-            autoFocus
-            autoCapitalize='none'
-            keyboardType='email-address'
-            autoComplete='email'
-          />
-  
-          <CustomInput
-            control={control}
-            name='password'
-            placeholder='Password'
-            secureTextEntry
-          />
-  
-          {errors.root && (
-            <Text style={{ color: 'crimson' }}>{errors.root.message}</Text>
-          )}
-        </View>
-  
-        <CustomButton text='Sign in' onPress={handleSubmit(onSignIn)} />
- 
-        <Link href='/sign-up' style={styles.link}>
-          New here? Sign up
-        </Link>
-  
-        <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 'auto' }}>
-          <SignInWith strategy='oauth_google' />
-          <SignInWith strategy='oauth_facebook' />
-          <SignInWith strategy='oauth_apple' />
-        </View>
-      </KeyboardAvoidingView>
+        {/* Sign in with social providers (Google, Facebook, Apple) */}
+          <View className="flex flex-col items-start gap-8 self-stretch mt-[40px]">
+            <View className='flex flex-row justify-center items-center gap-2 self-stretch'>
+              <Image source={Line} className="w-[40px]"/>
+              <Text className="text-black font-lato text-base font-light leading-6 tracking-[-0.1px]">Or Sign In With</Text>
+              <Image source={Line} className="w-[40px]"/>
+              </View>
+            <View style={{ flexDirection: 'row', gap: 32, marginHorizontal: 'auto' }}>
+              <SignInWith strategy='oauth_google' />
+              <SignInWith strategy='oauth_facebook' />
+              <SignInWith strategy='oauth_apple' />
+            </View>
+          </View>
+
+            <View className='items-center gap-[16px]'>
+              <TouchableOpacity
+                  className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full mt-[68px]"
+                  onPress={handleSubmit(onSignIn)}
+                >
+                  <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Sign In</Text>
+                </TouchableOpacity>
+                <View className='flex flex-row items-center gap-3'>
+                  <Text className='text-black font-lato text-base font-light leading-6 tracking-[-0.1px]'>
+                    Don't have an account? 
+                  </Text>
+                  <TouchableOpacity onPress={() => router.push('/sign-up')}>
+                    <Text className='text-[#0F172A] font-lato text-base font-extrabold leading-6 tracking-[-0.1px]'>
+                      Sign Up
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+            </View>
+          </View> 
+        </SafeAreaView>
     );
   }
-  
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      justifyContent: 'center',
-      padding: 20,
-      gap: 20,
-    },
-    form: {
-      gap: 5,
-    },
-    title: {
-      fontSize: 24,
-      fontWeight: '600',
-    },
-    link: {
-      color: '#4353FD',
-      fontWeight: '600',
-    },
-  });
+ 

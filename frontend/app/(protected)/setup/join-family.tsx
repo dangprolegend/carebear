@@ -1,18 +1,39 @@
 import React, { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 // Import custom UI components
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { Button } from '~/components/ui/button';
+import axios from 'axios';
+import { useAuth } from '@clerk/clerk-expo';
 
 export default function JoinFamilyScreen() {
+  const { userId } = useAuth();
   const router = useRouter();
   const [groupId, setGroupId] = useState<string>('');
-  const handleJoin = () => {
-    console.log("Attempting to join group:", groupId);
-    // TODO: Add logic to validate groupId and attempt to join the group via API call.
-    router.navigate('/setup/congrats');
+  const handleJoin = async () => {
+    try {
+      if (!userId) {
+        alert('User is not authenticated.');
+        return;
+      }
+
+      // Step 1: Fetch userID using clerkID
+      const userResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/clerk/${userId}`);
+      const userID = userResponse.data.userID;
+      console.log('Fetching userID for clerkID:', userID);
+      
+
+      // Step 2: Join group with provided group ID
+      const updateData = { groupID: groupId };
+
+      await axios.patch(`https://carebear-backend.onrender.com/api/users/${userID}/joinGroup`, updateData);
+      router.push('/setup/congrats');
+    } catch (error) {
+      console.error('Error joining group:', error);
+      alert('Failed to join group');
+    }
   };
   return (
     <View className="flex-1 flex-col">
@@ -52,7 +73,27 @@ export default function JoinFamilyScreen() {
         </Button>
       </View>
 
-      
+      <Text className="text-center text-black font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px] mt-[172px]">
+        No worries if you don't have a group yet!
+      </Text>
+
+      <View className="flex flex-row justify-between items-start self-stretch mt-[56px]">
+          <TouchableOpacity 
+            onPress={() => router.push('/setup/health-input')}
+            className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-[#DDD]"
+          >
+          <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
+            Back
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+          onPress={() => router.push('/setup/create-family')}
+        >
+          <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Create Group</Text>
+        </TouchableOpacity>
+      </View>
       
     </View>
   );

@@ -59,6 +59,11 @@ export const signup = async (req, res) => {
         imageURL: image_url!,
         firstName: first_name,
         lastName: last_name,
+        dateOfBirth: null, // Default to null
+        gender: null, // Default to null
+        weight: null, // Default to null
+        height: null, // Default to null
+        groupID: null, // Default to null
       });
 
       await user.save();
