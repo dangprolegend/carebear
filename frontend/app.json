@@ -12,7 +12,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "carebare.group4.com",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSHealthShareUsageDescription": "We need access to your health data to display your health metrics.",
+        "NSHealthUpdateUsageDescription": "We need access to update your health data."
       }
     },
     "android": {
