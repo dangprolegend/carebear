@@ -5,7 +5,7 @@ import Welcome from '../assets/images/welcome.png';
 import { useEffect } from 'react';
 
 export default function WelcomeScreen() {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, userId } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
