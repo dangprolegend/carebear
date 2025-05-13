@@ -28,7 +28,7 @@ export default function CompleteScreen() {
 
         <TouchableOpacity
           className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
-          onPress={() => router.push('../(protected)/dashboard/dashboard')}
+          onPress={() => router.push('../dashboard/dashboard')}
         >
           <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Next</Text>
         </TouchableOpacity>
