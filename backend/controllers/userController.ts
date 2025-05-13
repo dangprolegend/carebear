@@ -62,6 +62,30 @@ export const provideAdditionalUserInfo = async (req: any, res: any) => {
   } catch (error: any) {}
 }
 
+// Get the groupID of a specific user
+export const getUserGroup = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+
+    const user = await User.findById(userID).select('groupID');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({ 
+      groupID: user.groupID 
+    });
+    
+  } catch (error: any) {
+    console.error('Error fetching user group:', error);
+    return res.status(500).json({ 
+      message: 'Failed to fetch user group',
+      error: error.message 
+    });
+  }
+};
+
 export const getUser = async (req: TypedRequest<any, UserParams>, res: Response): Promise<void> => {
   try {
     const user = await User.findById(req.params.userID);
