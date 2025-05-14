@@ -27,8 +27,8 @@ export default function WelcomeScreen() {
 
           // Step 3: Redirect based on groupID status
           if (groupID) {
-            // User has a group, redirect to dashboard
-            router.push('/(protected)/dashboard/mydashboard/dashboard');
+            // User has a group, redirect to family
+            router.push('/(protected)/dashboard/family/family');
           } else {
             // User has no group, redirect to setup
             router.push('/(protected)/setup/health-input');
