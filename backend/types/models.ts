@@ -5,9 +5,20 @@ export interface IUser extends Document {
   email: string;
   name?: string;
   image?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
+  clerkID: string;
+  firstName?: string;
+  lastName?: string;
+  dateOfBirth?: Date;
+  gender?: 'Female' | 'Male';
+  weight?: string;
+  height?: string;
+  groupID?: Types.ObjectId | string;
+  role: 'bear_mom' | 'care_bear' | 'baby_bear';
+  pushToken?: string;
+  pushNotificationsEnabled?: boolean;
+  phoneNumber?: string;
+  smsAlertsEnabled?: boolean;
+
 
 export interface IGroup extends Document {
   name: string;
@@ -16,18 +27,37 @@ export interface IGroup extends Document {
 export interface IMember extends Document {
   userID: Types.ObjectId | string; // Reference to User _id
   groupID: Types.ObjectId | string; // Reference to Group _id
-  role: string;
+  role: 'bear_mom' | 'care_bear' | 'baby_bear';
+}
+
+export interface IReminder_setup {
+  start_date?: Date;
+  end_date?: Date;
+  times_of_day?: string[]; // Array of times in HH:MM format
+  recurrence_rule?: string; // e.g., "FREQ=DAILY;INTERVAL=1" or "FREQ=WEEKLY;BYDAY=MO,WE,FR"
 }
 
 export interface ITask extends Document {
-  user: Types.ObjectId | string; // Reference to User _id
+  title: string;
   group: Types.ObjectId | string; // Reference to Group _id
+  user: Types.ObjectId | string; // Reference to User _id
+
   assignedBy: Types.ObjectId | string; // Reference to User _id
-  assignedTo: Types.ObjectId | string; // Reference to User _id
+  assignedTo?: Types.ObjectId | string; // Reference to User _id
   status: 'pending' | 'in-progress' | 'done';
   description: string;
   deadline?: Date;
+  reminder?: IReminder_setup;
   priority: 'low' | 'medium' | 'high';
+  completedAt?: Date;
+  acceptedAt?: Date;
+  completionMethod?: 'manual' | 'photo' | 'input';
+  completionNotes?: string;
+  evidenceUrl?: string;
+  escalated?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+
 }
 
 export interface INotification extends Document {

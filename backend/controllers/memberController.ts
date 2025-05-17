@@ -7,7 +7,7 @@ import Group from '../models/Group';
 interface MemberBody {
   userID: string;  // Changed from userID to user
   groupID: string;  // Changed from groupID to group
-  role: 'admin' | 'caregiver' | 'carereceiver';
+  role: 'bear_mom' | 'care_bear' | 'baby_bear';
 }
 
 interface MemberParams {
@@ -63,7 +63,7 @@ export const addMember = async (req: TypedRequest<MemberBody>, res: Response): P
 
 
 // Update a member's role
-export const updateMember = async (req: TypedRequest<{ role: 'admin' | 'caregiver' | 'carereceiver' }, MemberParams>, res: Response): Promise<void> => {
+export const updateMember = async (req: TypedRequest<{ role: 'bear_mom' | 'care_bear' | 'baby_bear' }, MemberParams>, res: Response): Promise<void> => {
   const { groupID, userID } = req.params;
   const { role } = req.body;
 
