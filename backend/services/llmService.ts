@@ -1,4 +1,3 @@
-// src/services/llmService.ts
 import OpenAI from 'openai';
 
 const nebiusApiKey = process.env.NEBIUS_API_KEY;
@@ -16,15 +15,15 @@ const nebiusClient = new OpenAI({
   baseURL: nebiusApiBaseUrl,
 });
 
-export interface AiTaskSuggestion { // Exporting for use in controller if needed
+export interface AiTaskSuggestion { 
   title: string;
   description: string;
   start_date: string; // YYYY-MM-DD
   end_date?: string | null; // YYYY-MM-DD or null
   times_of_day: string[]; // Array of HH:MM strings
   recurrence_rule?: string | null; // e.g., "DAILY", "WEEKLY", "NONE", or RRULE
-  assignedTo: null; // Must be null as per spec
-  priority: 'low' | 'high' | null; // Can be 'low', 'high', or null
+  assignedTo: null; 
+  priority: 'low' | 'high' | null; 
 }
 
 export const generateTaskSuggestions = async (prompt: string): Promise<AiTaskSuggestion[]> => {
@@ -33,9 +32,7 @@ export const generateTaskSuggestions = async (prompt: string): Promise<AiTaskSug
   }
 
   try {
-    // Using a generally capable and potentially less resource-intensive model.
-    // Replace with your specific chosen model identifier from Nebius AI.
-    const modelIdentifier = "meta-llama/Meta-Llama-3.1-8B-Instruct-fast"; // Example "old model"
+    const modelIdentifier = "meta-llama/Meta-Llama-3.1-8B-Instruct-fast"; 
     console.log(`Sending prompt to Nebius AI LLM (Model: ${modelIdentifier})...`);
 
     const completion = await nebiusClient.chat.completions.create({
@@ -55,7 +52,6 @@ Each task object must have the following fields: "title" (string), "description"
     });
 
     const content = completion.choices[0]?.message?.content;
-    console.log("RAW content string from Nebius AI LLM:", content);
 
     if (!content || content.trim() === '') {
       console.error("Nebius AI LLM returned empty or null content string.");
@@ -64,8 +60,6 @@ Each task object must have the following fields: "title" (string), "description"
 
     let jsonString = content.trim();
 
-    // Optional: Basic Markdown stripping if LLM sometimes wraps output
-    // More robust stripping might be needed if this is a frequent issue.
     if (jsonString.startsWith("```json") && jsonString.endsWith("```")) {
         jsonString = jsonString.substring(7, jsonString.length - 3).trim();
         console.log("Stripped ```json wrapper. New jsonString:", jsonString);
@@ -78,7 +72,7 @@ Each task object must have the following fields: "title" (string), "description"
     let parsedJson: any;
     try {
       parsedJson = JSON.parse(jsonString);
-      console.log("Successfully parsed JSON from LLM. Parsed structure:", JSON.stringify(parsedJson, null, 2));
+      //console.log("Successfully parsed JSON from LLM. Parsed structure:", JSON.stringify(parsedJson, null, 2));
     } catch (jsonError: any) {
       console.error("Failed to parse Nebius AI LLM response as JSON. Processed string was:", jsonString, "Raw content was (from variable 'content'):", content, "Error:", jsonError.message);
       throw new Error(`Nebius AI LLM response was not valid JSON: ${jsonError.message}`);
@@ -91,7 +85,7 @@ Each task object must have the following fields: "title" (string), "description"
         (task: AiTaskSuggestion) => (
           typeof task.title === 'string' &&
           typeof task.description === 'string' &&
-          typeof task.start_date === 'string' && // Basic check, could add regex for YYYY-MM-DD
+          typeof task.start_date === 'string' && 
           (task.end_date === null || typeof task.end_date === 'string' || typeof task.end_date === 'undefined') &&
           Array.isArray(task.times_of_day) &&
           (task.recurrence_rule === null || typeof task.recurrence_rule === 'string' || typeof task.recurrence_rule === 'undefined') &&
