@@ -12,9 +12,9 @@ console.log(">>> testOcr.ts script started <<<"); // START SCRIPT LOG
 const testImage = async () => {
   console.log(">>> testImage function entered <<<"); // START FUNCTION LOG
 
-  const imageFileName = 'Screenshot 2025-05-17 at 09.33.54.png';
+  const imageFileName = 'Screenshot 2025-05-17 at 17.05.25.png';
   const currentWorkingDirectory = process.cwd();
-  const imagePath = path.resolve(currentWorkingDirectory, 'scripts', imageFileName);
+  const imagePath = path.resolve(currentWorkingDirectory, imageFileName);
 
   console.log("--- Path Debugging ---");
   console.log("Current Working Directory (process.cwd()):", currentWorkingDirectory);
