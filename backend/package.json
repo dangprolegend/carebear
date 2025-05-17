@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@clerk/express": "^1.4.9",
+    "@google-cloud/vision": "^5.1.0",
     "axios": "^1.8.4",
     "body-parse": "^0.1.0",
     "body-parser": "^2.2.0",
@@ -20,6 +21,7 @@
     "express": "^5.1.0",
     "mongodb": "^6.15.0",
     "mongoose": "^8.13.2",
+    "openai": "^4.100.0",
     "svix": "^1.64.1"
   },
   "devDependencies": {
