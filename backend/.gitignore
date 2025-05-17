@@ -7,3 +7,6 @@ node_modules/
 
 # local env files
 .env
+
+# Google Cloud Vision key
+carebearvtmp2025-d63f0a6f60de.json
