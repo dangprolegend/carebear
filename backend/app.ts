@@ -16,6 +16,7 @@ import dashboardRoutes from './routes/dashboardRoutes';
 import authRoutes from './routes/authRoutes';
 import aiRoutes from './routes/aiRoutes';
 
+
 import { Webhook } from 'svix';
 import User from './models/User';
 import job from './config/cron';
@@ -48,6 +49,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/ai', aiRoutes);
+
 
 // Health check route
 app.get('/', (req: Request, res: Response) => {
