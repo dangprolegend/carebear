@@ -21,13 +21,16 @@ export interface IUser extends Document {
 
 
 export interface IGroup extends Document {
-  name: string;
+  numberOfMembers: number;
+  members: {
+    user: Types.ObjectId | string;
+    role: 'bear_mom' | 'care_bear' | 'baby_bear';
+  }[];
 }
 
 export interface IMember extends Document {
   userID: Types.ObjectId | string; // Reference to User _id
   groupID: Types.ObjectId | string; // Reference to Group _id
-  role: 'bear_mom' | 'care_bear' | 'baby_bear';
 }
 
 export interface IReminder_setup {
