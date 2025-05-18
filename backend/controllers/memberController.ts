@@ -7,7 +7,7 @@ import Group from '../models/Group';
 
 interface MemberBody {
   userID: string;
-  role: 'admin' | 'care_giver' | 'care_receiver'; // Role is stored in Group model's members array, not in Member model
+  role: 'admin' | 'caregiver' | 'carereceiver'; // Role is stored in Group model's members array, not in Member model
 }
 
 interface MemberParams {
@@ -81,7 +81,7 @@ export const addMember = async (req: TypedRequest<MemberBody, { groupID: string 
 
 // Update a member's role
 export const updateMember = async (
-  req: TypedRequest<{ role: 'admin' | 'care_giver' | 'care_receiver' }, MemberParams>,
+  req: TypedRequest<{ role: 'admin' | 'caregiver' | 'carereceiver' }, MemberParams>,
   res: Response
 ): Promise<void> => {
   const { groupID, userID } = req.params;
