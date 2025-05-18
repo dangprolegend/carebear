@@ -21,7 +21,8 @@ export interface IUser extends Document {
 
 
 export interface IGroup extends Document {
-  numberOfMembers: number;
+  name: string;
+  numberOfMembers?: number;
   members: {
     user: Types.ObjectId | string;
     role: 'bear_mom' | 'care_bear' | 'baby_bear';
