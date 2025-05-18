@@ -13,19 +13,19 @@ export interface IUser extends Document {
   weight?: string;
   height?: string;
   groupID?: Types.ObjectId | string;
-  role: 'bear_mom' | 'care_bear' | 'baby_bear';
+  role: 'admin' | 'caregiver' | 'carereceiver';
   pushToken?: string;
   pushNotificationsEnabled?: boolean;
   phoneNumber?: string;
   smsAlertsEnabled?: boolean;
-
+}
 
 export interface IGroup extends Document {
   name: string;
   numberOfMembers?: number;
   members: {
     user: Types.ObjectId | string;
-    role: 'bear_mom' | 'care_bear' | 'baby_bear';
+    role: 'admin' | 'caregiver' | 'carereceiver';
   }[];
 }
 
@@ -61,7 +61,6 @@ export interface ITask extends Document {
   escalated?: boolean;
   createdAt: Date;
   updatedAt: Date;
-
 }
 
 export interface INotification extends Document {
