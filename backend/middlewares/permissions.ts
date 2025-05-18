@@ -12,11 +12,22 @@ const isSameObjectId = (id1: any, id2: any): boolean => {
   return String(id1) === String(id2);
 };
 
-// Check if user has bear_mom privileges
-export const isAdmin = (req: UserRequest, res: Response, next: NextFunction) => {
+// Check if user has bear_mom privileges in the Group
+export const isAdmin = async (req: UserRequest, res: Response, next: NextFunction) => {
   try {
-    const user = req.user;
-    if (user && user.role === 'bear_mom') {
+    const { groupID } = req.params;
+    
+    if (!user || !groupID) {
+      return res.status(403).json({ message: 'Access denied: User or Group not found' });
+    }
+    
+    // Find the group and check if the user is a member with bear_mom role
+    const group = await Group.findOne({
+      _id: groupID,
+      'members.user': user._id,
+      'members.role': 'bear_mom'
+    });
+    if (group) {
       return next();
     }
     return res.status(403).json({ message: 'Access denied: Bear Mom required' });
