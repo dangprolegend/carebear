@@ -8,6 +8,7 @@ export type Task = {
     detail?: string;
     subDetail?: string;
     checked?: boolean;
+    onPress?: () => void; // Add this line
 };
   
 export type GroupedTask = {
@@ -54,9 +55,10 @@ export const TaskGroup = ({
 
     <View className="space-y-4 w-full">
         {tasks.map((task, index) => (
-        <View 
+        <Pressable 
             key={index}
             className="p-4 rounded-lg border-[1.5px] border-gray-300 w-full bg-[#F7F7F7]"
+            onPress={task.onPress}
         >
             <View className="flex-row items-start justify-between w-full">
             {/* Task Content */}
@@ -87,7 +89,7 @@ export const TaskGroup = ({
                 <Pressable className="w-5 h-5 border-2 border-gray-300 rounded bg-white" />
             )}
             </View>
-        </View>
+        </Pressable>
         ))}
     </View>
     </View>
