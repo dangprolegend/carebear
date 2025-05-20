@@ -49,14 +49,14 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
   };
 
   const isTaskForSelectedDate = (task: Task) => {
-  const taskDate = new Date(task.datetime);
-  console.log('Task Date:', taskDate, 'Selected Date:', selectedDate);
-  return (
-    taskDate.getFullYear() === selectedDate.getFullYear() &&
-    taskDate.getMonth() === selectedDate.getMonth() &&
-    taskDate.getDate() === selectedDate.getDate()
-  );
-};
+    const taskDate = new Date(task.datetime);
+    console.log('Task Date:', taskDate, 'Selected Date:', selectedDate);
+    return (
+      taskDate.getFullYear() === selectedDate.getFullYear() &&
+      taskDate.getMonth() === selectedDate.getMonth() &&
+      taskDate.getDate() === selectedDate.getDate()
+    );
+  };
 
   // Filter tasks for the selected date
   const filteredTasks = tasks.filter(isTaskForSelectedDate);
