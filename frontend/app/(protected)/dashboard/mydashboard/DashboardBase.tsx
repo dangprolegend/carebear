@@ -12,6 +12,7 @@ type DashboardBaseProps = {
   title?: string; // Title for the dashboard
 };
 
+
 const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }: DashboardBaseProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showTodaySchedule, setShowTodaySchedule] = useState(true);
@@ -51,6 +52,14 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
   const isTaskForSelectedDate = (task: Task) => {
   const taskDate = new Date(task.datetime);
   console.log('Task Date:', taskDate, 'Selected Date:', selectedDate);
+
+  const API_URL = 'https://0098-2601-19b-4101-ef80-895-7c74-5a8e-f389.ngrok-free.app'; // Use your ngrok URL here
+
+  // Example fetch:
+  fetch(`${API_URL}/api/groups`)
+    .then(res => res.json())
+    .then(data => console.log(data));
+
   return (
     taskDate.getFullYear() === selectedDate.getFullYear() &&
     taskDate.getMonth() === selectedDate.getMonth() &&
