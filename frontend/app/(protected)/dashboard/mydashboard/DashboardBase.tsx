@@ -49,12 +49,8 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
   };
 
   const isTaskForSelectedDate = (task: Task) => {
-  // Parse 'YYYY-MM-DD' as local date
-  const [year, month, day] = String(task.date).split('-').map(Number);
-  const taskDate = new Date(year, month - 1, day); // month is 0-based
-
-  console.log('Task:', task.title, ', Task Date:', taskDate, ', Selected Date:', selectedDate);
-
+  const taskDate = new Date(task.datetime);
+  console.log('Task Date:', taskDate, 'Selected Date:', selectedDate);
   return (
     taskDate.getFullYear() === selectedDate.getFullYear() &&
     taskDate.getMonth() === selectedDate.getMonth() &&

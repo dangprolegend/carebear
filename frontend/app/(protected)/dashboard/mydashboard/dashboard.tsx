@@ -1,13 +1,13 @@
 import DashboardBase from './DashboardBase';
 
-const Dashboard = () => {
-  const tasks = [
-    { date: '2025-05-20', time: '8:00 am', type: 'Breakfast', title: 'Medicine 1', detail: '1 Tablet', subDetail: 'after breakfast', checked: true },
-    { date: '2025-05-19', time: '12:00 pm', type: 'Lunch', title: 'Supplement 1', detail: '1 Tablet', subDetail: 'after lunch' },
-    { date: '2025-05-19', time: '1:00 pm', type: 'Lunch', title: 'Help Grandm...', detail: 'Bedroom' },
-    { date: '2025-05-19', time: '6:00 pm', type: 'Dinner', title: 'Medicine 2', detail: '1 Tablet', subDetail: 'after dinner' },
-  ];
+const tasks = [
+  { datetime: '2025-05-20T08:00:00', type: 'Breakfast', title: 'Medicine 1', detail: '1 Tablet', subDetail: 'after breakfast', checked: true },
+  { datetime: '2025-05-19T12:00:00', type: 'Lunch', title: 'Supplement 1', detail: '1 Tablet', subDetail: 'after lunch' },
+  { datetime: '2025-05-19T13:00:00', type: 'Lunch', title: 'Help Grandm...', detail: 'Bedroom' },
+  { datetime: '2025-05-19T18:00:00', type: 'Dinner', title: 'Medicine 2', detail: '1 Tablet', subDetail: 'after dinner' },
+];
 
+const Dashboard = () => {
   return <DashboardBase tasks={tasks} />;
 };
 

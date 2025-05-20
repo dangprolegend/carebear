@@ -2,14 +2,13 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { View, Text, Pressable } from "react-native";
 
 export type Task = {
-    date: string | number | Date;
-    time: string;
-    type?: string;  // Remove the strict type constraint
+    datetime: string; // ISO string, e.g., '2025-05-20T08:00:00'
+    type?: string;
     title: string;
     detail?: string;
     subDetail?: string;
     checked?: boolean;
-    onPress?: () => void; // Add this line
+    onPress?: () => void;
 };
   
 export type GroupedTask = {
@@ -20,10 +19,10 @@ export type GroupedTask = {
   
 export const groupTasksByTimeAndType = (tasks: Task[]): GroupedTask[] => {
     const grouped = tasks.reduce<Record<string, GroupedTask>>((acc, task) => {
-    const key = `${task.time}-${task.type || 'default'}`;
+    const key = `${task.datetime}-${task.type || 'default'}`;
     if (!acc[key]) {
         acc[key] = {
-        time: task.time,
+        time: new Date(task.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         type: task.type,
         tasks: []
         };
