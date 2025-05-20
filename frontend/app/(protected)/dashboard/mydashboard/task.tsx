@@ -2,6 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { View, Text, Pressable } from "react-native";
 
 export type Task = {
+    date: string | number | Date;
     time: string;
     type?: string;  // Remove the strict type constraint
     title: string;

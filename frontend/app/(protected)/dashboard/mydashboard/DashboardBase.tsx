@@ -48,6 +48,23 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
     setShowTaskCard(true);
   };
 
+  const isTaskForSelectedDate = (task: Task) => {
+  // Parse 'YYYY-MM-DD' as local date
+  const [year, month, day] = String(task.date).split('-').map(Number);
+  const taskDate = new Date(year, month - 1, day); // month is 0-based
+
+  console.log('Task:', task.title, ', Task Date:', taskDate, ', Selected Date:', selectedDate);
+
+  return (
+    taskDate.getFullYear() === selectedDate.getFullYear() &&
+    taskDate.getMonth() === selectedDate.getMonth() &&
+    taskDate.getDate() === selectedDate.getDate()
+  );
+};
+
+  // Filter tasks for the selected date
+  const filteredTasks = tasks.filter(isTaskForSelectedDate);
+
   // Initialize calendar
   useEffect(() => {
     (async () => {
@@ -150,7 +167,7 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
         </View>
 
         <View className="flex-1 mt-6">
-          {/* Today Schedule Section */}
+          {/* Schedule Section */}
           <View className="px-4 mb-6">
             <Pressable
               onPress={() => setShowTodaySchedule(!showTodaySchedule)}
@@ -166,7 +183,7 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
 
             {showTodaySchedule && (
               <View className="bg-white rounded-xl p-4">
-                {groupTasksByTimeAndType(tasks).map((group, index) => (
+                {groupTasksByTimeAndType(filteredTasks).map((group, index) => (
                   <TaskGroup key={index} time={group.time} type={group.type} 
                       tasks={group.tasks.map(task => ({
                         ...task,
