@@ -2,12 +2,13 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { View, Text, Pressable } from "react-native";
 
 export type Task = {
-    time: string;
-    type?: string;  // Remove the strict type constraint
+    datetime: string; // ISO string, e.g., '2025-05-20T08:00:00'
+    type?: string;
     title: string;
     detail?: string;
     subDetail?: string;
     checked?: boolean;
+    onPress?: () => void;
 };
   
 export type GroupedTask = {
@@ -18,10 +19,10 @@ export type GroupedTask = {
   
 export const groupTasksByTimeAndType = (tasks: Task[]): GroupedTask[] => {
     const grouped = tasks.reduce<Record<string, GroupedTask>>((acc, task) => {
-    const key = `${task.time}-${task.type || 'default'}`;
+    const key = `${task.datetime}-${task.type || 'default'}`;
     if (!acc[key]) {
         acc[key] = {
-        time: task.time,
+        time: new Date(task.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         type: task.type,
         tasks: []
         };
@@ -54,9 +55,10 @@ export const TaskGroup = ({
 
     <View className="space-y-4 w-full">
         {tasks.map((task, index) => (
-        <View 
+        <Pressable 
             key={index}
             className="p-4 rounded-lg border-[1.5px] border-gray-300 w-full bg-[#F7F7F7]"
+            onPress={task.onPress}
         >
             <View className="flex-row items-start justify-between w-full">
             {/* Task Content */}
@@ -87,7 +89,7 @@ export const TaskGroup = ({
                 <Pressable className="w-5 h-5 border-2 border-gray-300 rounded bg-white" />
             )}
             </View>
-        </View>
+        </Pressable>
         ))}
     </View>
     </View>
