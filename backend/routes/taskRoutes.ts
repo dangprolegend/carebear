@@ -4,8 +4,12 @@ import {
   getTask, 
   updateTask, 
   updateTaskStatus, 
-  deleteTask 
+  deleteTask,
+  acceptTask,
+  completeTask,
+  getUserTasks
 } from '../controllers/taskController';
+import { canManageTasks, hasTaskPermission, isAdmin, canManageSpecificTask } from '../middlewares/permissions';
 
 const router: Router = express.Router();
 

@@ -66,6 +66,7 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
     taskDate.getDate() === selectedDate.getDate()
   );
 };
+=======
 
   // Filter tasks for the selected date
   const filteredTasks = tasks.filter(isTaskForSelectedDate);
