@@ -21,6 +21,32 @@ import { Webhook } from 'svix';
 import User from './models/User';
 import job from './config/cron';
 
+
+import swaggerUi from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
+
+// Swagger configuration
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'CareBear API',
+      version: '1.0.0',
+      description: 'API documentation for CareBear application',
+    },
+    servers: [
+      {
+        url: `http://localhost:${process.env.PORT || 5000}`,
+        description: 'Development server',
+      },
+    ],
+  },
+  apis: ['./routes/*.ts'], // Path to route files
+};
+
+// Initialize swagger-jsdoc
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
 // Load environment variables
 dotenv.config();
 
@@ -40,6 +66,9 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+// Serve Swagger UI
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Define routes
 app.use('/api/webhooks', authRoutes);
 app.use('/api/users', userRoutes);
