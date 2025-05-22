@@ -36,6 +36,93 @@ interface TaskParams {
   taskID: string;
 }
 
+//interface for AI Generate
+interface AiTaskData {
+  title: string;
+  description: string;
+  start_date: string | null; // YYYY-MM-DD or null
+  end_date?: string | null;   // YYYY-MM-DD or null
+  times_of_day?: string[];    // Array of "HH:MM"
+  recurrence_rule?: string | null;
+  assignedTo?: string | null; // User ID string or null
+  priority?: 'low' | 'high' | null;
+}
+
+interface AiGeneratedTasksRequestBody {
+  groupID: string;
+  userID: string; //user created task 
+  tasks: AiTaskData[];
+}
+
+// AiGenerate function
+export const createAiGeneratedTasks = async (
+  req: TypedRequest<AiGeneratedTasksRequestBody>,
+  res: Response
+): Promise<void> => {
+  try {
+    const { groupID, userID, tasks: aiTasksToCreate } = req.body;
+
+    if (!groupID || !userID || !aiTasksToCreate || !Array.isArray(aiTasksToCreate) || aiTasksToCreate.length === 0) {
+      res.status(400).json({ message: 'Missing groupID, userID, or tasks array for AI generation.' });
+      return;
+    }
+
+    const creator = await User.findById(userID);
+    if (!creator) {
+      res.status(400).json({ message: 'User initiating task creation not found.' });
+      return;
+    }
+
+    const createdTasksPromises = aiTasksToCreate.map(async (aiTask) => {
+      let validAssignee: string | undefined | null = undefined;
+      if (aiTask.assignedTo) {
+        const assignee = await User.findById(aiTask.assignedTo);
+        if (!assignee) {
+          console.warn(`AI Task: Assignee user with ID ${aiTask.assignedTo} not found for task "${aiTask.title}". Task will be unassigned.`);
+          // Keep validAssignee as undefined/null
+        } else {
+          validAssignee = aiTask.assignedTo;
+        }
+      }
+
+      const reminderDataFormatted = {
+        start_date: aiTask.start_date ? new Date(aiTask.start_date) : undefined,
+        end_date: aiTask.end_date ? new Date(aiTask.end_date) : undefined,
+        times_of_day: aiTask.times_of_day && aiTask.times_of_day.length > 0 ? aiTask.times_of_day : [],
+        recurrence_rule: aiTask.recurrence_rule || undefined,
+      };
+
+      const newTask = new Task({
+        title: aiTask.title,
+        groupID,
+        assignedBy: userID,
+        assignedTo: validAssignee,
+        description: aiTask.description,
+        priority: aiTask.priority || 'medium', // Your schema defaults to medium if not provided
+        reminder: reminderDataFormatted,
+        status: 'pending',
+      });
+      return newTask.save();
+    });
+
+    const savedTasks = await Promise.all(createdTasksPromises);
+
+    // Populate assignedTo and assignedBy for the response
+    const populatedTasks = await Task.find({ _id: { $in: savedTasks.map(t => t._id) } })
+                                     .populate('assignedTo', 'name email role')
+                                     .populate('assignedBy', 'name email role');
+
+
+    res.status(201).json({
+      message: `${populatedTasks.length} AI-suggested tasks created successfully.`,
+      tasks: populatedTasks,
+    });
+
+  } catch (err: any) {
+    handleError(res, err);
+  }
+};
+
 // Helper function for common error handling
 const handleError = (res: Response, error: any): void => {
   console.error('Task operation error:', error);
@@ -72,7 +159,7 @@ export const createTask = async (req: TypedRequest<TaskBody>, res: Response): Pr
         start_date: reminder.start_date ? new Date(reminder.start_date) : undefined,
         end_date: reminder.end_date ? new Date(reminder.end_date) : undefined,
         times_of_day: reminder.times_of_day || [],
-        recurrence_rule: reminder.recurrence_rule || ''
+        recurrence_rule: reminder.recurrence_rule || undefined
       };
     }
     
@@ -80,7 +167,7 @@ export const createTask = async (req: TypedRequest<TaskBody>, res: Response): Pr
       title,
       groupID,
       assignedBy,
-      assignedTo,
+      assignedTo: assignedTo || undefined,
       description,
       deadline: deadline ? new Date(deadline) : undefined,
       priority,
@@ -130,9 +217,9 @@ export const updateTask = async (req: TypedRequest<Partial<TaskBody>, TaskParams
         start_date: req.body.reminder.start_date ? new Date(req.body.reminder.start_date) : undefined,
         end_date: req.body.reminder.end_date ? new Date(req.body.reminder.end_date) : undefined,
         times_of_day: req.body.reminder.times_of_day || [],
-        recurrence_rule: req.body.reminder.recurrence_rule || ''
+        recurrence_rule: req.body.reminder.recurrence_rule || undefined
       };
-      
+    }
     const task = await Task.findByIdAndUpdate(
       req.params.taskID,
       { $set: updateData },
