@@ -1,7 +1,9 @@
 import { Response, NextFunction } from 'express';
-import Task from '../models/Task';
+import { Task } from '../models/Task';
 import User from '../models/User';
+import Group from '../models/Group';
 import { TypedRequest } from '../types/express';
+import { getUserRoleInGroup, getUserIdsByRoleInGroup, getUserIdsByRolesInGroup } from './utils/groupRoleUtils';
 
 interface Reminder_setup {
   start_date?: string;
@@ -78,7 +80,7 @@ export const createTask = async (req: TypedRequest<TaskBody>, res: Response): Pr
     
     const newTask = new Task({
       title,
-      groupID,
+      group: groupID,
       assignedBy,
       assignedTo,
       description,
@@ -132,18 +134,16 @@ export const updateTask = async (req: TypedRequest<Partial<TaskBody>, TaskParams
         times_of_day: req.body.reminder.times_of_day || [],
         recurrence_rule: req.body.reminder.recurrence_rule || ''
       };
-      
+    }
     const task = await Task.findByIdAndUpdate(
       req.params.taskID,
       { $set: updateData },
       { new: true }
     ).populate('assignedTo', 'name email role');
-    
     if (!task) {
       res.status(404).json({ message: 'Task not found' });
       return;
-    }  
-    
+    }
     res.json(task);
   } catch (err: any) {
     handleError(res, err);
@@ -268,46 +268,37 @@ export const getUserTasks = async (req: TypedRequest<any, { userID: string }>, r
 export const checkOverdueTasks = async (): Promise<void> => {
   try {
     const now = new Date();
-    
     // Find non-completed tasks with passed deadlines that haven't been escalated
     const overdueTasks = await Task.find({
       deadline: { $lt: now },
       status: { $ne: 'done' },
       escalated: { $ne: true }
-    }).populate('assignedTo').populate('assignedBy');
-    
+    });
     for (const task of overdueTasks) {
       // Mark as escalated to prevent duplicate notifications
       task.escalated = true;
       await task.save();
-      // Find appropriate backup users based on role hierarchy
+      // Find appropriate backup users based on role hierarchy (per-group)
       let backupUserIds: string[] = [];
-      if (!task.assignedTo) continue;
-      // Ensure assignedTo is populated as a User document
-      const assignedToUser = typeof task.assignedTo === 'object' && task.assignedTo !== null && 'role' in task.assignedTo ? task.assignedTo : await User.findById(task.assignedTo);
-      if (!assignedToUser) continue;
-      
-      switch(assignedToUser.role) {
-        case 'care_bear':
-          // Escalate to care moms and admins
-          const caregivers = await User.find({ 
-            role: { $in: ['care_mom', 'admin'] },
-            _id: { $ne: assignedToUser._id }
-          });
-          backupUserIds = caregivers.map(user => user._id && typeof user._id === 'object' && 'toString' in user._id ? user._id.toString() : String(user._id));
-          break;
-          
-        case 'care_mom':
-          // Escalate to admins
-          const admins = await User.find({ role: 'admin' });
-          backupUserIds = admins.map(user => user._id && typeof user._id === 'object' && 'toString' in user._id ? user._id.toString() : String(user._id));
-          break;
-          
-        default:
-          // No escalation for admin tasks
-          break;
+      if (!task.assignedTo || !task.group) continue;
+      const groupId = task.group.toString();
+      const assignedToUserId = task.assignedTo.toString();
+      const assignedToRole = await getUserRoleInGroup(assignedToUserId, groupId);
+      if (!assignedToRole) continue;
+      if (assignedToRole === 'caregiver') {
+        // Escalate to admins in the same group
+        backupUserIds = await getUserIdsByRoleInGroup(groupId, 'admin');
+      } else if (assignedToRole === 'carereceiver') {
+        // Escalate to caregivers and admins in the same group
+        backupUserIds = [
+          ...(await getUserIdsByRoleInGroup(groupId, 'caregiver')),
+          ...(await getUserIdsByRoleInGroup(groupId, 'admin')),
+        ].filter(id => id !== assignedToUserId);
+      } else if (assignedToRole === 'admin') {
+        // No escalation for admin tasks
+        backupUserIds = [];
       }
-      
+      // TODO: Send notifications to backupUserIds as needed
     }
   } catch (error) {
     console.error('Error checking overdue tasks:', error);

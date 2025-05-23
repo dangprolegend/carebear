@@ -16,17 +16,10 @@ const UserSchema: Schema = new Schema({
   },
   firstName: {
     type: String,
-  },
-  lastName: {
+  },  lastName: {
     type: String,
   },
-  // Role field for permissions
-  role: {
-    type: String,
-    enum: ['bear_mom', 'care_bear', 'baby_bear'],
-    required: true,
-  },
-
+  
   // New fields based on the registration screens
   dateOfBirth: {
     type: Date,

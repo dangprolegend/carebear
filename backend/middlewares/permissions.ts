@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { IUser } from '../types/models';
 import { UserRequest } from '../types/express';
 import User from '../models/User';
+import Group from '../models/Group';
 import Task from '../models/Task';
 
 /**
@@ -12,27 +13,50 @@ const isSameObjectId = (id1: any, id2: any): boolean => {
   return String(id1) === String(id2);
 };
 
-// Check if user has bear_mom privileges
-export const isAdmin = (req: UserRequest, res: Response, next: NextFunction) => {
+// Helper to get user's id as string
+const getUserIdString = (user: any) => (user._id ? user._id.toString() : user.id ? user.id.toString() : undefined);
+
+// Helper to get user's role in a group
+const getUserRoleInGroup = async (userId: any, groupId: any) => {
+  const group = await Group.findById(groupId);
+  if (!group) return null;
+  const member = group.members.find((m: any) => m.user.toString() === userId.toString());
+  return member ? member.role : null;
+};
+
+// Check if user has admin privileges in the group
+export const isAdmin = async (req: UserRequest, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
-    if (user && user.role === 'bear_mom') {
+    const { groupID } = req.params;
+    const userId = user && getUserIdString(user);
+    if (!userId || !groupID) {
+      return res.status(403).json({ message: 'Access denied: User or Group not found' });
+    }
+    const role = await getUserRoleInGroup(userId, groupID);
+    if (role === 'admin') {
       return next();
     }
-    return res.status(403).json({ message: 'Access denied: Bear Mom required' });
+    return res.status(403).json({ message: 'Access denied: Admin required for this group' });
   } catch (error) {
     return res.status(500).json({ message: 'Server error' });
   }
 };
 
-// Check if user can create and manage tasks (only bear_mom can create tasks)
-export const canManageTasks = (req: UserRequest, res: Response, next: NextFunction) => {
+// Check if user can create and manage tasks (admin or caregiver in group)
+export const canManageTasks = async (req: UserRequest, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
-    if (user && (user.role === 'bear_mom' || user.role === 'care_bear')) {
+    const { groupID } = req.body;
+    const userId = user && getUserIdString(user);
+    if (!userId || !groupID) {
+      return res.status(403).json({ message: 'Access denied: User or Group not found' });
+    }
+    const role = await getUserRoleInGroup(userId, groupID);
+    if (role === 'admin' || role === 'caregiver') {
       return next();
     }
-    return res.status(403).json({ message: 'Access denied: Only Bear-Moms and Care-Bears can create tasks' });
+    return res.status(403).json({ message: 'Access denied: Only Admins and Caregivers can create tasks' });
   } catch (error) {
     return res.status(500).json({ message: 'Server error' });
   }
@@ -42,30 +66,22 @@ export const canManageTasks = (req: UserRequest, res: Response, next: NextFuncti
 export const canAssignTask = async (req: UserRequest, res: Response, next: NextFunction) => {
   try {
     const user = req.user;
-    
-    // Only bear_moms and care_bears can assign tasks
-    if (!user || (user.role !== 'bear_mom' && user.role !== 'care_bear')) {
+    const { groupID } = req.body;
+    const userId = user && getUserIdString(user);
+    if (!userId || !groupID) {
       return res.status(403).json({ message: 'Cannot assign tasks' });
     }
-
-    const assigneeId = req.body.assignedTo;
-    
-    // Bear Moms can assign to anyone
-    if (user.role === 'bear_mom') {
+    const role = await getUserRoleInGroup(userId, groupID);
+    if (role === 'admin') {
       return next();
     }
-    
-    // Care Bears can only assign to Baby Bears or themselves
-    if (user.role === 'care_bear') {
-      const assignee = await User.findById(assigneeId);
-      if (!assignee) {
-        return res.status(400).json({ message: 'Assigned user not found' });
-      }
-      
-      if (assignee.role === 'baby_bear' || isSameObjectId(assignee._id, user._id)) {
+    if (role === 'caregiver') {
+      const assigneeId = req.body.assignedTo;
+      const assigneeRole = await getUserRoleInGroup(assigneeId, groupID);
+      if (assigneeRole === 'carereceiver' || assigneeId.toString() === userId) {
         return next();
       }
-    }    
+    }
     return res.status(403).json({ message: 'Cannot assign tasks to this user' });
   } catch (error) {
     console.error('Error in canAssignTask middleware:', error);
@@ -73,14 +89,19 @@ export const canAssignTask = async (req: UserRequest, res: Response, next: NextF
   }
 };
 
-// Check if the user is the owner of the requested resource or a bear_mom
+// Check if the user is the owner of the requested resource or an admin
 export const isOwnerOrAdmin = (paramName: string) => {
-  return (req: UserRequest, res: Response, next: NextFunction) => {
+  return async (req: UserRequest, res: Response, next: NextFunction) => {
     try {
       const user = req.user;
       const resourceId = req.params[paramName];
-      
-      if (user && (user.role === 'bear_mom' || isSameObjectId(user._id, resourceId))) {
+      const { groupID } = req.body;
+      const userId = user && getUserIdString(user);
+      if (!userId) {
+        return res.status(403).json({ message: 'Access denied: User not found' });
+      }
+      const role = await getUserRoleInGroup(userId, groupID);
+      if (role === 'admin' || isSameObjectId(userId, resourceId)) {
         return next();
       }
       return res.status(403).json({ message: 'Access denied for this resource' });
@@ -95,33 +116,25 @@ export const hasTaskPermission = async (req: UserRequest, res: Response, next: N
   try {
     const user = req.user;
     const taskID = req.params.taskID;
-    
-    if (!user) {
+    const userId = user && getUserIdString(user);
+    if (!userId) {
       return res.status(401).json({ message: 'Authentication required' });
     }
-    
-    // Fetch the task to check permissions
     const task = await Task.findById(taskID);
-    
     if (!task) {
       return res.status(404).json({ message: 'Task not found' });
     }
-    
-    // Bear Moms have full access
-    if (user.role === 'bear_mom') {
+    const groupID = task.group;
+    const role = await getUserRoleInGroup(userId, groupID);
+    if (role === 'admin') {
       return next();
     }
-
-    // Care Bears can access tasks they created or that are assigned to them
-    if (user.role === 'care_bear' && 
-        (isSameObjectId(task.assignedBy, user._id) || isSameObjectId(task.assignedTo, user._id))) {
+    if (role === 'caregiver' && (isSameObjectId(task.assignedBy, userId) || isSameObjectId(task.assignedTo, userId))) {
       return next();
     }
-    
-    // Baby Bears can only access tasks assigned to them
-    if (user.role === 'baby_bear' && isSameObjectId(task.assignedTo, user._id)) {
+    if (role === 'carereceiver' && isSameObjectId(task.assignedTo, userId)) {
       return next();
-    }    
+    }
     return res.status(403).json({ message: 'Access denied: Not authorized for this task' });
   } catch (error) {
     console.error('Error in hasTaskPermission middleware:', error);
@@ -134,30 +147,22 @@ export const canManageSpecificTask = async (req: UserRequest, res: Response, nex
   try {
     const user = req.user;
     const taskID = req.params.taskID;
-    
-    if (!user) {
+    const userId = user && getUserIdString(user);
+    if (!userId) {
       return res.status(401).json({ message: 'Authentication required' });
     }
-    
-    // Bear Moms can manage any task
-    if (user.role === 'bear_mom') {
+    const task = await Task.findById(taskID);
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    const groupID = task.group;
+    const role = await getUserRoleInGroup(userId, groupID);
+    if (role === 'admin') {
       return next();
     }
-    
-    // Care Bears can only manage tasks they created
-    if (user.role === 'care_bear') {
-      const task = await Task.findById(taskID);
-      
-      if (!task) {
-        return res.status(404).json({ message: 'Task not found' });
-      }
-
-      // Check if the care_bear created this task
-      if (isSameObjectId(task.assignedBy, user._id)) {
-        return next();
-      }
+    if (role === 'caregiver' && isSameObjectId(task.assignedBy, userId)) {
+      return next();
     }
-    
     return res.status(403).json({ message: 'Access denied: Not authorized to manage this task' });
   } catch (error) {
     console.error('Error in canManageSpecificTask middleware:', error);

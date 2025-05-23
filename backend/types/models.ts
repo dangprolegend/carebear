@@ -9,25 +9,22 @@ export interface IUser extends Document {
   firstName?: string;
   lastName?: string;
   dateOfBirth?: Date;
-  gender?: 'Female' | 'Male';
-  weight?: string;
+  gender?: 'Female' | 'Male';  weight?: string;
   height?: string;
   groupID?: Types.ObjectId | string;
-  role: 'bear_mom' | 'care_bear' | 'baby_bear';
   pushToken?: string;
   pushNotificationsEnabled?: boolean;
   phoneNumber?: string;
   smsAlertsEnabled?: boolean;
-
+}
 
 export interface IGroup extends Document {
   name: string;
-}
-
-export interface IMember extends Document {
-  userID: Types.ObjectId | string; // Reference to User _id
-  groupID: Types.ObjectId | string; // Reference to Group _id
-  role: 'bear_mom' | 'care_bear' | 'baby_bear';
+  numberOfMembers: number;
+  members: {
+    user: Types.ObjectId | string;
+    role: 'admin' | 'caregiver' | 'carereceiver';
+  }[];
 }
 
 export interface IReminder_setup {
