@@ -16,11 +16,10 @@ const UserSchema: Schema = new Schema({
   },
   firstName: {
     type: String,
-  },
-  lastName: {
+  },  lastName: {
     type: String,
   },
-  // New fields based on the registration screens
+// New fields based on the registration screens
   dateOfBirth: {
     type: Date,
   },

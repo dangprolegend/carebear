@@ -1,7 +1,6 @@
 //@ts-nocheck
 import { Response } from 'express';
 import Group from '../models/Group';
-import Member from '../models/Member';
 import { TypedRequest } from '../types/express';
 import mongoose from 'mongoose';
 import Task from '../models/Task';
@@ -112,9 +111,6 @@ export const deleteGroup = async (req: TypedRequest<any, GroupParams>, res: Resp
       return;
     }
     
-    // Delete all associated members
-    await Member.deleteMany({ group: req.params.groupID });
-    
     res.json({ message: 'Group deleted successfully' });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -126,8 +122,7 @@ export const deleteGroup = async (req: TypedRequest<any, GroupParams>, res: Resp
 export const getUserGroups = async (req: TypedRequest<any, { userID: string }>, res: Response): Promise<void> => {
   try {
     const userID = new mongoose.Types.ObjectId(req.params.userID);
-    const members = await Member.find({userID: userID}).populate('groupID').exec()
-    const groups = members.map(member => member.groupID);
+    const groups = await Group.find({ 'members.user': userID }).exec();
     res.json(groups);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -143,13 +138,12 @@ export const getGroupMembers = async (req: TypedRequest<any, GroupParams>, res: 
     }
 
     try {
-        const members = await Member.find({ groupID: groupID })
-                                    .populate('userID', 'name email');
-        if (!members) {
-            res.status(404).json({ message: "Members not found" });
+        const group = await Group.findById(groupID);
+        if (!group) {
+            res.status(404).json({ message: "Group not found" });
             return;
         }
-        res.status(200).json(members);
+        res.status(200).json(group.members);
     } catch (error: any) {
         console.error("Error in fetching group members", error.message);
         res.status(400).json({ success: false, error: error.message });
@@ -173,7 +167,7 @@ export const getGroupTasks = async (req: TypedRequest<any, GroupParams>, res: Re
 // Join a group
 export const joinGroup = async (req: any, res: any): Promise<void> => {
   try {
-    const { groupID } = req.body;
+    const { groupID, role } = req.body; // Accept role from request body
     const { userID } = req.params;
     
     // Find the group
@@ -191,11 +185,11 @@ export const joinGroup = async (req: any, res: any): Promise<void> => {
       return;
     }
 
-    // Determine the role (default to caregiver for now)
-    const role = 'caregiver'; // This can be updated later based on additional logic
+    // Use provided role or default to caregiver
+    const memberRole = role || 'caregiver';
 
     // Add the user to the group's members array
-    group.members.push({ user: userID, role });
+    group.members.push({ user: userID, role: memberRole });
     group.numberOfMembers += 1;
 
     const updatedGroup = await group.save();
@@ -219,6 +213,34 @@ export const joinGroup = async (req: any, res: any): Promise<void> => {
     });
   } catch (err: any) {
     console.error('Error joining group:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Add or update a member's role in a group
+export const updateMemberRole = async (req: TypedRequest<{ role: string }, { groupID: string; userID: string }>, res: Response): Promise<void> => {
+  try {
+    const { groupID, userID } = req.params;
+    const { role } = req.body;
+    if (!groupID || !userID || !role) {
+      res.status(400).json({ message: 'Group ID, User ID, and role are required' });
+      return;
+    }
+    const group = await Group.findById(groupID);
+    if (!group) {
+      res.status(404).json({ message: 'Group not found' });
+      return;
+    }
+    const member = group.members.find((m) => m.user.toString() === userID);
+    if (!member) {
+      res.status(404).json({ message: 'Member not found in this group' });
+      return;
+    }
+    member.role = role;
+    await group.save();
+    res.status(200).json({ message: 'Role updated successfully', member });
+  } catch (err: any) {
+    console.error('Error updating member role:', err);
     res.status(500).json({ error: err.message });
   }
 };

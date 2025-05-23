@@ -9,11 +9,13 @@ export interface IUser extends Document {
   firstName?: string;
   lastName?: string;
   dateOfBirth?: Date;
-  gender?: 'Female' | 'Male';
-  weight?: string;
+  gender?: 'Female' | 'Male';  weight?: string;
   height?: string;
   groupID?: Types.ObjectId | string;
+<<<<<<< HEAD
   role: 'admin' | 'caregiver' | 'carereceiver';
+=======
+>>>>>>> 2f10c3a (refactor group and remove membertable)
   pushToken?: string;
   pushNotificationsEnabled?: boolean;
   phoneNumber?: string;
@@ -22,17 +24,24 @@ export interface IUser extends Document {
 
 export interface IGroup extends Document {
   name: string;
+<<<<<<< HEAD
   numberOfMembers?: number;
+=======
+  numberOfMembers: number;
+>>>>>>> 2f10c3a (refactor group and remove membertable)
   members: {
     user: Types.ObjectId | string;
     role: 'admin' | 'caregiver' | 'carereceiver';
   }[];
+<<<<<<< HEAD
 }
 
 export interface IMember extends Document {
   userID: Types.ObjectId | string; // Reference to User _id
   groupID: Types.ObjectId | string; // Reference to Group _id
   role: 'admin' | 'caregiver' | 'carereceiver';
+=======
+>>>>>>> 2f10c3a (refactor group and remove membertable)
 }
 
 export interface IReminder_setup {
