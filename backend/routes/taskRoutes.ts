@@ -12,8 +12,7 @@ import {
 import { canManageTasks, hasTaskPermission, isAdmin, canManageSpecificTask } from '../middlewares/permissions';
 
 const router: Router = express.Router();
-
-// Create new task (admin only)
+// Create new task (carebear only)
 router.post('/', canManageTasks, createTask);
 
 // Get task details (with permission check)

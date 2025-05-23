@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import Task from '../models/Task';
 import User from '../models/User';
-import { TypedRequest } from '../types/express';
+import { TypedRequest, UserRequest } from '../types/express';
 
 interface Reminder_setup {
   start_date?: string;
@@ -19,7 +19,7 @@ interface TaskBody {
   description: string;
   deadline?: string;
   reminder?: Reminder_setup;
-  priority: 'low' | 'medium' | 'high';
+  priority?: 'low' | 'medium' | 'high' | null;
 }
 
 interface TaskStatusBody {
@@ -34,6 +34,24 @@ interface TaskCompletionBody {
 
 interface TaskParams {
   taskID: string;
+}
+
+//interface for AI Generate
+interface AiTaskData {
+  title: string;
+  description: string;
+  start_date: string | null; // YYYY-MM-DD or null
+  end_date?: string | null;   // YYYY-MM-DD or null
+  times_of_day?: string[];    // Array of "HH:MM"
+  recurrence_rule?: string | null;
+  assignedTo?: string | null; // User ID string or null
+  priority?: 'low' | 'high' | null;
+}
+
+interface AiGeneratedTasksRequestBody {
+  groupID: string;
+  userID: string; //user created task 
+  tasks: AiTaskData[];
 }
 
 // Helper function for common error handling
@@ -72,7 +90,7 @@ export const createTask = async (req: TypedRequest<TaskBody>, res: Response): Pr
         start_date: reminder.start_date ? new Date(reminder.start_date) : undefined,
         end_date: reminder.end_date ? new Date(reminder.end_date) : undefined,
         times_of_day: reminder.times_of_day || [],
-        recurrence_rule: reminder.recurrence_rule || ''
+        recurrence_rule: reminder.recurrence_rule || undefined
       };
     }
     
@@ -80,7 +98,7 @@ export const createTask = async (req: TypedRequest<TaskBody>, res: Response): Pr
       title,
       groupID,
       assignedBy,
-      assignedTo,
+      assignedTo: assignedTo || undefined,
       description,
       deadline: deadline ? new Date(deadline) : undefined,
       priority,
@@ -115,35 +133,47 @@ export const getTask = async (req: TypedRequest<any, TaskParams>, res: Response)
 };
 
 // Update a task
-export const updateTask = async (req: TypedRequest<Partial<TaskBody>, TaskParams>, res: Response): Promise<void> => {
+export const updateTask = async (req: UserRequest, res: Response): Promise<void> => { // Assuming TaskParams in UserRequest
   try {
-    // Handle date conversion if deadline is provided
-    const updateData: Partial<{ [key: string]: any }> = { ...req.body };
-    if (req.body.deadline) {
-      updateData.deadline = new Date(req.body.deadline);
-    }
-    
+    const { taskID } = req.params as unknown as TaskParams; // Cast if params are not directly on UserRequest type
+    const updateData: Partial<any> = { ...req.body };
 
-    // Process reminder data
+    if (req.body.hasOwnProperty('assignedTo') && req.body.assignedTo === null) {
+        updateData.assignedTo = null;
+    }
+    if (req.body.hasOwnProperty('description') && req.body.description === null) {
+        updateData.description = null; 
+    }
+     if (req.body.hasOwnProperty('priority') && req.body.priority === null) {
+        updateData.priority = null;
+    }
+
+
     if (req.body.reminder) {
       updateData.reminder = {
         start_date: req.body.reminder.start_date ? new Date(req.body.reminder.start_date) : undefined,
         end_date: req.body.reminder.end_date ? new Date(req.body.reminder.end_date) : undefined,
         times_of_day: req.body.reminder.times_of_day || [],
-        recurrence_rule: req.body.reminder.recurrence_rule || ''
+        recurrence_rule: req.body.reminder.recurrence_rule || undefined,
       };
-      
+      if (Object.keys(req.body.reminder).length === 0) {
+        updateData.reminder = undefined; // Or $unset: { reminder: 1 } in MongoDB update
+      }
+    } else if (req.body.hasOwnProperty('reminder') && req.body.reminder === null) {
+        updateData.reminder = undefined; 
+    }
+
+
     const task = await Task.findByIdAndUpdate(
-      req.params.taskID,
-      { $set: updateData },
-      { new: true }
-    ).populate('assignedTo', 'name email role');
-    
+      taskID,
+      { $set: updateData }, // Use $set to only update provided fields
+      { new: true, runValidators: true }
+    ).populate('assignedTo', 'name email role')
+     .populate('assignedBy', 'name email role');
+
     if (!task) {
-      res.status(404).json({ message: 'Task not found' });
-      return;
-    }  
-    
+      return handleError(res, new Error('Task not found for update.'));
+    }
     res.json(task);
   } catch (err: any) {
     handleError(res, err);

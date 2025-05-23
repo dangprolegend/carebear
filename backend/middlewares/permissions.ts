@@ -17,7 +17,7 @@ const isSameObjectId = (id1: any, id2: any): boolean => {
 export const isAdmin = async (req: UserRequest, res: Response, next: NextFunction) => {
   try {
     const { groupID } = req.params;
-    
+    const user = req.user;
     if (!user || !groupID) {
       return res.status(403).json({ message: 'Access denied: User or Group not found' });
     }
