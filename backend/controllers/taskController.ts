@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import Task from '../models/Task';
 import User from '../models/User';
-import { TypedRequest } from '../types/express';
+import { TypedRequest, UserRequest } from '../types/express';
 
 interface Reminder_setup {
   start_date?: string;
@@ -19,7 +19,7 @@ interface TaskBody {
   description: string;
   deadline?: string;
   reminder?: Reminder_setup;
-  priority: 'low' | 'medium' | 'high';
+  priority?: 'low' | 'medium' | 'high' | null;
 }
 
 interface TaskStatusBody {
@@ -53,75 +53,6 @@ interface AiGeneratedTasksRequestBody {
   userID: string; //user created task 
   tasks: AiTaskData[];
 }
-
-// AiGenerate function
-export const createAiGeneratedTasks = async (
-  req: TypedRequest<AiGeneratedTasksRequestBody>,
-  res: Response
-): Promise<void> => {
-  try {
-    const { groupID, userID, tasks: aiTasksToCreate } = req.body;
-
-    if (!groupID || !userID || !aiTasksToCreate || !Array.isArray(aiTasksToCreate) || aiTasksToCreate.length === 0) {
-      res.status(400).json({ message: 'Missing groupID, userID, or tasks array for AI generation.' });
-      return;
-    }
-
-    const creator = await User.findById(userID);
-    if (!creator) {
-      res.status(400).json({ message: 'User initiating task creation not found.' });
-      return;
-    }
-
-    const createdTasksPromises = aiTasksToCreate.map(async (aiTask) => {
-      let validAssignee: string | undefined | null = undefined;
-      if (aiTask.assignedTo) {
-        const assignee = await User.findById(aiTask.assignedTo);
-        if (!assignee) {
-          console.warn(`AI Task: Assignee user with ID ${aiTask.assignedTo} not found for task "${aiTask.title}". Task will be unassigned.`);
-          // Keep validAssignee as undefined/null
-        } else {
-          validAssignee = aiTask.assignedTo;
-        }
-      }
-
-      const reminderDataFormatted = {
-        start_date: aiTask.start_date ? new Date(aiTask.start_date) : undefined,
-        end_date: aiTask.end_date ? new Date(aiTask.end_date) : undefined,
-        times_of_day: aiTask.times_of_day && aiTask.times_of_day.length > 0 ? aiTask.times_of_day : [],
-        recurrence_rule: aiTask.recurrence_rule || undefined,
-      };
-
-      const newTask = new Task({
-        title: aiTask.title,
-        groupID,
-        assignedBy: userID,
-        assignedTo: validAssignee,
-        description: aiTask.description,
-        priority: aiTask.priority || 'medium', // Your schema defaults to medium if not provided
-        reminder: reminderDataFormatted,
-        status: 'pending',
-      });
-      return newTask.save();
-    });
-
-    const savedTasks = await Promise.all(createdTasksPromises);
-
-    // Populate assignedTo and assignedBy for the response
-    const populatedTasks = await Task.find({ _id: { $in: savedTasks.map(t => t._id) } })
-                                     .populate('assignedTo', 'name email role')
-                                     .populate('assignedBy', 'name email role');
-
-
-    res.status(201).json({
-      message: `${populatedTasks.length} AI-suggested tasks created successfully.`,
-      tasks: populatedTasks,
-    });
-
-  } catch (err: any) {
-    handleError(res, err);
-  }
-};
 
 // Helper function for common error handling
 const handleError = (res: Response, error: any): void => {
@@ -202,35 +133,47 @@ export const getTask = async (req: TypedRequest<any, TaskParams>, res: Response)
 };
 
 // Update a task
-export const updateTask = async (req: TypedRequest<Partial<TaskBody>, TaskParams>, res: Response): Promise<void> => {
+export const updateTask = async (req: UserRequest, res: Response): Promise<void> => { // Assuming TaskParams in UserRequest
   try {
-    // Handle date conversion if deadline is provided
-    const updateData: Partial<{ [key: string]: any }> = { ...req.body };
-    if (req.body.deadline) {
-      updateData.deadline = new Date(req.body.deadline);
-    }
-    
+    const { taskID } = req.params as unknown as TaskParams; // Cast if params are not directly on UserRequest type
+    const updateData: Partial<any> = { ...req.body };
 
-    // Process reminder data
+    if (req.body.hasOwnProperty('assignedTo') && req.body.assignedTo === null) {
+        updateData.assignedTo = null;
+    }
+    if (req.body.hasOwnProperty('description') && req.body.description === null) {
+        updateData.description = null; 
+    }
+     if (req.body.hasOwnProperty('priority') && req.body.priority === null) {
+        updateData.priority = null;
+    }
+
+
     if (req.body.reminder) {
       updateData.reminder = {
         start_date: req.body.reminder.start_date ? new Date(req.body.reminder.start_date) : undefined,
         end_date: req.body.reminder.end_date ? new Date(req.body.reminder.end_date) : undefined,
         times_of_day: req.body.reminder.times_of_day || [],
-        recurrence_rule: req.body.reminder.recurrence_rule || undefined
+        recurrence_rule: req.body.reminder.recurrence_rule || undefined,
       };
+      if (Object.keys(req.body.reminder).length === 0) {
+        updateData.reminder = undefined; // Or $unset: { reminder: 1 } in MongoDB update
+      }
+    } else if (req.body.hasOwnProperty('reminder') && req.body.reminder === null) {
+        updateData.reminder = undefined; 
     }
+
+
     const task = await Task.findByIdAndUpdate(
-      req.params.taskID,
-      { $set: updateData },
-      { new: true }
-    ).populate('assignedTo', 'name email role');
-    
+      taskID,
+      { $set: updateData }, // Use $set to only update provided fields
+      { new: true, runValidators: true }
+    ).populate('assignedTo', 'name email role')
+     .populate('assignedBy', 'name email role');
+
     if (!task) {
-      res.status(404).json({ message: 'Task not found' });
-      return;
-    }  
-    
+      return handleError(res, new Error('Task not found for update.'));
+    }
     res.json(task);
   } catch (err: any) {
     handleError(res, err);

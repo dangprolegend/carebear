@@ -1,6 +1,5 @@
 import express, { Router } from 'express';
 import { 
-  createAiGeneratedTasks,
   createTask, 
   getTask, 
   updateTask, 
@@ -13,9 +12,6 @@ import {
 import { canManageTasks, hasTaskPermission, isAdmin, canManageSpecificTask } from '../middlewares/permissions';
 
 const router: Router = express.Router();
-//Create new task, using AI (carebear only) 
-router.post('/ai_generate', canManageTasks, createAiGeneratedTasks); // Use appropriate middleware
-
 // Create new task (carebear only)
 router.post('/', canManageTasks, createTask);
 
