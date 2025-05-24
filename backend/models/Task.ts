@@ -28,7 +28,7 @@ const taskSchema: Schema = new Schema({
   escalated: { type: Boolean, default: false }
 }, {
   timestamps: true // Adds createdAt and updatedAt fields automatically
-
+});
 
 const Task = mongoose.model<ITask>('Task', taskSchema);
 export default Task;

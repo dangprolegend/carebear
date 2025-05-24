@@ -1,7 +1,9 @@
 import { Response } from 'express';
-import { TypedRequest } from '../types/express'; 
+import { TypedRequest, UserRequest } from '../types/express'; 
 import { getTextFromImage } from '../services/ocrService'; 
-import { generateTaskSuggestions } from '../services/llmService'; 
+import { generateTaskSuggestions, AiTaskSuggestion } from '../services/llmService'; 
+import User from '../models/User';
+import Task from '../models/Task';
 
 interface AiSuggestBody {
   userID: string;
@@ -10,7 +12,7 @@ interface AiSuggestBody {
   image_base64?: string; 
 }
 
-export const suggestTasksFromInput = async (req: TypedRequest<AiSuggestBody>, res: Response): Promise<void> => {
+export const suggestTasksFromInput = async (req: UserRequest, res: Response): Promise<void> => {
   try {
     const { userID, groupID, prompt_text, image_base64 } = req.body;
 
@@ -66,7 +68,7 @@ export const suggestTasksFromInput = async (req: TypedRequest<AiSuggestBody>, re
       - "recurrence_rule": A string describing the recurrence. Use simple terms like "DAILY", "WEEKLY", "MONTHLY", "NONE", or a more specific iCalendar RRULE if applicable (e.g., "FREQ=WEEKLY;BYDAY=MO,WE,FR"). If no recurrence, use "NONE" or null.
       - "assignedTo": This MUST be null.
       - "priority": This can strictly either be 'low','high' or null. You can suggest.
-      Based on the input, also try to suggest 1-2 other relevant ancillary tasks if appropriate (e.g., "Refill prescription for [Medicine Name]", "Schedule follow-up appointment with doctor"). These ancillary tasks should also follow the same JSON object structure.
+      Based on the input, also try to suggest 4-5 other relevant ancillary tasks if appropriate (e.g., "Refill prescription for [Medicine Name]", "Schedule follow-up appointment with doctor"). These ancillary tasks should also follow the same JSON object structure.
       Return your entire response as 1 or many JSONs object depends on how many task you think of and suggest. Each with one top-level key:: "tasks". The value of "tasks" MUST be an array of these task JSON objects. Do not include any other text or explanation outside of the JSON object.
       User's Input:
       """
@@ -74,11 +76,62 @@ export const suggestTasksFromInput = async (req: TypedRequest<AiSuggestBody>, re
       """
     `;
 
-    const suggestions = await generateTaskSuggestions(llmPrompt); 
-    res.json(suggestions); 
+    const aiSuggestedTasks: AiTaskSuggestion[] = await generateTaskSuggestions(llmPrompt); 
+    if (!aiSuggestedTasks || aiSuggestedTasks.length === 0) {
+      res.status(200).json({ message: "AI processed the input but did not suggest any tasks to create.", tasks: [] });
+      return;
+    }
+    
+    const creator = await User.findById(userID);
+    if (!creator) {
+      res.status(400).json({ message: 'User initiating task creation not found (creator check).' });
+      return;
+    }
+
+
+  const createdTasksPromises = aiSuggestedTasks.map(async (aiTask) => {
+      let validAssigneeId: string | undefined = undefined;
+      if (aiTask.assignedTo) { // AI currently defaults assignedTo to null
+        const assignee = await User.findById(aiTask.assignedTo) as (typeof User.prototype & { _id: any }) | null;
+        if (assignee) {
+          validAssigneeId = assignee._id.toString();
+        } else {
+          console.warn(`AI Task: Suggested assignee ID ${aiTask.assignedTo} not found for task "${aiTask.title}". Task will be unassigned.`);
+        }
+      }
+
+      const reminderDataFormatted = {
+        start_date: aiTask.start_date ? new Date(aiTask.start_date) : undefined,
+        end_date: aiTask.end_date ? new Date(aiTask.end_date) : undefined,
+        times_of_day: aiTask.times_of_day && aiTask.times_of_day.length > 0 ? aiTask.times_of_day : [],
+        recurrence_rule: aiTask.recurrence_rule || undefined,
+      };
+
+      const newTask = new Task({
+        title: aiTask.title,
+        groupID,
+        assignedBy: userID,
+        assignedTo: validAssigneeId, // Use validated assignee ID
+        description: aiTask.description,
+        priority: aiTask.priority || 'medium',
+        reminder: reminderDataFormatted || null,
+        status: 'pending',
+      });
+      return newTask.save();
+    });
+
+    const savedTasks = await Promise.all(createdTasksPromises);
+    const populatedTasks = await Task.find({ _id: { $in: savedTasks.map(t => t._id) } })
+                                     .populate('assignedTo', 'name email role')
+                                     .populate('assignedBy', 'name email role');
+
+    res.status(201).json({
+      message: `${populatedTasks.length} tasks suggested by AI were created successfully.`,
+      tasks: populatedTasks,
+    });
 
   } catch (error: any) {
-    console.error('AI Suggestion Controller Error:', error);
-    res.status(500).json({ error: `Failed to get AI suggestions: ${error.message}` });
+    console.error('Error in processAndCreateAiTasks controller:', error);
+    res.status(500).json({ error: `Failed to process AI input and create tasks. ${error.message || 'Unknown error'}` });
   }
 };

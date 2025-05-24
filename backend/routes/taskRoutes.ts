@@ -13,6 +13,7 @@ import { canManageTasks, hasTaskPermission, isAdmin, canManageSpecificTask } fro
 
 const router: Router = express.Router();
 
+
 /**
  * @swagger
  * /api/tasks:
@@ -50,7 +51,10 @@ const router: Router = express.Router();
  *                 updatedAt:
  *                   type: string
  */
-router.post('/', createTask);
+
+// Create new task (carebear only)
+router.post('/', canManageTasks, createTask);
+
 
 /**
  * @swagger

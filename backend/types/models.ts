@@ -32,6 +32,7 @@ export interface IGroup extends Document {
 export interface IMember extends Document {
   userID: Types.ObjectId | string; // Reference to User _id
   groupID: Types.ObjectId | string; // Reference to Group _id
+  role: 'admin' | 'caregiver' | 'carereceiver';
 }
 
 export interface IReminder_setup {
