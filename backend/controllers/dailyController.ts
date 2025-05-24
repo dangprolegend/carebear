@@ -148,3 +148,108 @@ export const getTodayStatus = async (
     res.status(500).json({ error: err.message });
   }
 };
+
+// Get status history for user (with pagination)
+export const getStatusHistory = async (
+  req: TypedRequest<any, UserParams, StatusQueryParams>, 
+  res: Response
+): Promise<void> => {
+  try {
+    const { userID } = req.params;
+    const page = parseInt(req.query.page || '1');
+    const limit = parseInt(req.query.limit || '30');
+    const skip = (page - 1) * limit;
+
+    const userStatus = await Daily.findOne({ userID: userID });
+    
+    if (!userStatus || !userStatus.statusHistory.length) {
+      res.json({
+        data: [],
+        pagination: {
+          currentPage: page,
+          totalPages: 0,
+          totalRecords: 0,
+          hasNextPage: false,
+          hasPrevPage: false
+        }
+      });
+      return;
+    }
+
+    // Sort by date descending (most recent first)
+    const sortedHistory = userStatus.statusHistory
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(skip, skip + limit);
+
+    const total = userStatus.statusHistory.length;
+
+    res.json({
+      data: sortedHistory,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalRecords: total,
+        hasNextPage: page < Math.ceil(total / limit),
+        hasPrevPage: page > 1
+      }
+    });
+
+  } catch (err: any) {
+    console.error('Error getting status history:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get status statistics for user (for daily streaks and could be helpful for future AI analysis)
+export const getStatusStats = async (
+  req: TypedRequest<any, UserParams, StatusQueryParams>, 
+  res: Response
+): Promise<void> => {
+  try {
+    const { userID } = req.params;
+    const days = parseInt(req.query.days || '7');
+    
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    startDate.setHours(0, 0, 0, 0);
+
+    const userStatus = await Daily.findOne({ userID: userID });
+    
+    if (!userStatus) {
+      res.json({
+          period: `${days} days`,
+          totalEntries: 0,
+          moodDistribution: {},
+          bodyDistribution: {},
+          recentEntries: []
+      });
+      return;
+    }
+
+    // Filter status history for the specified period
+    const recentStatuses = userStatus.statusHistory.filter(status => 
+      new Date(status.date) >= startDate
+    ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Calculate statistics
+    const moodStats: Record<string, number> = {};
+    const bodyStats: Record<string, number> = {};
+    
+    recentStatuses.forEach(status => {
+      moodStats[status.mood] = (moodStats[status.mood] || 0) + 1;
+      bodyStats[status.body] = (bodyStats[status.body] || 0) + 1;
+    });
+
+    res.json({
+        period: `${days} days`,
+        totalEntries: recentStatuses.length,
+        moodDistribution: moodStats,
+        bodyDistribution: bodyStats,
+        recentEntries: recentStatuses.slice(-5)
+    });
+
+  } catch (err: any) {
+    console.error('Error getting status statistics:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
