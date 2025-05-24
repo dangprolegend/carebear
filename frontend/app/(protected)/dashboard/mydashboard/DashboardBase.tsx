@@ -53,10 +53,8 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
   const taskDate = new Date(task.datetime);
   console.log('Task Date:', taskDate, 'Selected Date:', selectedDate);
 
-  const API_URL = 'https://ea3e-98-118-49-220.ngrok-free.app'; // Use your ngrok URL here
-
   // Example fetch:
-  fetch(`${API_URL}/api/tasks/682ed36cb380744bd1ed4559`)
+  fetch(`${process.env.NGROK_API_URL}/api/tasks/682ed36cb380744bd1ed4559`)
     .then(res => res.json())
     .then(data => console.log(data));
 
@@ -66,7 +64,7 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
     taskDate.getDate() === selectedDate.getDate()
   );
 };
-=======
+
 
   // Filter tasks for the selected date
   const filteredTasks = tasks.filter(isTaskForSelectedDate);
