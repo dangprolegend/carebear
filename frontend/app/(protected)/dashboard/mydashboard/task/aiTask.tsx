@@ -16,7 +16,10 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { useAuth } from '@clerk/clerk-expo';
 import axios from 'axios';
 
-const YOUR_BACKEND_API_BASE_URL = 'http://localhost:3000' ; 
+
+
+
+const YOUR_BACKEND_API_BASE_URL = "";
 
 const AiTaskInputScreen = () => {
   const navigation = useNavigation();
@@ -91,11 +94,11 @@ const AiTaskInputScreen = () => {
       userID: currentUserID, // Your backend's aiController expects userID from req.user._id after auth
       groupID: currentGroupID,
       prompt_text: promptText,
-      image_base64: imageBase64, // Send raw base64; controller will handle prefix if needed for OCR service
+      image_base64: imageBase64, 
     };
 
     try {
-      const response = await fetch(`${YOUR_BACKEND_API_BASE_URL}/api/ai/suggest_tasks`, {
+      const response = await fetch(`${YOUR_BACKEND_API_BASE_URL}/api/ai/suggest-tasks`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -103,6 +106,10 @@ const AiTaskInputScreen = () => {
         },
         body: JSON.stringify(requestBody),
       });
+      const responseText = await response.text(); // Get response as text first
+        console.log("Raw response status:", response.status);
+        console.log("Raw response headers:", JSON.stringify(response.headers)); // May or may not be super useful here
+        console.log("Raw response text from server:", responseText);
 
       const responseData = await response.json();
 
@@ -110,7 +117,7 @@ const AiTaskInputScreen = () => {
         Alert.alert(
           "Tasks Generated!",
           `${responseData.tasks?.length || 0} task(s) were created by AI. You can review them on your dashboard.`,
-          [{ text: "OK" , onPress: () => navigation.goBack() }] 
+          [{ text: "OK"  }] 
            
         );
         console.log("AI Generated and Created Tasks:", responseData.tasks);
