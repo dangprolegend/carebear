@@ -98,3 +98,53 @@ export const submitDailyStatus = async (
     res.status(500).json({ error: err.message });
   }
 };
+
+// Check if user has submitted status today
+export const checkTodayStatus = async (
+  req: TypedRequest<any, UserParams>, 
+  res: Response
+): Promise<void> => {
+  try {
+    const { userID } = req.params;
+    const hasSubmitted = await Daily.hasUserSubmittedToday(userID);
+
+    res.json({
+      hasSubmittedToday: hasSubmitted
+    });
+
+  } catch (err: any) {
+    console.error('Error checking daily status:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Get today's status for user
+export const getTodayStatus = async (
+  req: TypedRequest<any, UserParams>, 
+  res: Response
+): Promise<void> => {
+  try {
+    const { userID } = req.params;
+    const todayStatus = await Daily.getTodayStatus(userID);
+
+    if (!todayStatus) {
+      res.status(404).json({
+        success: false,
+        message: 'No status found for today'
+      });
+      return;
+    }
+
+    res.json({
+        id: todayStatus._id,
+        mood: todayStatus.mood,
+        body: todayStatus.body,
+        date: todayStatus.date,
+        timestamp: todayStatus.timestamp
+    });
+
+  } catch (err: any) {
+    console.error('Error getting today\'s status:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
