@@ -12,6 +12,7 @@ type DashboardBaseProps = {
   title?: string; // Title for the dashboard
 };
 
+
 const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }: DashboardBaseProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showTodaySchedule, setShowTodaySchedule] = useState(true);
@@ -49,14 +50,21 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
   };
 
   const isTaskForSelectedDate = (task: Task) => {
-    const taskDate = new Date(task.datetime);
-    console.log('Task Date:', taskDate, 'Selected Date:', selectedDate);
-    return (
-      taskDate.getFullYear() === selectedDate.getFullYear() &&
-      taskDate.getMonth() === selectedDate.getMonth() &&
-      taskDate.getDate() === selectedDate.getDate()
-    );
-  };
+  const taskDate = new Date(task.datetime);
+  console.log('Task Date:', taskDate, 'Selected Date:', selectedDate);
+
+  // Example fetch:
+  fetch(`${process.env.NGROK_API_URL}/api/tasks/682ed36cb380744bd1ed4559`)
+    .then(res => res.json())
+    .then(data => console.log(data));
+
+  return (
+    taskDate.getFullYear() === selectedDate.getFullYear() &&
+    taskDate.getMonth() === selectedDate.getMonth() &&
+    taskDate.getDate() === selectedDate.getDate()
+  );
+};
+
 
   // Filter tasks for the selected date
   const filteredTasks = tasks.filter(isTaskForSelectedDate);
