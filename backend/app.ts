@@ -9,7 +9,6 @@ import connectDB from './config/db';
 // Import routes
 import userRoutes from './routes/userRoutes';
 import groupRoutes from './routes/groupRoutes';
-import memberRoutes from './routes/memberRoutes';
 import taskRoutes from './routes/taskRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
@@ -72,7 +71,6 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/webhooks', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/groups', groupRoutes);
-app.use('/api/groups', memberRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
