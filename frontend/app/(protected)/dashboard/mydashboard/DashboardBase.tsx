@@ -9,8 +9,8 @@ import {Link} from 'expo-router'
 
 type DashboardBaseProps = {
   tasks: Task[];
-  showHealthSection?: boolean; // Whether to show the health section
-  title?: string; // Title for the dashboard
+  showHealthSection?: boolean; 
+  title?: string; 
 };
 
 
@@ -59,11 +59,11 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
   //   .then(res => res.json())
   //   .then(data => console.log(data));
 
-  // return (
-  //   taskDate.getFullYear() === selectedDate.getFullYear() &&
-  //   taskDate.getMonth() === selectedDate.getMonth() &&
-  //   taskDate.getDate() === selectedDate.getDate()
-  // );
+  return (
+    taskDate.getFullYear() === selectedDate.getFullYear() &&
+    taskDate.getMonth() === selectedDate.getMonth() &&
+    taskDate.getDate() === selectedDate.getDate()
+  );
 };
 
 
