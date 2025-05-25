@@ -3,13 +3,13 @@ import { Document, Types } from 'mongoose';
 export interface IUser extends Document {
   username?: string; // Optional since it can be auto-generated
   email: string;
-  name?: string;
-  image?: string;
+  name?: string;  image?: string;
   clerkID: string;
   firstName?: string;
   lastName?: string;
   dateOfBirth?: Date;
-  gender?: 'Female' | 'Male';  weight?: string;
+  gender?: 'Female' | 'Male';
+  weight?: string;
   height?: string;
   groupID?: Types.ObjectId | string;
 <<<<<<< HEAD
