@@ -1,7 +1,9 @@
 import { Response, NextFunction } from 'express';
-import Task from '../models/Task';
+import { Task } from '../models/Task';
 import User from '../models/User';
-import { TypedRequest, UserRequest } from '../types/express';
+import Group from '../models/Group';
+import { TypedRequest } from '../types/express';
+import { getUserRoleInGroup, getUserIdsByRoleInGroup, getUserIdsByRolesInGroup } from './utils/groupRoleUtils';
 
 interface Reminder_setup {
   start_date?: string;
@@ -96,7 +98,7 @@ export const createTask = async (req: TypedRequest<TaskBody>, res: Response): Pr
     
     const newTask = new Task({
       title,
-      groupID,
+      group: groupID,
       assignedBy,
       assignedTo: assignedTo || undefined,
       description,
@@ -133,9 +135,9 @@ export const getTask = async (req: TypedRequest<any, TaskParams>, res: Response)
 };
 
 // Update a task
-export const updateTask = async (req: UserRequest, res: Response): Promise<void> => { // Assuming TaskParams in UserRequest
+export const updateTask = async (req: any, res: Response): Promise<void> => {
   try {
-    const { taskID } = req.params as unknown as TaskParams; // Cast if params are not directly on UserRequest type
+    const { taskID } = req.params as unknown as TaskParams;
     const updateData: Partial<any> = { ...req.body };
 
     if (req.body.hasOwnProperty('assignedTo') && req.body.assignedTo === null) {
@@ -144,10 +146,9 @@ export const updateTask = async (req: UserRequest, res: Response): Promise<void>
     if (req.body.hasOwnProperty('description') && req.body.description === null) {
         updateData.description = null; 
     }
-     if (req.body.hasOwnProperty('priority') && req.body.priority === null) {
+    if (req.body.hasOwnProperty('priority') && req.body.priority === null) {
         updateData.priority = null;
     }
-
 
     if (req.body.reminder) {
       updateData.reminder = {
@@ -157,16 +158,15 @@ export const updateTask = async (req: UserRequest, res: Response): Promise<void>
         recurrence_rule: req.body.reminder.recurrence_rule || undefined,
       };
       if (Object.keys(req.body.reminder).length === 0) {
-        updateData.reminder = undefined; // Or $unset: { reminder: 1 } in MongoDB update
+        updateData.reminder = undefined;
       }
     } else if (req.body.hasOwnProperty('reminder') && req.body.reminder === null) {
         updateData.reminder = undefined; 
     }
 
-
     const task = await Task.findByIdAndUpdate(
       taskID,
-      { $set: updateData }, // Use $set to only update provided fields
+      { $set: updateData },
       { new: true, runValidators: true }
     ).populate('assignedTo', 'name email role')
      .populate('assignedBy', 'name email role');
@@ -298,46 +298,37 @@ export const getUserTasks = async (req: TypedRequest<any, { userID: string }>, r
 export const checkOverdueTasks = async (): Promise<void> => {
   try {
     const now = new Date();
-    
     // Find non-completed tasks with passed deadlines that haven't been escalated
     const overdueTasks = await Task.find({
       deadline: { $lt: now },
       status: { $ne: 'done' },
       escalated: { $ne: true }
-    }).populate('assignedTo').populate('assignedBy');
-    
+    });
     for (const task of overdueTasks) {
       // Mark as escalated to prevent duplicate notifications
       task.escalated = true;
       await task.save();
-      // Find appropriate backup users based on role hierarchy
+      // Find appropriate backup users based on role hierarchy (per-group)
       let backupUserIds: string[] = [];
-      if (!task.assignedTo) continue;
-      // Ensure assignedTo is populated as a User document
-      const assignedToUser = typeof task.assignedTo === 'object' && task.assignedTo !== null && 'role' in task.assignedTo ? task.assignedTo : await User.findById(task.assignedTo);
-      if (!assignedToUser) continue;
-      
-      switch(assignedToUser.role) {
-        case 'care_bear':
-          // Escalate to care moms and admins
-          const caregivers = await User.find({ 
-            role: { $in: ['care_mom', 'admin'] },
-            _id: { $ne: assignedToUser._id }
-          });
-          backupUserIds = caregivers.map(user => user._id && typeof user._id === 'object' && 'toString' in user._id ? user._id.toString() : String(user._id));
-          break;
-          
-        case 'care_mom':
-          // Escalate to admins
-          const admins = await User.find({ role: 'admin' });
-          backupUserIds = admins.map(user => user._id && typeof user._id === 'object' && 'toString' in user._id ? user._id.toString() : String(user._id));
-          break;
-          
-        default:
-          // No escalation for admin tasks
-          break;
+      if (!task.assignedTo || !task.group) continue;
+      const groupId = task.group.toString();
+      const assignedToUserId = task.assignedTo.toString();
+      const assignedToRole = await getUserRoleInGroup(assignedToUserId, groupId);
+      if (!assignedToRole) continue;
+      if (assignedToRole === 'caregiver') {
+        // Escalate to admins in the same group
+        backupUserIds = await getUserIdsByRoleInGroup(groupId, 'admin');
+      } else if (assignedToRole === 'carereceiver') {
+        // Escalate to caregivers and admins in the same group
+        backupUserIds = [
+          ...(await getUserIdsByRoleInGroup(groupId, 'caregiver')),
+          ...(await getUserIdsByRoleInGroup(groupId, 'admin')),
+        ].filter(id => id !== assignedToUserId);
+      } else if (assignedToRole === 'admin') {
+        // No escalation for admin tasks
+        backupUserIds = [];
       }
-      
+      // TODO: Send notifications to backupUserIds as needed
     }
   } catch (error) {
     console.error('Error checking overdue tasks:', error);
