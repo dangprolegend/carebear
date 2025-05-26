@@ -6,7 +6,6 @@ import { FeedItemCard } from '~/components/ui/feed-item-card';
 import { MoodIcon } from '~/components/ui/mood-icon';
 import { EmptyState } from '~/components/ui/empty-state';
 
-// Mock data - replace with actual API calls
 const mockFeedData = [
   {
     id: '1',
@@ -83,13 +82,11 @@ const activityFilterOptions = [
   { label: 'Tasks Only', value: 'task' },
 ];
 
-// Helper function to group items by date
 interface DateGroup {
   dateLabel: string;
   items: Array<typeof mockFeedData[0]>;
 }
 
-// Helper function to check if a date is today
 function isToday(date: Date): boolean {
   const today = new Date();
   return date.getDate() === today.getDate() && 
@@ -131,18 +128,15 @@ function groupItemsByDate(items: Array<typeof mockFeedData[0]>): DateGroup[] {
     groups[dateLabel].push(item);
   });
 
-  // Convert the groups object to an array and sort by date
   return Object.keys(groups).map(dateLabel => ({
     dateLabel,
     items: groups[dateLabel]
   })).sort((a, b) => {
-    // Sort in reverse chronological order (newest first)
     if (a.dateLabel === 'Today') return -1;
     if (b.dateLabel === 'Today') return 1;
     if (a.dateLabel === 'Yesterday') return -1;
     if (b.dateLabel === 'Yesterday') return 1;
     
-    // For other dates, compare the first item's timestamp
     return b.items[0].timestamp.getTime() - a.items[0].timestamp.getTime();
   });
 }
@@ -152,20 +146,16 @@ export default function Feed() {
   const [filteredData, setFilteredData] = useState(mockFeedData);
   const [refreshing, setRefreshing] = useState(false);
   
-  // Filter states
   const [timeFilter, setTimeFilter] = useState('all');
   const [peopleFilter, setPeopleFilter] = useState('all');
   const [activityFilter, setActivityFilter] = useState('all');
   
-  // Quick mood selector state
   const [showMoodSelector, setShowMoodSelector] = useState(false);
   const [showMoodPopup, setShowMoodPopup] = useState(false);
   const [selectedMood, setSelectedMood] = useState<'happy' | 'excited' | 'sad' | 'angry' | 'nervous' | null>(null);
     // Check if user has been away for at least an hour (for the mood popup)
   useEffect(() => {
     try {
-      // In React Native, we should use AsyncStorage, but for this example we'll simulate the check
-      // In a real app, you would use AsyncStorage.getItem() and AsyncStorage.setItem()
       const lastLoginTime = '0'; // Simulate first login to show the popup
       const currentTime = Date.now();
       
@@ -176,8 +166,6 @@ export default function Feed() {
         }, 500);
       }
       
-      // Update last login time
-      // AsyncStorage.setItem('lastLoginTime', currentTime.toString());
     } catch (error) {
       console.error('Error accessing storage:', error);
     }
@@ -190,7 +178,6 @@ export default function Feed() {
   const applyFilters = () => {
     let filtered = [...feedData];
 
-    // Time filter
     if (timeFilter !== 'all') {
       const now = new Date();
       const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -211,26 +198,20 @@ export default function Feed() {
       });
     }
 
-    // Activity filter
     if (activityFilter !== 'all') {
       filtered = filtered.filter(item => item.type === activityFilter);
     }
-
-    // People filter would need actual user data to implement properly
-    // For now, it's a placeholder
 
     setFilteredData(filtered);
   };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    // Simulate API call
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
   };
   const handleMoodSubmit = (mood: 'happy' | 'excited' | 'sad' | 'angry' | 'nervous') => {
-    // In a real app, this would submit to the backend
     const newMoodEntry = {
       id: Date.now().toString(),
       type: 'mood' as const,
@@ -245,7 +226,6 @@ export default function Feed() {
     setShowMoodSelector(false);
   };  return (
     <View className="flex-1 bg-gray-50">
-      {/* Mood Popup Modal */}
       {showMoodPopup && (
         <Modal
           visible={showMoodPopup}
@@ -306,7 +286,6 @@ export default function Feed() {
         </Modal>
       )}
       
-      {/* Quick Action Bar */}
       <View className="bg-white border-b border-gray-200 px-4 py-3 flex-row items-center justify-between">
         <Text className="text-lg font-semibold text-gray-900 font-['Lato']">Activity Feed</Text>
         
@@ -322,7 +301,7 @@ export default function Feed() {
         </Pressable>
       </View>
       
-      {/* Mood Selector Sheet */}
+      {/* Mood Selector*/}
       {showMoodSelector && (
         <Modal
           visible={showMoodSelector}
@@ -435,7 +414,6 @@ export default function Feed() {
           />
         ) : (
           <View className="px-4">
-              {/* Group items by date */}
             {groupItemsByDate(filteredData).map((group, groupIndex) => (
               <View key={group.dateLabel} className="mb-6">
                   <View className="pl-3 relative">
@@ -452,7 +430,6 @@ export default function Feed() {
                       isLast={index === group.items.length - 1 && groupIndex === groupItemsByDate(filteredData).length - 1}
                       isFirst={index === 0 && groupIndex === 0}
                       onPress={() => {
-                        // Handle item press - could navigate to details
                         console.log('Pressed item:', item.id);
                       }}
                     />
