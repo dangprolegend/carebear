@@ -119,18 +119,12 @@ const AiTaskInputScreen = () => {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-4 pt-12 pb-4 border-b border-slate-200 bg-white">
-        {/* Back button or placeholder for it if this is a modal/part of a stack */}
-        <View className="w-8">
-          {/* <Pressable onPress={() => router.back()}>
-            <MaterialIcons name="arrow-back-ios" size={24} color="black" />
-          </Pressable> */}
-        </View>
-        <Text className="text-lg font-semibold text-slate-800">Create New Task</Text>
-        <Pressable onPress={() => router.back()} className="p-1">
+      <View className="flex-row items-center px-1 border-b border-black-200 bg-white justify-between">
+        <View className="w-8" />
+        <Text className="text-lg font-bold text-black-800">Create New Task</Text>
+        <Pressable onPress={() => router.back()} className="p-4 ml-auto">
           <MaterialIcons name="close" size={26} color="black" />
-        </Pressable>
+        </Pressable>  
       </View>
 
       <ScrollView
@@ -139,11 +133,11 @@ const AiTaskInputScreen = () => {
         keyboardShouldPersistTaps="handled"
       >
         <View className="flex-1">
-          <Text className="text-sm text-slate-600 mb-3 text-center px-4">
+          <Text className="text-sm text-black-600 mb-3 text-center px-4">
             Describe the task you'd like AI to help with
           </Text>
           <TextInput
-            className="bg-slate-50 border border-slate-300 rounded-xl p-4 text-base min-h-[100px] text-slate-900 mb-5"
+            className="bg-white-50 border border-orange-100 rounded-xl p-4 text-base min-h-[100px] text-gray-900 mb-5"
             placeholder="My grandmother needs to take Osteoarthritis around 11:30 am and 6pm everyday."
             placeholderTextColor="#9ca3af"
             value={promptText}
@@ -171,11 +165,11 @@ const AiTaskInputScreen = () => {
           )}
 
           <Pressable
-            className={`flex-row justify-center items-center py-4 rounded-xl mt-1 mb-3 ${isLoading ? 'bg-orange-300' : 'bg-orange-500 active:bg-orange-600'}`}
-            onPress={handleSubmitToAI} // This will use promptText and/or imageBase64
+            className={`flex-row justify-center items-center py-4 rounded-xl mt-1 mb-3 ${isLoading ? 'bg-grey' : 'bg-black active:bg-grey'}`}
+            onPress={handleSubmitToAI} 
             disabled={isLoading}
           >
-            {isLoading && !selectedImageUri ? ( // Show loading only if not also showing image loading
+            {isLoading && !selectedImageUri ? ( 
               <ActivityIndicator size="small" color="white" className="mr-2"/>
             ) : (
               <FontAwesome5 name="magic" size={18} color="white" className="mr-2" />
@@ -185,29 +179,28 @@ const AiTaskInputScreen = () => {
             </Text>
           </Pressable>
 
-          <Text className="text-center text-sm text-slate-500 my-3">
+          <Text className="text-center text-sm text-black-500 my-3">
             Or click the button below to scan your medications and let AI auto-fill the details.
           </Text>
 
           <Pressable
-            className="flex-row justify-center items-center py-3 rounded-xl border-2 border-orange-500 mb-5 active:bg-orange-50"
-            onPress={pickImage} // This sets the image, user then presses "Generate Task with AI"
+            className="flex-row justify-center items-center py-3 rounded-xl border-2 mb-5 bg-black"
+            onPress={pickImage} 
             disabled={isLoading}
           >
-            <MaterialIcons name="qr-code-scanner" size={22} color="#E65100" className="mr-2" />
-            <Text className="text-orange-600 text-base font-semibold">
+            <MaterialIcons name="qr-code-scanner" size={22} color="white" className="mr-2" />
+            <Text className="text-white text-base font-semibold">
               Scan Medication / Upload Image
             </Text>
           </Pressable>
 
           {/* Placeholder for Manual Input Section */}
-          <View className="mt-4 border-t border-slate-300 pt-4">
-            <Text className="text-center text-sm text-slate-500 mb-4">
+          <View className="mt-1 pt-4">
+            <Text className="text-center text-sm text-black-500 mb-4">
               Or fill manually below
             </Text>
-            {/* Tab-like structure placeholder */}
             <View className="flex-row justify-around mb-4">
-              {['Task 1', 'Task 2', 'Task 3'].map((tab) => ( // Simplified tabs
+              {['Task 1', 'Task 2', 'Task 3'].map((tab) => ( 
                 <Pressable key={tab} className="px-4 py-2">
                   <Text className="text-slate-500">{tab}</Text>
                 </Pressable>
@@ -223,7 +216,6 @@ const AiTaskInputScreen = () => {
               placeholder="Assigned To (Manual Input)"
               placeholderTextColor="#9ca3af"
             />
-            {/* Add more manual input fields here as needed */}
           </View>
         </View>
       </ScrollView>
