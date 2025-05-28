@@ -18,12 +18,10 @@ export default function WelcomeScreen() {
           // Step 1: Fetch userID using clerkID
           const userResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/clerk/${userId}`);
           const userID = userResponse.data.userID;
-          console.log('Fetched userID for clerkID:', userID);
 
           // Step 2: Get the user's groupID
           const groupResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/group`);
           const { groupID } = groupResponse.data;
-          console.log('User groupID status:', groupID ? 'Has group' : 'No group');
 
           // Step 3: Redirect based on groupID status
           if (groupID) {

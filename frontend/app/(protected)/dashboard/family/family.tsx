@@ -1,8 +1,10 @@
-import { View, Text, Pressable, ScrollView, Alert } from 'react-native';
+import { View, Text, Pressable, ScrollView, Alert, ActivityIndicator, TouchableOpacity, Modal } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AddFamily from './add_family';
+import { useAuth } from '@clerk/clerk-expo';
+import axios from 'axios';
 
 // Define the FamilyMember type
 interface FamilyMember {
@@ -19,9 +21,18 @@ interface Family {
 }
 
 export default function Family() {
+  const { isSignedIn, userId } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('Family 1');
   const [modalVisible, setModalVisible] = useState(false);
+
+  // Daily status modal states
+  const [showDailyModal, setShowDailyModal] = useState(false);
+  const [selectedMood, setSelectedMood] = useState('');
+  const [selectedBodyFeeling, setSelectedBodyFeeling] = useState('');
+  const [isSubmittingStatus, setIsSubmittingStatus] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(true);
+  const [userID, setUserID] = useState(null);
   
   // Available families 
   const [availableFamilies, setAvailableFamilies] = useState<Family[]>([
@@ -36,6 +47,93 @@ export default function Family() {
     { name: 'Dad', age: 49, status: 'Currently alive and healthy' },
     { name: 'Sister', age: 19, status: 'Currently alive and healthy', isStarred: true },
   ];
+
+  const moods = [
+    { id: 'happy', emoji: '😊', label: 'Happy', value: 'happy' },
+    { id: 'excited', emoji: '🤩', label: 'Excited', value: 'excited' },
+    { id: 'sad',  emoji: '😢',label: 'Sad', value: 'sad' },
+    { id: 'angry',  emoji: '😠',label: 'Angry', value: 'angry' },
+    { id: 'nervous',  emoji: '😬',label: 'Nervous', value: 'nervous' },
+    { id: 'peaceful',  emoji: '🧘',label: 'Peaceful', value: 'peaceful' },
+  ];
+
+  const bodyFeelings = [
+    { id: 'energized',  emoji: '⚡',label: 'Energized', value: 'energized' },
+    { id: 'sore',  emoji: '💪',label: 'Sore', value: 'sore' },
+    { id: 'tired',  emoji: '😴',label: 'Tired', value: 'tired' },
+    { id: 'sick',  emoji: '🤒',label: 'Sick', value: 'sick' },
+    { id: 'relaxed',  emoji: '😌',label: 'Relaxed', value: 'relaxed' },
+    { id: 'tense',  emoji: '😣',label: 'Tense', value: 'tense' },
+  ];
+
+  // Check if user has submitted daily status
+  useEffect(() => {
+    const checkDailyStatus = async () => {
+      if (isSignedIn && userId) {
+        setIsCheckingStatus(true);
+        try {
+          // Step 1: Fetch userID using clerkID
+          const userResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/clerk/${userId}`);
+          const fetchedUserID = userResponse.data.userID;
+          setUserID(fetchedUserID);
+
+          // Step 2: Check if user has submitted today
+          const statusResponse = await axios.get(`https://carebear-backend.onrender.com/api/daily/check/${fetchedUserID}`);
+          
+          // If user hasn't submitted today, show the modal
+          if (!statusResponse.data.hasSubmittedToday) {
+            setShowDailyModal(true);
+          }
+        } catch (error) {
+          console.error('Error checking daily status:', error);
+          // Show modal on error to be safe
+          setShowDailyModal(true);
+        } finally {
+          setIsCheckingStatus(false);
+        }
+      }
+    };
+
+    checkDailyStatus();
+  }, [isSignedIn, userId]);
+
+  // Handle daily status submission
+  const handleSubmitDailyStatus = async () => {
+    if (!selectedMood || !selectedBodyFeeling) {
+      Alert.alert('Missing Information', 'Please select both your mood and body feeling.');
+      return;
+    }
+
+    if (!userID) {
+      Alert.alert('Error', 'User ID not found. Please try again.');
+      return;
+    }
+
+    try {
+      setIsSubmittingStatus(true);
+
+      // Submit daily status to backend (userID in endpoint, only mood and body fields)
+      await axios.post(`https://carebear-backend.onrender.com/api/daily/submit/${userID}`, {
+        mood: selectedMood,
+        body: selectedBodyFeeling,
+      });
+
+      // Reset selections
+      setSelectedMood('');
+      setSelectedBodyFeeling('');
+
+      // Hide modal
+      setShowDailyModal(false);
+
+      Alert.alert('Success', 'Your daily status has been updated!');
+    } catch (error) {
+      console.error('Error submitting daily status:', error);
+      Alert.alert('Error', 'Failed to update your status. Please try again.');
+    } finally {
+      setIsSubmittingStatus(false);
+    }
+  };
+
   
   const handleMemberPress = (member: FamilyMember) => {
     router.push({
@@ -72,6 +170,39 @@ export default function Family() {
     // Show success message
     Alert.alert('Success', `Family "${newFamily.name}" has been created`);
   };
+
+  const renderOptionButton = (
+    option: { id: string; emoji: string; label: string; value: string },
+    selectedValue: string,
+    onSelect: (value: string) => void
+  ) => (
+    <TouchableOpacity
+      key={option.id}
+      className={`px-4 py-2 rounded-lg border-2 m-1 ${
+        selectedValue === option.value 
+          ? 'border border-[##2A1800]' 
+          : 'border border-[#FAE5CA]'
+      }`}
+      onPress={() => onSelect(option.value)}
+    >
+      <View className='flex flex-col items-center'>
+      <Text className="text-2xl">{option.emoji}</Text>
+      <Text className="text-black font-lato text-base font-normal leading-6 tracking-[-0.1px]">
+        {option.label}
+      </Text>
+      </View>
+    </TouchableOpacity>
+  );
+
+  // Show loading screen while checking status
+  if (isCheckingStatus) {
+    return (
+      <View className="flex-1 justify-center items-center bg-gray-50">
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text className="mt-4 text-gray-600">Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1">
@@ -170,6 +301,60 @@ export default function Family() {
         onClose={() => setModalVisible(false)}
         onAddFamily={handleAddFamily}
       />
+
+      {/* Daily Status Modal */}
+      <Modal
+        visible={showDailyModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => {}} // Prevent closing with back button
+      >
+        <View className="flex-1 bg-[#AF9D86] bg-opacity-50 justify-center items-center">
+          <View className="bg-white flex w-[345px] p-6 flex-col items-center gap-6 rounded-lg">
+            <Text className="text-black text-center font-lato text-2xl font-extrabold leading-8 tracking-[0.3px]">Daily Check-in</Text>
+            <Text className="text-black text-center font-lato text-base font-normal leading-6 tracking-[-0.1px] mt-2">
+              Before you continue, let's check in on how you're feeling today!
+            </Text>
+
+            {/* Mood Section */}
+            <View className="w-full mb-6">
+              <Text className="text-lg font-semibold mb-3 text-center">How is your mood today?</Text>
+              <View className="flex-row flex-wrap justify-center">
+                {moods.map((mood) =>
+                  renderOptionButton(mood, selectedMood, setSelectedMood)
+                )}
+              </View>
+            </View>
+
+            {/* Body Feeling Section */}
+            <View className="w-full mb-6">
+              <Text className="text-lg font-semibold mb-3 text-center">How does your body feel?</Text>
+              <View className="flex-row flex-wrap justify-center">
+                {bodyFeelings.map((feeling) =>
+                  renderOptionButton(feeling, selectedBodyFeeling, setSelectedBodyFeeling)
+                )}
+              </View>
+            </View>
+
+            {/* Submit Button */}
+            <TouchableOpacity
+              className={`w-full py-4 rounded-full items-center mt-2 ${
+                (!selectedMood || !selectedBodyFeeling || isSubmittingStatus) 
+                  ? 'bg-gray-300' 
+                  : 'bg-[#2A1800]'
+              }`}
+              onPress={handleSubmitDailyStatus}
+              disabled={!selectedMood || !selectedBodyFeeling || isSubmittingStatus}
+            >
+              {isSubmittingStatus ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text className="text-white text-lg font-semibold">Done</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
