@@ -49,21 +49,21 @@ export default function Family() {
   ];
 
   const moods = [
-    { id: 'happy', label: '😊 Happy', value: 'happy' },
-    { id: 'excited', label: '🤩 Excited', value: 'excited' },
-    { id: 'sad', label: '😢 Sad', value: 'sad' },
-    { id: 'angry', label: '😠 Angry', value: 'angry' },
-    { id: 'nervous', label: '😬 Nervous', value: 'nervous' },
-    { id: 'peaceful', label: '🧘 Peaceful', value: 'peaceful' },
+    { id: 'happy', emoji: '😊', label: 'Happy', value: 'happy' },
+    { id: 'excited', emoji: '🤩', label: 'Excited', value: 'excited' },
+    { id: 'sad',  emoji: '😢',label: 'Sad', value: 'sad' },
+    { id: 'angry',  emoji: '😠',label: 'Angry', value: 'angry' },
+    { id: 'nervous',  emoji: '😬',label: 'Nervous', value: 'nervous' },
+    { id: 'peaceful',  emoji: '🧘',label: 'Peaceful', value: 'peaceful' },
   ];
 
   const bodyFeelings = [
-    { id: 'energized', label: '⚡ Energized', value: 'energized' },
-    { id: 'sore', label: '💪 Sore', value: 'sore' },
-    { id: 'tired', label: '😴 Tired', value: 'tired' },
-    { id: 'sick', label: '🤒 Sick', value: 'sick' },
-    { id: 'relaxed', label: '😌 Relaxed', value: 'relaxed' },
-    { id: 'tense', label: '😣 Tense', value: 'tense' },
+    { id: 'energized',  emoji: '⚡',label: 'Energized', value: 'energized' },
+    { id: 'sore',  emoji: '💪',label: 'Sore', value: 'sore' },
+    { id: 'tired',  emoji: '😴',label: 'Tired', value: 'tired' },
+    { id: 'sick',  emoji: '🤒',label: 'Sick', value: 'sick' },
+    { id: 'relaxed',  emoji: '😌',label: 'Relaxed', value: 'relaxed' },
+    { id: 'tense',  emoji: '😣',label: 'Tense', value: 'tense' },
   ];
 
   // Check if user has submitted daily status
@@ -172,24 +172,25 @@ export default function Family() {
   };
 
   const renderOptionButton = (
-    option: { id: string; label: string; value: string },
+    option: { id: string; emoji: string; label: string; value: string },
     selectedValue: string,
     onSelect: (value: string) => void
   ) => (
     <TouchableOpacity
       key={option.id}
-      className={`px-4 py-2 rounded-full border-2 m-1 ${
+      className={`px-4 py-2 rounded-lg border-2 m-1 ${
         selectedValue === option.value 
-          ? 'border-blue-500 bg-blue-500' 
-          : 'border-gray-300 bg-gray-100'
+          ? 'border border-[##2A1800]' 
+          : 'border border-[#FAE5CA]'
       }`}
       onPress={() => onSelect(option.value)}
     >
-      <Text className={`text-sm ${
-        selectedValue === option.value ? 'text-white font-semibold' : 'text-gray-700'
-      }`}>
+      <View className='flex flex-col items-center'>
+      <Text className="text-2xl">{option.emoji}</Text>
+      <Text className="text-black font-lato text-base font-normal leading-6 tracking-[-0.1px]">
         {option.label}
       </Text>
+      </View>
     </TouchableOpacity>
   );
 
@@ -308,10 +309,10 @@ export default function Family() {
         transparent={true}
         onRequestClose={() => {}} // Prevent closing with back button
       >
-        <View className="flex-1 bg-black bg-opacity-50 justify-center items-center">
-          <View className="bg-white m-5 rounded-3xl p-6 items-center shadow-lg max-h-4/5">
-            <Text className="text-2xl font-bold mb-2 text-center">Daily Check-in</Text>
-            <Text className="text-base text-gray-600 text-center mb-6">
+        <View className="flex-1 bg-[#AF9D86] bg-opacity-50 justify-center items-center">
+          <View className="bg-white flex w-[345px] p-6 flex-col items-center gap-6 rounded-lg">
+            <Text className="text-black text-center font-lato text-2xl font-extrabold leading-8 tracking-[0.3px]">Daily Check-in</Text>
+            <Text className="text-black text-center font-lato text-base font-normal leading-6 tracking-[-0.1px] mt-2">
               Before you continue, let's check in on how you're feeling today!
             </Text>
 
@@ -340,7 +341,7 @@ export default function Family() {
               className={`w-full py-4 rounded-full items-center mt-2 ${
                 (!selectedMood || !selectedBodyFeeling || isSubmittingStatus) 
                   ? 'bg-gray-300' 
-                  : 'bg-blue-500'
+                  : 'bg-[#2A1800]'
               }`}
               onPress={handleSubmitDailyStatus}
               disabled={!selectedMood || !selectedBodyFeeling || isSubmittingStatus}
@@ -348,7 +349,7 @@ export default function Family() {
               {isSubmittingStatus ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text className="text-white text-lg font-semibold">Continue to App</Text>
+                <Text className="text-white text-lg font-semibold">Done</Text>
               )}
             </TouchableOpacity>
           </View>
