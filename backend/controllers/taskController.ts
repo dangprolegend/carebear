@@ -294,6 +294,44 @@ export const getUserTasks = async (req: TypedRequest<any, { userID: string }>, r
   }
 };
 
+// Get all tasks for a specific group
+export const getGroupTasks = async (req: TypedRequest<any, { groupID: string }>, res: Response): Promise<void> => {
+  try {
+    const { groupID } = req.params;
+    const tasks = await Task.find({ groupID })
+      .sort({ createdAt: -1 })
+      .populate('assignedBy', 'name email')
+      .populate('assignedTo', 'name email');
+    res.json(tasks);
+  } catch (err: any) {
+    handleError(res, err);
+  }
+};
+
+// Get recent (just created) tasks for a group (e.g., last 1 hour or with a query param limit)
+export const getRecentGroupTasks = async (req: TypedRequest<any, { groupID: string }>, res: Response): Promise<void> => {
+  try {
+    const { groupID } = req.params;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
+    // Option 1: Use createdAt within last hour
+    // const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    // const tasks = await Task.find({ groupID, createdAt: { $gte: oneHourAgo } })
+    //   .sort({ createdAt: -1 })
+    //   .limit(limit)
+    //   .populate('assignedBy', 'name email')
+    //   .populate('assignedTo', 'name email');
+    // Option 2: Just get N most recent
+    const tasks = await Task.find({ groupID })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .populate('assignedBy', 'name email')
+      .populate('assignedTo', 'name email');
+    res.json(tasks);
+  } catch (err: any) {
+    handleError(res, err);
+  }
+};
+
 // Check for overdue tasks and trigger notifications
 export const checkOverdueTasks = async (): Promise<void> => {
   try {
