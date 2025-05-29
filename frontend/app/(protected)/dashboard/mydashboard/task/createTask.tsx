@@ -233,8 +233,15 @@ const AiTaskInputScreen = () => {
             </View>
           ) : generatedAiTasks.length > 0 ? (
             <View className="mt-6 border-t border-slate-200 pt-4">
-              <AiGeneratedTasksReviewScreen/>
-              
+              <AiGeneratedTasksReviewScreen 
+                generatedTasksJSON={JSON.stringify(generatedAiTasks)}
+                groupID={currentGroupID}
+                userID={currentUserID}
+                onDone={() => {
+                  // Optionally refresh dashboard or navigate
+                  router.back();
+                }}
+              />
             </View>
           ) : (
             // Default to showing the ManualTaskForm if no AI tasks are displayed

@@ -2,33 +2,63 @@
 // Or src/screens/AiGeneratedTasksReviewScreen.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Pressable, Alert, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams, router } from 'expo-router';
+import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Task as FrontendTaskType } from '../task'; // ADJUST PATH
+import { fetchRecentTasksForGroup } from '../../../../../service/apiServices';
 
 // TODO: Import your apiService function for updating tasks if you add inline quick edits
 // import { updateTaskAPI } from '../../../../services/apiService';
 
-const AiGeneratedTasksReviewScreen = () => {
-  const params = useLocalSearchParams<{ generatedTasksJSON?: string; groupID?: string; userID?: string }>();
+// Add prop types for AiGeneratedTasksReviewScreen
+interface AiGeneratedTasksReviewScreenProps {
+  generatedTasksJSON?: string;
+  groupID?: string | null;
+  userID?: string | null;
+  onDone?: () => void;
+}
+
+const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> = ({
+  generatedTasksJSON,
+  groupID,
+  userID,
+  onDone
+}) => {
   const [aiTasks, setAiTasks] = useState<FrontendTaskType[]>([]);
-  const [isLoading, setIsLoading] = useState(false); // For any actions on this screen
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Fetch recent tasks for the group and display them
+  const fetchAndDisplayRecentTasks = async () => {
+    if (!groupID) {
+      Alert.alert('Error', 'No groupID provided for fetching recent tasks.');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const recentTasks = await fetchRecentTasksForGroup(groupID, 5);
+      setAiTasks(recentTasks);
+    } catch (e) {
+      Alert.alert('Error', 'Failed to fetch recent tasks.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (params.generatedTasksJSON) {
+    if (groupID) {
+      fetchAndDisplayRecentTasks();
+    } else if (generatedTasksJSON) {
       try {
-        const tasks = JSON.parse(params.generatedTasksJSON) as FrontendTaskType[];
+        const tasks = JSON.parse(generatedTasksJSON) as FrontendTaskType[];
         setAiTasks(tasks);
       } catch (e) {
         console.error("Failed to parse AI generated tasks:", e);
         Alert.alert("Error", "Could not load AI generated tasks.");
-        // router.back(); // Optionally go back if tasks can't be parsed
       }
     } else {
-        Alert.alert("No Tasks", "No AI generated tasks were passed to this screen.");
-        // router.back();
+      Alert.alert("No Tasks", "No AI generated tasks were passed to this screen.");
     }
-  }, [params.generatedTasksJSON]);
+  }, [generatedTasksJSON, groupID]);
 
   const navigateToEditScreen = (task: FrontendTaskType) => {
     if (task._id) {
@@ -39,6 +69,14 @@ const AiGeneratedTasksReviewScreen = () => {
       });
     } else {
       Alert.alert("Error", "Task ID is missing, cannot edit.");
+    }
+  };
+
+  const handleDone = () => {
+    if (onDone) {
+      onDone();
+    } else {
+      router.replace('../dashboardBase'); // Fallback navigation
     }
   };
 
@@ -97,7 +135,7 @@ const AiGeneratedTasksReviewScreen = () => {
         ListFooterComponent={
             <Pressable
                 className="py-3 rounded-lg items-center mt-3 bg-green-500 active:bg-green-600 mb-5"
-                onPress={() => router.replace('../dashboardBase')} // Replace to go to dashboard, or router.back() if appropriate
+                onPress={handleDone}
             >
                 <Text className="text-white text-base font-semibold">Done - Go to Dashboard</Text>
             </Pressable>
