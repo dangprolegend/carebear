@@ -23,6 +23,8 @@ import {
   setCurrentUserIDForApiService,
   setCurrentGroupIDForApiService
 } from '../../../../../service/apiServices';
+import ManualTaskForm from './manualTask';
+import { Task as FrontendTaskType } from '../task';
 
 const AiTaskInputScreen = () => {
   const navigation = useNavigation();
@@ -79,41 +81,69 @@ const AiTaskInputScreen = () => {
       setImageBase64(result.assets[0].base64);
     }
   };
-
+  const [generatedAiTasks, setGeneratedAiTasks] = useState<FrontendTaskType[]>([]);
   const handleSubmitToAI = async () => {
-    if (!promptText && !imageBase64) {
-      Alert.alert("Input Required", "Please provide a text prompt or select an image.");
-      return;
-    }
-    if (!currentUserID || !currentGroupID) {
-      Alert.alert("Error", "User or Group information is missing. Please try logging in again.");
-      return;
-    }
-    if (!clerkToken) {
-      Alert.alert("Authentication Error", "User session token is missing. Please try logging in again.");
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const responseData = await processAndCreateAiTasksAPI({
-        groupID: currentGroupID,
-        userID: currentUserID,
-        prompt_text: promptText,
-        image_base64: imageBase64 ?? undefined,
+      if (!promptText && !imageBase64) {
+        Alert.alert("Input Required", "Please provide a text prompt or select an image.");
+        return;
+      }
+      if (!currentUserID || !currentGroupID) { // Check your backend UserID here
+        Alert.alert("Error", "User or Group information is missing. Please try logging in again.");
+        return;
+      }
+      if (!clerkToken) { // This is the token from Clerk for auth header
+        Alert.alert("Authentication Error", "User session token is missing. Please try logging in again.");
+        return;
+      }
+      setIsLoading(true);
+      setGeneratedAiTasks([]); // Clear previous AI results
+      try {
+        const responseData = await processAndCreateAiTasksAPI({
+          groupID: currentGroupID,
+          userID: currentUserID,
+          prompt_text: promptText,
+          image_base64: imageBase64 ?? undefined,
+        });
+
+        if (responseData.tasks && responseData.tasks.length > 0) {
+          Alert.alert(
+            "Tasks Generated!",
+            `${responseData.tasks.length} task(s) were created by AI. You can review or edit them now.`,
+            [{ text: "OK" }]
+          );
+          setGeneratedAiTasks(
+            responseData.tasks.map((task: any) => ({
+              ...task,
+              datetime: task.datetime ?? new Date().toISOString() // Provide a fallback if missing
+            }))
+          ); // Display AI generated tasks
+        } else {
+          Alert.alert(
+            "No Tasks Generated",
+            responseData.message || "The AI didn't find any tasks to create. You can try adding one manually.",
+            [{ text: "OK" }]
+          );
+          setGeneratedAiTasks([]); 
+        }
+  
+      } catch (error: any) {
+        console.error("Network or other error submitting to AI:", error);
+        Alert.alert("Submission Error", error?.message || "An error occurred. Please try adding manually.");
+        setGeneratedAiTasks([]); // Ensure manual form shows on error
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const navigateToEditAiTask = (task: FrontendTaskType) => {
+    if (task._id) {
+      console.log("Navigating to edit AI task:", task.title);
+      router.push({
+        pathname: `./aiTask`, // ADJUST this route to your edit screen
+        params: { taskData: JSON.stringify(task) } // Pass task data to prefill edit form
       });
-      Alert.alert(
-        "Tasks Generated!",
-        `${responseData.tasks?.length || 0} task(s) were created by AI. You can review them on your dashboard.`,
-        [{ text: "OK", onPress: () => navigation.goBack() }]
-      );
-      setPromptText('');
-      setImageBase64(null);
-      setSelectedImageUri(null);
-    } catch (error: any) {
-      console.error("Network or other error submitting to AI:", error);
-      Alert.alert("Submission Error", error?.message || "An error occurred while contacting the AI service. Check your connection and try again.");
-    } finally {
-      setIsLoading(false);
+    } else {
+      Alert.alert("Error", "Task ID is missing, cannot edit.");
     }
   };
 
@@ -195,28 +225,39 @@ const AiTaskInputScreen = () => {
           </Pressable>
 
           {/* Placeholder for Manual Input Section */}
-          <View className="mt-1 pt-4">
-            <Text className="text-center text-sm text-black-500 mb-4">
-              Or fill manually below
-            </Text>
-            <View className="flex-row justify-around mb-4">
-              {['Task 1', 'Task 2', 'Task 3'].map((tab) => ( 
-                <Pressable key={tab} className="px-4 py-2">
-                  <Text className="text-slate-500">{tab}</Text>
-                </Pressable>
-              ))}
+          {isLoading ? ( // Show loading indicator specifically for AI processing if handleSubmitAI is active
+            <View className="items-center my-5">
+              <ActivityIndicator size="large" color="#FF9800" />
+              <Text className="text-slate-600 mt-2">AI is processing and creating tasks...</Text>
             </View>
-            <TextInput
-              className="bg-white border border-slate-300 rounded-lg p-4 text-base text-slate-900 mb-3"
-              placeholder="Task Name (Manual Input)"
-              placeholderTextColor="#9ca3af"
-            />
-             <TextInput
-              className="bg-white border border-slate-300 rounded-lg p-4 text-base text-slate-900"
-              placeholder="Assigned To (Manual Input)"
-              placeholderTextColor="#9ca3af"
-            />
-          </View>
+          ) : generatedAiTasks.length > 0 ? (
+            <View className="mt-6 border-t border-slate-200 pt-4">
+              <Text className="text-lg font-semibold text-slate-700 mb-1">
+                AI Created Tasks ({generatedAiTasks.length})
+              </Text>
+              <Text className="text-xs text-slate-500 mb-3">
+                Review these tasks. Tap any task to edit its details.
+              </Text>
+              
+            </View>
+          ) : (
+            // Default to showing the ManualTaskForm if no AI tasks are displayed
+            // This section replaces your original "Or fill manually below" placeholder
+            <View className="mt-6 border-t border-slate-200 pt-4">
+              <Text className="text-center text-sm text-slate-600 mb-4">
+                Or, create a task manually:
+              </Text>
+              <ManualTaskForm
+                currentUserID={currentUserID} // Pass the backend User ID
+                currentGroupID={currentGroupID}
+                onTaskCreated={() => {
+                  console.log("Manual task created callback triggered from AiTaskInputScreen.");
+                  // Optionally navigate back or refresh something
+                  router.back(); // Example: navigate back after manual creation
+                }}
+              />
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>
