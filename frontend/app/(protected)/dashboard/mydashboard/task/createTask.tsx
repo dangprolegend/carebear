@@ -24,6 +24,7 @@ import {
   setCurrentGroupIDForApiService
 } from '../../../../../service/apiServices';
 import ManualTaskForm from './manualTask';
+import AiGeneratedTasksReviewScreen from './aiTask';
 import { Task as FrontendTaskType } from '../task';
 
 const AiTaskInputScreen = () => {
@@ -232,12 +233,7 @@ const AiTaskInputScreen = () => {
             </View>
           ) : generatedAiTasks.length > 0 ? (
             <View className="mt-6 border-t border-slate-200 pt-4">
-              <Text className="text-lg font-semibold text-slate-700 mb-1">
-                AI Created Tasks ({generatedAiTasks.length})
-              </Text>
-              <Text className="text-xs text-slate-500 mb-3">
-                Review these tasks. Tap any task to edit its details.
-              </Text>
+              <AiGeneratedTasksReviewScreen/>
               
             </View>
           ) : (
