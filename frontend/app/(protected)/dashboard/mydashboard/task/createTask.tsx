@@ -88,16 +88,16 @@ const AiTaskInputScreen = () => {
         Alert.alert("Input Required", "Please provide a text prompt or select an image.");
         return;
       }
-      if (!currentUserID || !currentGroupID) { // Check your backend UserID here
+      if (!currentUserID || !currentGroupID) { 
         Alert.alert("Error", "User or Group information is missing. Please try logging in again.");
         return;
       }
-      if (!clerkToken) { // This is the token from Clerk for auth header
+      if (!clerkToken) { 
         Alert.alert("Authentication Error", "User session token is missing. Please try logging in again.");
         return;
       }
       setIsLoading(true);
-      setGeneratedAiTasks([]); // Clear previous AI results
+      setGeneratedAiTasks([]); 
       try {
         const responseData = await processAndCreateAiTasksAPI({
           groupID: currentGroupID,
@@ -115,9 +115,9 @@ const AiTaskInputScreen = () => {
           setGeneratedAiTasks(
             responseData.tasks.map((task: any) => ({
               ...task,
-              datetime: task.datetime ?? new Date().toISOString() // Provide a fallback if missing
+              datetime: task.datetime ?? new Date().toISOString() 
             }))
-          ); // Display AI generated tasks
+          ); 
         } else {
           Alert.alert(
             "No Tasks Generated",
@@ -130,7 +130,7 @@ const AiTaskInputScreen = () => {
       } catch (error: any) {
         console.error("Network or other error submitting to AI:", error);
         Alert.alert("Submission Error", error?.message || "An error occurred. Please try adding manually.");
-        setGeneratedAiTasks([]); // Ensure manual form shows on error
+        setGeneratedAiTasks([]); 
       } finally {
         setIsLoading(false);
       }
@@ -140,8 +140,8 @@ const AiTaskInputScreen = () => {
     if (task._id) {
       console.log("Navigating to edit AI task:", task.title);
       router.push({
-        pathname: `./aiTask`, // ADJUST this route to your edit screen
-        params: { taskData: JSON.stringify(task) } // Pass task data to prefill edit form
+        pathname: `./aiTask`, 
+        params: { taskData: JSON.stringify(task) } 
       });
     } else {
       Alert.alert("Error", "Task ID is missing, cannot edit.");
@@ -226,7 +226,7 @@ const AiTaskInputScreen = () => {
           </Pressable>
 
           {/* Placeholder for Manual Input Section */}
-          {isLoading ? ( // Show loading indicator specifically for AI processing if handleSubmitAI is active
+          {isLoading ? ( 
             <View className="items-center my-5">
               <ActivityIndicator size="large" color="#FF9800" />
               <Text className="text-slate-600 mt-2">AI is processing and creating tasks...</Text>
@@ -238,25 +238,23 @@ const AiTaskInputScreen = () => {
                 groupID={currentGroupID}
                 userID={currentUserID}
                 onDone={() => {
-                  // Optionally refresh dashboard or navigate
+                  
                   router.back();
                 }}
               />
             </View>
           ) : (
-            // Default to showing the ManualTaskForm if no AI tasks are displayed
-            // This section replaces your original "Or fill manually below" placeholder
-            <View className="mt-6 border-t border-slate-200 pt-4">
-              <Text className="text-center text-sm text-slate-600 mb-4">
-                Or, create a task manually:
+          
+            <View className="mt-2 border-slate-200 pt-1s">
+              <Text className="text-center text-sm text-black">
+                Or fill manually below
               </Text>
               <ManualTaskForm
-                currentUserID={currentUserID} // Pass the backend User ID
+                currentUserID={currentUserID} 
                 currentGroupID={currentGroupID}
                 onTaskCreated={() => {
-                  console.log("Manual task created callback triggered from AiTaskInputScreen.");
-                  // Optionally navigate back or refresh something
-                  router.back(); // Example: navigate back after manual creation
+                  console.log("Manual task created callback triggered from AiTaskInputScreen.");        
+                  router.back(); 
                 }}
               />
             </View>

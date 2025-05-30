@@ -1,16 +1,15 @@
-// app/task/ai-review.tsx (Example path for Expo Router)
-// Or src/screens/AiGeneratedTasksReviewScreen.tsx
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Pressable, Alert, ActivityIndicator, TextInput, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Task as FrontendTaskType } from '../task'; // ADJUST PATH
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { Task as OriginalTaskType } from '../task'; 
+
+type FrontendTaskType = OriginalTaskType & {
+  endDate?: string;
+};
 import { fetchRecentTasksForGroup, updateTask } from '../../../../../service/apiServices';
-
-// TODO: Import your apiService function for updating tasks if you add inline quick edits
-// import { updateTaskAPI } from '../../../../services/apiService';
-
-// Add prop types for AiGeneratedTasksReviewScreen
 interface AiGeneratedTasksReviewScreenProps {
   generatedTasksJSON?: string;
   groupID?: string | null;
@@ -30,7 +29,7 @@ const EMPTY_TASK = {
   checked: false,
   priority: undefined,
   status: 'pending',
-  assignedTo: '', // Ensure this is a string (user ID) or null
+  assignedTo: '', 
 };
 
 const NUM_TABS = 5;
@@ -46,7 +45,6 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
-  // Fetch recent tasks for the group and display them
   const fetchAndDisplayRecentTasks = async () => {
     if (!groupID) {
       Alert.alert('Error', 'No groupID provided for fetching recent tasks.');
@@ -81,7 +79,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
     if (task._id) {
       console.log("Navigating to edit AI task:", task.title);
       router.push({
-        pathname: `./createtask`, // ADJUST this route to your edit screen
+        pathname: `./createtask`, 
         params: { taskData: JSON.stringify(task) }
       });
     } else {
@@ -93,24 +91,21 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
     if (onDone) {
       onDone();
     } else {
-      router.replace('../dashboardBase'); // Fallback navigation
+      router.replace('../dashboardBase'); 
     }
   };
 
-  // Always show 5 tabs, fill with empty tasks if needed
   const paddedTasks = [
     ...aiTasks,
     ...Array(Math.max(0, NUM_TABS - aiTasks.length)).fill(EMPTY_TASK)
   ].slice(0, NUM_TABS);
 
-  // Form state for each tab (initialize with aiTasks or empty)
   const [formTasks, setFormTasks] = useState<FrontendTaskType[]>(paddedTasks);
 
   useEffect(() => {
     setFormTasks(paddedTasks);
   }, [aiTasks]);
 
-  // Track if the current tab has unsaved changes
   const [tabDirty, setTabDirty] = useState<boolean[]>(Array(NUM_TABS).fill(false));
 
   const handleInputChange = (field: keyof FrontendTaskType, value: any) => {
@@ -126,12 +121,8 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
     });
   };
 
-  // Helper to sanitize task payload for backend
   const sanitizeTaskForBackend = (task: FrontendTaskType) => {
-    // Remove null for description, only send string or undefined
-    // assignedTo must be string or undefined for backend
     const { description, assignedTo, _id, datetime, type, title, detail, subDetail, checked, priority, status } = task;
-    // Only send fields that exist on BackendTask and are compatible
     const payload: any = {
       title,
       description: description ?? undefined,
@@ -141,11 +132,9 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
     if (typeof assignedTo === 'string') {
       payload.assignedTo = assignedTo;
     }
-    // Optionally add reminder, etc. if needed
     return payload;
   };
 
-  // Save only the current tab's task
   const handleSaveTask = async () => {
     const task = formTasks[activeTab];
     if (!task._id) {
@@ -165,14 +154,12 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
     }
   };
 
-  // Save all tasks that have unsaved changes
   const handleSaveAllTasks = async () => {
     const updatePromises = formTasks.map(async (task, idx) => {
       if (tabDirty[idx] && task._id) {
         try {
           await updateTask(task._id, sanitizeTaskForBackend(task));
         } catch (e) {
-          // Optionally handle per-task error
         }
       }
     });
@@ -181,7 +168,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
     Alert.alert('Success', 'All edited tasks updated.');
   };
 
-  if (aiTasks.length === 0 && !isLoading) { // Show message if no tasks after parsing
+  if (aiTasks.length === 0 && !isLoading) { 
     return (
         <View className="flex-1 bg-white">
              <View className="flex-row items-center justify-between px-4 pt-12 pb-4 border-b border-slate-200">
@@ -204,8 +191,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
 
 
   return (
-    <View className="flex-1 bg-white">
-      {/* Tab Bar */}
+    <View className="mt-4 pt-4">
       <View className="flex-row border-b border-slate-200">
         {[...Array(NUM_TABS)].map((_, idx) => (
           <Pressable
@@ -213,86 +199,136 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
             className={`flex-1 py-3 items-center ${activeTab === idx ? 'border-b-2 border-black' : ''}`}
             onPress={() => setActiveTab(idx)}
           >
-            <Text className={`font-semibold ${activeTab === idx ? 'text-black' : 'text-slate-400'}`}>{`Task ${idx + 1}`}</Text>
+            <Text className={`font-bold ${activeTab === idx ? 'text-black' : 'text-black'}`}>{`Task ${idx + 1}`}</Text>
           </Pressable>
         ))}
       </View>
 
-      {/* Task Form for Active Tab */}
-      <ScrollView className="p-5">
-        {/* Task Name */}
-        <Text className="font-bold mb-1">Task Name</Text>
+      <ScrollView className="pt-5 mt-4 pt-4  ml-2 mr-2">
+        <Text className="font-semibold mb-2">Task Name</Text>
         <TextInput
-          className="border rounded-lg px-3 py-2 mb-4"
+          className="border rounded-lg px-3 py-3 mb-8"
           placeholder="Task Name"
           value={formTasks[activeTab]?.title || ''}
           onChangeText={text => handleInputChange('title', text)}
         />
 
         {/* Assigned To */}
-        <Text className="font-bold mb-1">Assigned To (User ID)</Text>
-        <TextInput
-          className="border rounded-lg px-3 py-2 mb-4"
-          placeholder="Assignee User ID"
-          value={formTasks[activeTab]?.assignedTo || ''}
-          onChangeText={text => handleInputChange('assignedTo', text)}
-        />
+        <Text className="font-semibold mb-2">Assigned To</Text>
+        <View className="border rounded-lg mb-8 px-3 py-3 bg-white">
+          {/** Replace this with your actual user list */}
+          {[
+            { id: 'user1', name: 'Alice' },
+            { id: 'user2', name: 'Bob' },
+            { id: 'user3', name: 'Charlie' },
+          ].map(user => (
+            <Pressable
+              key={user.id}
+              className={`py-2 ${formTasks[activeTab]?.assignedTo === user.id ? 'bg-blue-100' : ''}`}
+              onPress={() => handleInputChange('assignedTo', user.id)}
+            >
+              <Text className={`text-base ${formTasks[activeTab]?.assignedTo === user.id ? 'font-bold text-blue-700' : 'text-black'}`}>
+                {user.name}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
 
         {/* Start Date */}
-        <Text className="font-bold mb-1">Start Date</Text>
-        <TextInput
-          className="border rounded-lg px-3 py-2 mb-2"
-          placeholder="YYYY-MM-DD"
-          value={formTasks[activeTab]?.datetime?.slice(0, 10) || ''}
-          onChangeText={text => handleInputChange('datetime', text)}
-        />
+        <Text className="font-semibold mb-2">Start Date</Text>
+        <Pressable
+          onPress={() => {
+            DateTimePickerAndroid.open({
+              value: formTasks[activeTab]?.datetime ? new Date(formTasks[activeTab].datetime) : new Date(),
+              mode: 'date',
+              onChange: (event, selectedDate) => {
+                if (selectedDate) {
+                  // Keep time part if present, else just set date
+                  const prev = formTasks[activeTab]?.datetime ? new Date(formTasks[activeTab].datetime) : new Date();
+                  selectedDate.setHours(prev.getHours(), prev.getMinutes(), prev.getSeconds());
+                  handleInputChange('datetime', selectedDate.toISOString());
+                }
+              },
+            });
+          }}
+          
+        >
+          <Text className="text-base text-black">
+            {formTasks[activeTab]?.datetime
+              ? new Date(formTasks[activeTab].datetime).toLocaleDateString()
+              : 'Select Start Date'}
+          </Text>
+        </Pressable>
+
+        <Text className="font-semibold mb-2">End Date</Text>
+        <Pressable
+          className="border rounded-lg px-3 py-3 mb-8 bg-white"
+          onPress={() => {
+            DateTimePickerAndroid.open({
+              value: formTasks[activeTab]?.endDate ? new Date(formTasks[activeTab].endDate) : new Date(),
+              mode: 'date',
+              onChange: (event, selectedDate) => {
+                if (selectedDate) {
+                  // Store as ISO string in a new field 'endDate'
+                  handleInputChange('endDate' as any, selectedDate.toISOString());
+                }
+              },
+            });
+          }}
+        >
+          <Text className="text-base text-black">
+            {formTasks[activeTab]?.endDate
+              ? new Date(formTasks[activeTab].endDate).toLocaleDateString()
+              : 'Select End Date'}
+          </Text>
+        </Pressable>
 
         {/* Times of Day */}
-        <Text className="font-bold mb-1">Times of Day</Text>
+        <Text className="font-semibold mb-2">Times of Day</Text>
         <TextInput
-          className="border rounded-lg px-3 py-2 mb-2"
+          className="border rounded-lg px-3 py-3 mb-8"
           placeholder="09:00,17:00"
           value={formTasks[activeTab]?.detail || ''}
           onChangeText={text => handleInputChange('detail', text)}
         />
 
         {/* Recurrence */}
-        <Text className="font-bold mb-1">Recurrence</Text>
+        <Text className="font-semibold mb-2">Recurrence</Text>
         <TextInput
-          className="border rounded-lg px-3 py-2 mb-4"
+          className="border rounded-lg px-3 py-3 mb-8"
           placeholder="DAILY/WEEKLY/NONE"
           value={formTasks[activeTab]?.subDetail || ''}
           onChangeText={text => handleInputChange('subDetail', text)}
         />
 
         {/* Purpose */}
-        <Text className="font-bold mb-1">Purpose</Text>
+        <Text className="font-semibold mb-2">Purpose</Text>
         <TextInput
-          className="border rounded-lg px-3 py-2 mb-4"
+          className="border rounded-lg px-3 py-3 mb-8"
           placeholder="Purpose"
           value={formTasks[activeTab]?.description || ''}
           onChangeText={text => handleInputChange('description', text)}
         />
 
         {/* Priority */}
-        <Text className="font-bold mb-1">Priority</Text>
-        <View className="flex-row mb-4">
+        <Text className="font-semibold mb-2">Priority</Text>
+        <View className="flex-row mb-8">
           {['high', 'medium', 'low'].map((level) => (
             <Pressable
               key={level}
-              className={`flex-1 flex-row items-center justify-center border rounded-lg py-2 mx-1 ${formTasks[activeTab]?.priority === level ? 'bg-slate-200 border-black' : 'bg-white border-slate-300'}`}
+              className={`flex-1 flex-row items-center justify-center border rounded-lg py-3 mx-1 ${formTasks[activeTab]?.priority === level ? 'bg-[#FAE5CA] border-black' : 'bg-white border-slate-300'}`}
               onPress={() => handleInputChange('priority', level)}
             >
               <MaterialIcons name="flag" size={18} color={level === 'high' ? 'red' : level === 'medium' ? 'gold' : 'blue'} />
-              <Text className="ml-1 font-semibold capitalize">{level}</Text>
+              <Text className={`ml-1 font-semibold capitalize ${formTasks[activeTab]?.priority === level ? 'text-black' : 'text-black'}`}>{level}</Text>
             </Pressable>
           ))}
         </View>
 
         {/* Instructions */}
-        <Text className="font-bold mb-1">Instructions</Text>
+        <Text className="font-semibold mb-2">Instructions</Text>
         <TextInput
-          className="border rounded-lg px-3 py-2 mb-4 min-h-[80px]"
+          className="border rounded-lg px-3 py-3 mb-4 min-h-[80px]"
           placeholder="Instructions"
           value={formTasks[activeTab]?.description || ''}
           onChangeText={text => handleInputChange('description', text)}
@@ -300,16 +336,16 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         />
 
         {/* Save/Done Buttons can go here */}
-        <View className="flex-row justify-between mt-4 mb-8">
+        <View className="flex-row justify-between mt-4 mb-20">
           <Pressable
-            className={`flex-1 py-3 rounded-lg items-center mr-2 ${tabDirty[activeTab] ? 'bg-blue-600' : 'bg-slate-300'}`}
+            className={`flex-1 py-3 border border-black rounded-full items-center mr-2 ${tabDirty[activeTab] ? 'bg-white' : 'bg-slate-300'}`}
             onPress={handleSaveTask}
             disabled={!tabDirty[activeTab]}
           >
-            <Text className="text-white text-base font-semibold">Save Task</Text>
+            <Text className="text-black text-base font-semibold">Save Task</Text>
           </Pressable>
           <Pressable
-            className={`flex-1 py-3 rounded-lg items-center ml-2 ${tabDirty.some(Boolean) ? 'bg-black' : 'bg-slate-300'}`}
+            className={`flex-1 py-3 rounded-full items-center ml-2 ${tabDirty.some(Boolean) ? 'bg-black' : 'bg-slate-300'}`}
             onPress={handleSaveAllTasks}
             disabled={!tabDirty.some(Boolean)}
           >

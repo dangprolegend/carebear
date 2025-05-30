@@ -1,21 +1,18 @@
-// components/task/ManualTaskForm.tsx (or a suitable path)
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, Alert, ActivityIndicator, Modal } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
 import { createManualTaskAPI } from '../../../../../service/apiServices'; // ADJUST PATH
 
-// TODO: Remove this placeholder and get from props or context
-const API_BASE_URL = "https://your-ngrok-or-deployed-url.com"; // Replace
-
-// Props that ManualTaskForm will receive from AiTaskInputScreen
 type ManualTaskFormProps = {
-  currentUserID: string | null; // Backend User ID for assignedBy
+  currentUserID: string | null; 
   currentGroupID: string | null;
-  onTaskCreated?: () => void; // Optional callback after task creation
+  onTaskCreated?: () => void; 
 };
 
-interface ManualTaskData { // Local state for the form
+interface ManualTaskData { 
   title: string;
   description?: string;
   startDateString?: string;
@@ -27,7 +24,7 @@ interface ManualTaskData { // Local state for the form
 }
 
 const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: ManualTaskFormProps) => {
-  // const { getToken } = useAuth(); // If this component needs to refresh token itself
+  
   const [manualForm, setManualForm] = useState<ManualTaskData>({
     title: '',
     description: '',
@@ -40,9 +37,12 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  // TODO: Date/Time Picker states and handlers would go here
-  // const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  // const [datePickerTarget, setDatePickerTarget] = useState<'start' | 'end' | null>(null);
+  const [showDateRangeModal, setShowDateRangeModal] = useState(false);
+  const [showTimesDropdown, setShowTimesDropdown] = useState(false);
+  const [showRecurrenceDropdown, setShowRecurrenceDropdown] = useState(false);
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const [tempStartDate, setTempStartDate] = useState(manualForm.startDateString ? new Date(manualForm.startDateString) : new Date());
+  const [tempEndDate, setTempEndDate] = useState(manualForm.endDateString ? new Date(manualForm.endDateString) : new Date());
 
   const handleInputChange = (field: keyof ManualTaskData, value: string | null) => {
     setManualForm(prev => ({ ...prev, [field]: value }));
@@ -123,88 +123,286 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
     }
   };
 
-
   return (
-    <View className="mt-4 pt-4">
-      <Text className="text-lg font-semibold text-slate-700 mb-3">Create Task Manually:</Text>
+    <View className="mt-4 pt-4 ml-2 mr-2">
 
       {/* Task Title */}
-      <Text className="font-bold mb-1">Task Name</Text>
+      <Text className="font-semibold mb-2">Task Name</Text>
       <TextInput
-        className="border rounded-lg px-3 py-2 mb-4"
+        className="border border-[0.5px] rounded-lg px-3 py-3 mb-8"
         placeholder="Task Name"
         value={manualForm.title}
         onChangeText={text => handleInputChange('title', text)}
       />
 
-      {/* Assigned To */}
-      <Text className="font-bold mb-1">Assigned To (User ID)</Text>
-      <TextInput
-        className="border rounded-lg px-3 py-2 mb-4"
-        placeholder="Assignee User ID"
-        value={manualForm.assignedToId || ''}
-        onChangeText={text => handleInputChange('assignedToId', text)}
-      />
-
-      {/* Start and End Date */}
-      <Text className="font-bold mb-1">Start and end date</Text>
-      <TextInput
-        className="border rounded-lg px-3 py-2 mb-2"
-        placeholder="Start Date (YYYY-MM-DD)"
-        value={manualForm.startDateString || ''}
-        onChangeText={text => handleInputChange('startDateString', text)}
-      />
-      <TextInput
-        className="border rounded-lg px-3 py-2 mb-2"
-        placeholder="End Date (YYYY-MM-DD)"
-        value={manualForm.endDateString || ''}
-        onChangeText={text => handleInputChange('endDateString', text)}
-      />
-
-      {/* Times of Day and Recurrence */}
-      <View className="flex-row mb-2">
-        <TextInput
-          className="flex-1 border rounded-lg px-3 py-2 mr-2"
-          placeholder="Time(s), e.g. 09:00,17:00"
-          value={manualForm.timesOfDayInput || ''}
-          onChangeText={text => handleInputChange('timesOfDayInput', text)}
-        />
-        <TextInput
-          className="w-28 border rounded-lg px-3 py-2"
-          placeholder="Daily"
-          value={manualForm.recurrenceRule || ''}
-          onChangeText={text => handleInputChange('recurrenceRule', text)}
-        />
-      </View>
-
-      {/* Purpose */}
-      <Text className="font-bold mb-1">Purpose</Text>
-      <TextInput
-        className="border rounded-lg px-3 py-2 mb-4"
-        placeholder="Purpose"
-        value={manualForm.description || ''}
-        onChangeText={text => handleInputChange('description', text)}
-      />
-
-      {/* Priority */}
-      <Text className="font-bold mb-1">Priority</Text>
-      <View className="flex-row mb-4">
-        {['high', 'medium', 'low'].map((level) => (
+      <Text className="font-semibold mb-2">Assigned To</Text>
+      <View className="border border-[0.5px] rounded-lg px-3 py-1 mb-8 bg-white">
+        <Pressable
+          className="py-2.5"
+          onPress={() => setShowAssigneeDropdown(true)}
+        >
+          <Text>
+            {manualForm.assignedToId === '681ed8ef263e811447b9f1a1'
+              ? 'Minh Le'
+              : manualForm.assignedToId === '6822b2e0a8f4a090c6b13f8a'
+              ? 'Luigi'
+              : manualForm.assignedToId === '682d4cb8b00f754d18bc6584'
+              ? 'Dang Nguyen'
+              : 'Select Assignee'}
+          </Text>
+        </Pressable>
+        <Modal
+          visible={!!showAssigneeDropdown}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowAssigneeDropdown(false)}
+        >
           <Pressable
-            key={level}
-            className={`flex-1 flex-row items-center justify-center border rounded-lg py-2 mx-1 ${manualForm.priority === level ? 'bg-slate-200 border-black' : 'bg-white border-slate-300'}`}
-            onPress={() => handleInputChange('priority', level as 'low'|'medium'|'high')}
+            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.2)' }}
+            onPress={() => setShowAssigneeDropdown(false)}
           >
-            <MaterialIcons name="flag" size={18} color={level === 'high' ? 'red' : level === 'medium' ? 'gold' : 'blue'} />
-            <Text className="ml-1 font-semibold capitalize">{level}</Text>
+            <View style={{
+              backgroundColor: 'white',
+              borderRadius: 8,
+              margin: 300,
+              marginLeft: 50,
+              padding: 10,
+              alignSelf: 'flex-start',
+              width: 220
+            }}>
+              {[
+          { label: 'Minh Le', value: '681ed8ef263e811447b9f1a1' },
+          { label: 'Luigi', value: '6822b2e0a8f4a090c6b13f8a' },
+          { label: 'Dang Nguyen', value: '682d4cb8b00f754d18bc6584' }
+              ].map(opt => (
+          <Pressable
+            key={opt.value}
+            onPress={() => {
+              handleInputChange('assignedToId', opt.value);
+              setShowAssigneeDropdown(false);
+            }}
+            style={{
+              paddingVertical: 12,
+              borderBottomWidth: opt.value !== 'user3' ? 0.5 : 0,
+              borderColor: '#eee'
+            }}
+          >
+            <Text>{opt.label}</Text>
           </Pressable>
-        ))}
+              ))}
+            </View>
+          </Pressable>
+        </Modal>
       </View>
+
+      <Text className="font-semibold mb-2">Date Range</Text>
+      <Pressable
+        className="border border-[0.5px] rounded-lg px-3 py-2 mb-4 bg-white"
+        onPress={() => setShowDateRangeModal(true)}
+      >
+        <Text>
+          {manualForm.startDateString && manualForm.endDateString
+            ? `${manualForm.startDateString} - ${manualForm.endDateString}`
+            : 'Select Date Range'}
+        </Text>
+      </Pressable>
+
+      {/* Date Range Modal */}
+      <Modal
+        visible={showDateRangeModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowDateRangeModal(false)}
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+          <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 20, width: 320 }}>
+            <Text className="mb-2 font-semibold">Select Start Date</Text>
+            <DateTimePicker
+              value={tempStartDate}
+              mode="date"
+              display="default"
+              onChange={(_, selectedDate) => {
+                if (selectedDate) setTempStartDate(selectedDate);
+              }}
+            />
+            <Text className="mb-2 mt-4 font-semibold">Select End Date</Text>
+            <DateTimePicker
+              value={tempEndDate}
+              mode="date"
+              display="default"
+              onChange={(_, selectedDate) => {
+                if (selectedDate) setTempEndDate(selectedDate);
+              }}
+            />
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20 }}>
+              <Pressable
+                style={{ marginRight: 16 }}
+                onPress={() => setShowDateRangeModal(false)}
+              >
+                <Text style={{ color: 'black', fontWeight: 'medium' }}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  handleInputChange('startDateString', tempStartDate.toISOString().slice(0, 10));
+                  handleInputChange('endDateString', tempEndDate.toISOString().slice(0, 10));
+                  setShowDateRangeModal(false);
+                }}
+              >
+                <Text style={{ color: 'black', fontWeight: 'bold' }}>Save</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <View className="flex-row mb-8 items-center">
+        <View className="flex-1 mr-2">
+          <Pressable
+        className="border border-[0.5px] rounded-lg px-2 py-2 bg-white"
+        onPress={() => setShowTimesDropdown(true)}
+          >
+        <Text>
+          {manualForm.timesOfDayInput
+            ? manualForm.timesOfDayInput
+            : 'Select Time'}
+        </Text>
+          </Pressable>
+          {/* Times Dropdown Modal */}
+          <Modal
+        visible={!!showTimesDropdown}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowTimesDropdown(false)}
+          >
+        <Pressable
+          style={{  backgroundColor: 'rgba(0,0,0,0.2)' }}
+          onPress={() => setShowTimesDropdown(false)}
+        >
+          <View style={{
+            backgroundColor: 'white',
+            borderRadius: 8,
+            margin: 360,
+            marginLeft: 50,
+            padding: 10,
+            alignSelf: 'flex-start',
+            width: 200
+          }}>
+            <ScrollView>
+          {Array.from({ length: 24 }).map((_, hour) => {
+            const label = hour.toString().padStart(2, '0') + ':00';
+            return (
+              <Pressable
+            key={label}
+            onPress={() => {
+              handleInputChange('timesOfDayInput', label);
+              setShowTimesDropdown(false);
+            }}
+            style={{
+              paddingVertical: 10,
+              borderBottomWidth: hour < 23 ? 0.5 : 0,
+              borderColor: '#eee'
+            }}
+              >
+            <Text>{label}</Text>
+              </Pressable>
+            );
+          })}
+            </ScrollView>
+          </View>
+        </Pressable>
+          </Modal>
+        </View>
+
+        {/* Recurrence Dropdown (Touchable) */}
+        <View className="w-32">
+          <Pressable
+        className="border border-[0.5px] rounded-lg px-2 py-2 bg-white"
+        onPress={() => setShowRecurrenceDropdown(true)}
+          >
+        <Text>
+          {{
+            NONE: 'None',
+            DAILY: 'Daily',
+            WEEKLY: 'Weekly',
+            MONTHLY: 'Monthly'
+          }[manualForm.recurrenceRule || 'NONE']}
+        </Text>
+          </Pressable>
+          {/* Recurrence Dropdown Modal */}
+          <Modal
+        visible={!!showRecurrenceDropdown}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowRecurrenceDropdown(false)}
+          >
+        <Pressable
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.2)' }}
+          onPress={() => setShowRecurrenceDropdown(false)}
+        >
+          <View style={{
+            backgroundColor: 'white',
+            borderRadius: 8,
+            margin: 360,
+            marginLeft: 220,
+            padding: 10,
+            alignSelf: 'flex-start',
+            width: 160
+          }}>
+            {[
+          { label: 'None', value: 'NONE' },
+          { label: 'Daily', value: 'DAILY' },
+          { label: 'Weekly', value: 'WEEKLY' },
+          { label: 'Monthly', value: 'MONTHLY' }
+            ].map(opt => (
+          <Pressable
+            key={opt.value}
+            onPress={() => {
+              handleInputChange('recurrenceRule', opt.value);
+              setShowRecurrenceDropdown(false);
+            }}
+            style={{
+              paddingVertical: 10,
+              borderBottomWidth: opt.value !== 'MONTHLY' ? 0.5 : 0,
+              borderColor: '#eee'
+            }}
+          >
+            <Text>{opt.label}</Text>
+          </Pressable>
+            ))}
+          </View>
+        </Pressable>
+          </Modal>
+        </View>
+      </View>
+
+            {/* Purpose */}
+            <Text className="font-semibold mb-2">Purpose</Text>
+            <TextInput
+              className="border border-[0.5px] rounded-lg px-3 py-2 mb-8"
+              placeholder="Purpose"
+              value={manualForm.description || ''}
+              onChangeText={text => handleInputChange('description', text)}
+            />
+
+            {/* Priority */}
+            <Text className="font-semibold mb-2">Priority</Text>
+            <View className="flex-row mb-8">
+                      {['high', 'medium', 'low'].map((level) => (
+                        <Pressable
+                          key={level}
+                          className={`flex-1 flex-row items-center justify-center border border-[0.5px] rounded-lg py-3 mx-1 ${manualForm.priority === level ? 'border-[black] bg-[#FAE5CA]' : 'bg-white border-black'}`}
+                          onPress={() => handleInputChange('priority', level)}
+                        >
+                          <MaterialIcons name="flag" size={18} color={level === 'high' ? 'red' : level === 'medium' ? 'gold' : 'blue'} />
+                          <Text className={`ml-1 font-semibold capitalize ${manualForm.priority === level ? 'text-black' : 'text-black'}`}>{level}</Text>
+                        </Pressable>
+                      ))}
+              </View>
 
       {/* Instructions */}
-      <Text className="font-bold mb-1">Instructions</Text>
+      <Text className="font-semibold mb-2">Instructions</Text>
       <TextInput
-        className="border rounded-lg px-3 py-2 mb-4 min-h-[80px]"
+        className="border border-[0.5px] rounded-lg bg-white px-3 py-2 mb-4 min-h-[80px]"
         placeholder="Instructions"
         value={manualForm.description || ''}
         onChangeText={text => handleInputChange('description', text)}
@@ -212,11 +410,12 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
       />
 
       <Pressable
-        className={`py-4 rounded-lg items-center mt-3 ${isLoading ? 'bg-blue-300' : 'bg-blue-600 active:bg-blue-700'}`}
+        className={`py-3 px-6 rounded-full items-center mt-3 mb-20 ${isLoading ? 'bg-white' : 'bg-black active:bg-black'}`}
         onPress={handleSaveManualTask}
-        disabled={isLoading}
+        disabled={isLoading}  
+        style={{ alignSelf: 'center', maxWidth: 160 }}
       >
-        {isLoading ? <ActivityIndicator color="white"/> : <Text className="text-white text-lg font-semibold">Create Task</Text>}
+        {isLoading ? <ActivityIndicator color="white"/> : <Text className="text-white text-base font-semibold">Create Task</Text>}
       </Pressable>
     </View>
   );
