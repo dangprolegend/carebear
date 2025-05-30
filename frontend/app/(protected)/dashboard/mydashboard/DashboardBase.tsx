@@ -5,15 +5,16 @@ import * as Calendar from 'expo-calendar';
 import { groupTasksByTimeAndType, TaskGroup, Task } from './task';
 import { HealthMetric } from './healthmetric';
 import TaskCard from './taskcard';
+import {Link} from 'expo-router'
 
 type DashboardBaseProps = {
   tasks: Task[];
-  showHealthSection?: boolean; // Whether to show the health section
-  title?: string; // Title for the dashboard
+  showHealthSection?: boolean; 
+  title?: string; 
 };
 
 
-const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }: DashboardBaseProps) => {
+const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboard' }: DashboardBaseProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showTodaySchedule, setShowTodaySchedule] = useState(true);
   const [showYourHealth, setShowYourHealth] = useState(true);
@@ -54,9 +55,9 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
   console.log('Task Date:', taskDate, 'Selected Date:', selectedDate);
 
   // Example fetch:
-  fetch(`${process.env.NGROK_API_URL}/api/tasks/682ed36cb380744bd1ed4559`)
-    .then(res => res.json())
-    .then(data => console.log(data));
+  // fetch(`${process.env.NGROK_API_URL}/api/tasks/682ed36cb380744bd1ed4559`)
+  //   .then(res => res.json())
+  //   .then(data => console.log(data));
 
   return (
     taskDate.getFullYear() === selectedDate.getFullYear() &&
@@ -233,6 +234,13 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
       onClose={() => setShowTaskCard(false)}
       task={selectedTask}
       />
+      <Link href="/dashboard/mydashboard/task/aiTask" asChild> 
+        <Pressable
+          className="absolute w-14 h-14 items-center justify-center right-6 bottom-6 bg-blue-500 rounded-full shadow-lg"
+        >
+          <MaterialIcons name="auto-fix-high" size={28} color="white" />
+        </Pressable>
+      </Link>
    </>
   );
 };
