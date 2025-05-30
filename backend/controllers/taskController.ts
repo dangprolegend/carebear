@@ -6,8 +6,8 @@ import { TypedRequest, UserRequest } from '../types/express';
 interface Reminder_setup {
   start_date?: string;
   end_date?: string;
-  times_of_day?: string[]; // Array of times in HH:MM format
-  recurrence_rule?: string; // e.g., "FREQ=DAILY;INTERVAL=1" or "FREQ=WEEKLY;BYDAY=MO,WE,FR"
+  times_of_day?: string[]; 
+  recurrence_rule?: string; 
 }
 
 
@@ -40,17 +40,17 @@ interface TaskParams {
 interface AiTaskData {
   title: string;
   description: string;
-  start_date: string | null; // YYYY-MM-DD or null
-  end_date?: string | null;   // YYYY-MM-DD or null
-  times_of_day?: string[];    // Array of "HH:MM"
+  start_date: string | null; 
+  end_date?: string | null;   
+  times_of_day?: string[];   
   recurrence_rule?: string | null;
-  assignedTo?: string | null; // User ID string or null
+  assignedTo?: string | null; 
   priority?: 'low' | 'high' | null;
 }
 
 interface AiGeneratedTasksRequestBody {
   groupID: string;
-  userID: string; //user created task 
+  userID: string; 
   tasks: AiTaskData[];
 }
 
@@ -75,7 +75,6 @@ export const createTask = async (req: TypedRequest<TaskBody>, res: Response): Pr
   try {
     const { title, groupID, assignedBy, assignedTo, description, deadline, priority, reminder } = req.body;
 
-    // Validate that assignee exists if assignedTo is chosen
     if (assignedTo) {
       const assignee = await User.findById(assignedTo);
       if (!assignee) {
@@ -83,7 +82,6 @@ export const createTask = async (req: TypedRequest<TaskBody>, res: Response): Pr
         return;
       }
     }
-    // Process reminder data
     let reminderData;
     if (reminder) {
       reminderData = {
@@ -118,8 +116,8 @@ export const createTask = async (req: TypedRequest<TaskBody>, res: Response): Pr
 export const getTask = async (req: TypedRequest<any, TaskParams>, res: Response): Promise<void> => {
   try {
     const task = await Task.findById(req.params.taskID)
-      .populate('assignedTo', 'name email role') // Include assignee details
-      .populate('assignedBy', 'name email role'); // Include assigner details
+      .populate('assignedTo', 'name email role') 
+      .populate('assignedBy', 'name email role'); 
 
     if (!task) {
       res.status(404).json({ message: 'Task not found' });
@@ -133,9 +131,9 @@ export const getTask = async (req: TypedRequest<any, TaskParams>, res: Response)
 };
 
 // Update a task
-export const updateTask = async (req: UserRequest, res: Response): Promise<void> => { // Assuming TaskParams in UserRequest
+export const updateTask = async (req: UserRequest, res: Response): Promise<void> => {
   try {
-    const { taskID } = req.params as unknown as TaskParams; // Cast if params are not directly on UserRequest type
+    const { taskID } = req.params as unknown as TaskParams; 
     const updateData: Partial<any> = { ...req.body };
 
     if (req.body.hasOwnProperty('assignedTo') && req.body.assignedTo === null) {
@@ -157,7 +155,7 @@ export const updateTask = async (req: UserRequest, res: Response): Promise<void>
         recurrence_rule: req.body.reminder.recurrence_rule || undefined,
       };
       if (Object.keys(req.body.reminder).length === 0) {
-        updateData.reminder = undefined; // Or $unset: { reminder: 1 } in MongoDB update
+        updateData.reminder = undefined; 
       }
     } else if (req.body.hasOwnProperty('reminder') && req.body.reminder === null) {
         updateData.reminder = undefined; 
@@ -166,7 +164,7 @@ export const updateTask = async (req: UserRequest, res: Response): Promise<void>
 
     const task = await Task.findByIdAndUpdate(
       taskID,
-      { $set: updateData }, // Use $set to only update provided fields
+      { $set: updateData }, 
       { new: true, runValidators: true }
     ).populate('assignedTo', 'name email role')
      .populate('assignedBy', 'name email role');
@@ -313,14 +311,6 @@ export const getRecentGroupTasks = async (req: TypedRequest<any, { groupID: stri
   try {
     const { groupID } = req.params;
     const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 5;
-    // Option 1: Use createdAt within last hour
-    // const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    // const tasks = await Task.find({ groupID, createdAt: { $gte: oneHourAgo } })
-    //   .sort({ createdAt: -1 })
-    //   .limit(limit)
-    //   .populate('assignedBy', 'name email')
-    //   .populate('assignedTo', 'name email');
-    // Option 2: Just get N most recent
     const tasks = await Task.find({ groupID })
       .sort({ createdAt: -1 })
       .limit(limit)
@@ -332,12 +322,10 @@ export const getRecentGroupTasks = async (req: TypedRequest<any, { groupID: stri
   }
 };
 
-// Check for overdue tasks and trigger notifications
 export const checkOverdueTasks = async (): Promise<void> => {
   try {
     const now = new Date();
     
-    // Find non-completed tasks with passed deadlines that haven't been escalated
     const overdueTasks = await Task.find({
       deadline: { $lt: now },
       status: { $ne: 'done' },
@@ -345,19 +333,15 @@ export const checkOverdueTasks = async (): Promise<void> => {
     }).populate('assignedTo').populate('assignedBy');
     
     for (const task of overdueTasks) {
-      // Mark as escalated to prevent duplicate notifications
       task.escalated = true;
       await task.save();
-      // Find appropriate backup users based on role hierarchy
       let backupUserIds: string[] = [];
       if (!task.assignedTo) continue;
-      // Ensure assignedTo is populated as a User document
       const assignedToUser = typeof task.assignedTo === 'object' && task.assignedTo !== null && 'role' in task.assignedTo ? task.assignedTo : await User.findById(task.assignedTo);
       if (!assignedToUser) continue;
       
       switch(assignedToUser.role) {
         case 'care_bear':
-          // Escalate to care moms and admins
           const caregivers = await User.find({ 
             role: { $in: ['care_mom', 'admin'] },
             _id: { $ne: assignedToUser._id }
@@ -366,13 +350,11 @@ export const checkOverdueTasks = async (): Promise<void> => {
           break;
           
         case 'care_mom':
-          // Escalate to admins
           const admins = await User.find({ role: 'admin' });
           backupUserIds = admins.map(user => user._id && typeof user._id === 'object' && 'toString' in user._id ? user._id.toString() : String(user._id));
           break;
           
         default:
-          // No escalation for admin tasks
           break;
       }
       
