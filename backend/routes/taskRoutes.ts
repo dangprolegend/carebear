@@ -55,7 +55,7 @@ const router: Router = express.Router();
  */
 
 // Create new task (carebear only)
-router.post('/', canManageTasks, createTask);
+router.post('/', createTask);
 
 
 /**

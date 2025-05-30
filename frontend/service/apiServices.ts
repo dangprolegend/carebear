@@ -244,3 +244,27 @@ export const fetchRecentTasksForGroup = async (
   const backendTasks: BackendTask[] = await handleApiResponse(response);
   return backendTasks.map(mapBackendTaskToFrontend);
 };
+
+/**
+ * Creates a new manual task.
+ * @param payload The data for the new task.
+ * @returns A promise that resolves to the created task data, mapped to FrontendTaskType.
+ */
+export const createManualTaskAPI = async (
+  payload: Partial<BackendTask>
+): Promise<FrontendTaskType> => {
+  const token = await getClerkToken();
+  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
+
+  const url = `${API_BASE_URL}/api/tasks`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  const createdBackendTask: BackendTask = await handleApiResponse(response);
+  return mapBackendTaskToFrontend(createdBackendTask);
+};
