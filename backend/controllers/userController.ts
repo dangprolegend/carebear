@@ -198,6 +198,23 @@ export const getUserIdByClerkId = async (req: Request, res: Response): Promise<v
   }
 };
 
+// Get full name and image URL of a user by userID
+export const getUserInfo = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userID } = req.params;
+    const user = await User.findById(userID).select('firstName lastName imageURL');
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+    const imageURL = user.imageURL || null;
+    res.status(200).json({ fullName, imageURL });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
+
 // Get dashboard metrics for a user
 // export const getUserMetrics = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
 //   try {
