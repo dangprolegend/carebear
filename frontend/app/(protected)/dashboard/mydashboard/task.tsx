@@ -16,9 +16,9 @@ export type Task = {
   checked?: boolean;         // Usually derived from backendTask.status === 'done'
   priority?: 'low' | 'medium' | 'high' | null; // From backend
   status?: 'pending' | 'in-progress' | 'done';   // From backend
+  assignedTo?: string | null; // User ID string for assignment (added for AI review flow)
 
   // Optional: If you need to pass down original backend objects or more complex data
-  // assignedTo?: { _id: string; name?: string; email?: string } | null;
   // assignedBy?: { _id: string; name?: string; email?: string };
 
   // This onPress will be attached by the parent component (e.g., DashboardBase)
