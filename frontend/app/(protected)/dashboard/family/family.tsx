@@ -46,6 +46,10 @@ export default function Family() {
   // Daily status display states
   const [todayMoodEmoji, setTodayMoodEmoji] = useState<string>('');
   const [todayBodyEmoji, setTodayBodyEmoji] = useState<string>('');
+
+   // Family members state
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+  const [isLoadingFamily, setIsLoadingFamily] = useState(false);
   
   // Available families 
   const [availableFamilies, setAvailableFamilies] = useState<Family[]>([
@@ -72,11 +76,13 @@ export default function Family() {
 
   // Helper function to get emoji from value
   const getMoodEmoji = (moodValue: string): string => {
+    if (moodValue === '') return '👤';
     const mood = moods.find(m => m.value === moodValue);
     return mood ? mood.emoji : '';
   };
 
   const getBodyEmoji = (bodyValue: string): string => {
+    if (bodyValue === '') return '👤';
     const body = bodyFeelings.find(b => b.value === bodyValue);
     return body ? body.emoji : '';
   };
@@ -92,6 +98,55 @@ export default function Family() {
     } catch (error) {
       console.error('Error fetching today\'s status:', error);
       // Keep emojis empty if there's an error or no data
+    }
+  };
+
+  // Fetch family member's daily status
+  const fetchMemberStatus = async (memberUserID: string) => {
+    try {
+      const response = await axios.get(`https://carebear-backend.onrender.com/api/daily/today/${memberUserID}`);
+      if (response.data && response.data.mood && response.data.body) {
+        return {
+          mood: response.data.mood,
+          body: response.data.body
+        };
+      }
+      return { mood: '👤', body: '👤' };
+    } catch (error) {
+      // Handle 404 specifically - user hasn't submitted status today
+      if (error.response && error.response.status === 404) {
+        console.log(`Family member ${memberUserID} hasn't submitted status today`);
+        return { mood: '', body: '' };
+      }
+      console.error('Error fetching member status:', error);
+      return { mood: '', body: '' };
+    }
+  };
+
+  // Fetch family members
+  const fetchFamilyMembers = async (userID: string) => {
+    try {
+      setIsLoadingFamily(true);
+      const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/familyMembers`);
+      
+      // Fetch daily status for each family member
+      const membersWithStatus = await Promise.all(
+        response.data.map(async (member: any) => {
+          const status = await fetchMemberStatus(member.userID);
+          return {
+            ...member,
+            mood: status.mood,
+            body: status.body
+          };
+        })
+      );
+      
+      setFamilyMembers(membersWithStatus);
+    } catch (error) {
+      console.error('Error fetching family members:', error);
+      setFamilyMembers([]);
+    } finally {
+      setIsLoadingFamily(false);
     }
   };
 
@@ -129,7 +184,7 @@ export default function Family() {
     checkDailyStatus();
   }, [isSignedIn, userId]);
 
-  // Fetch user imageURL after userID is set
+  // Fetch user imageURL and family members after userID is set
   useEffect(() => {
     const fetchUserInfo = async () => {
       if (userID) {
@@ -137,6 +192,9 @@ export default function Family() {
           const res = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/info`);
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
+          
+          // Fetch family members after getting user info
+          await fetchFamilyMembers(userID);
         } catch (err) {
           console.error('Failed to fetch user info:', err);
         }
@@ -144,6 +202,7 @@ export default function Family() {
     };
     fetchUserInfo();
   }, [userID]);
+
 
   // Handle daily status submission
   const handleSubmitDailyStatus = async () => {
@@ -165,6 +224,9 @@ export default function Family() {
         mood: selectedMood,
         body: selectedBodyFeeling,
       });
+
+      // Immediately fetch and update today's status emojis after successful submission
+      await fetchTodayStatus(userID);
 
       // Reset selections
       setSelectedMood('');
@@ -230,6 +292,61 @@ export default function Family() {
     </TouchableOpacity>
   );
 
+  // FamilyMemberCard Component
+  const FamilyMemberCard = ({ 
+    member, 
+    isCurrentUser = false 
+  }: { 
+    member: FamilyMember; 
+    isCurrentUser?: boolean; 
+  }) => (
+    <View className='flex flex-row p-4 items-center gap-4 rounded-lg border border-[#2A1800] mx-4 mt-4'>
+      <Image
+        source={{ uri: member.imageURL }}
+        className="w-10 h-10 rounded-full flex-shrink-0"
+      />
+      <View className="flex flex-col justify-center items-start gap-2 flex-1">
+        <View className="flex flex-row items-center gap-2">
+          <Text className="text-[#222] font-lato text-base font-extrabold leading-6 tracking-[0.3px]">
+            {member.fullName}
+          </Text>
+          {isCurrentUser && (
+            <Text className='text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]'>
+              Me
+            </Text>
+          )}
+        </View>
+        
+        <View className="flex flex-row items-center gap-2">
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Text className="text-xs">{getMoodEmoji(member.mood || '')}</Text>
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Text className="text-xs">{getBodyEmoji(member.body || '')}</Text>
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Image source={PillIcon} className="w-3.5 h-3.5" />
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Image source={PillBotte} className="w-3.5 h-3.5" />
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Image source={Moon} className="w-3.5 h-3.5" />
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Image source={Scale} className="w-3.5 h-3.5" />
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Image source={Foot} className="w-3.5 h-3.5" />
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Image source={Dumbbell} className="w-3.5 h-3.5" />
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+
   // Show loading screen while checking status
   if (isCheckingStatus) {
     return (
@@ -243,50 +360,53 @@ export default function Family() {
   return (
     <View className="flex-1">
       <ScrollView className="flex-1">
-        <View className='flex flex-row p-4 items-center gap-4 rounded-lg border border-[#2A1800] mt-10 mx-4 self-center'>
-          <Image
-            source={{ uri: userImageURL }}
-            className="w-10 h-10 rounded-full flex-shrink-0"
-          />
-          <View className="flex flex-col justify-center items-start gap-2 flex-1">
-            <View className="flex flex-row items-center gap-2">
-              <Text className="text-[#222] font-lato text-base font-extrabold leading-6 tracking-[0.3px]">
-                {userFullName}
-              </Text>
-              <Text className='text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]'>
-                Me
-              </Text>
+        <View className='px-4'>
+          <View className='flex flex-row p-4 items-center gap-4 rounded-lg border border-[#2A1800] mx-4 mt-10'>
+            <Image
+              source={{ uri: userImageURL }}
+              className="w-10 h-10 rounded-full flex-shrink-0"
+            />
+            <View className="flex flex-col justify-center items-start gap-2 flex-1">
+              <View className="flex flex-row items-center gap-2">
+                <Text className="text-[#222] font-lato text-base font-extrabold leading-6 tracking-[0.3px]">
+                  {userFullName}
+                </Text>
+                <Text className='text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]'>
+                  Me
+                </Text>
+              </View>
+              
+              <View className="flex flex-row items-center gap-2">
+                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+                  <Text className="text-xs">{todayMoodEmoji}</Text>
+                </View>
+                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+                  <Text className="text-xs">{todayBodyEmoji}</Text>
+                </View>
+                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+                  <Image source={PillIcon} className="w-3.5 h-3.5" />
+                </View>
+                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+                  <Image source={PillBotte} className="w-3.5 h-3.5" />
+                </View>
+                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+                  <Image source={Moon} className="w-3.5 h-3.5" />
+                </View>
+                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+                  <Image source={Scale} className="w-3.5 h-3.5" />
+                </View>
+                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+                  <Image source={Foot} className="w-3.5 h-3.5" />
+                </View>
+                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+                  <Image source={Dumbbell} className="w-3.5 h-3.5" />
+                </View>
+              </View>
+              
             </View>
-            
-            <View className="flex flex-row items-center gap-2">
-              <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                <Text className="text-xs">{todayMoodEmoji}</Text>
-              </View>
-              <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                <Text className="text-xs">{todayBodyEmoji}</Text>
-              </View>
-              <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                <Image source={PillIcon} className="w-3.5 h-3.5" />
-              </View>
-              <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                <Image source={PillBotte} className="w-3.5 h-3.5" />
-              </View>
-              <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                <Image source={Moon} className="w-3.5 h-3.5" />
-              </View>
-              <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                <Image source={Scale} className="w-3.5 h-3.5" />
-              </View>
-              <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                <Image source={Foot} className="w-3.5 h-3.5" />
-              </View>
-              <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                <Image source={Dumbbell} className="w-3.5 h-3.5" />
-              </View>
-            </View>
-            
           </View>
         </View>
+        {/* User's Card */}
 
         {/* Family Management Header */}
         <View className="px-4 mt-8">
@@ -321,9 +441,25 @@ export default function Family() {
               </Pressable>
             </ScrollView>
           </View>
-
+          {/* Family Members Cards */}
+        {isLoadingFamily ? (
+          <View className="flex-1 justify-center items-center py-8">
+            <ActivityIndicator size="large" color="#2A1800" />
+            <Text className="mt-4 text-gray-600">Loading family members...</Text>
+          </View>
+        ) : (
+          familyMembers.map((member) => (
+            <FamilyMemberCard 
+              key={member.userID}
+              member={member}
+              isCurrentUser={false}
+            />
+          ))
+        )}
         </View>
       </ScrollView>
+
+  
 
       {/* Add Family Modal Component */}
       <AddFamily
