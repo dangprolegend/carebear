@@ -1,15 +1,16 @@
-
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Pressable, Alert, ActivityIndicator, TextInput, ScrollView } from 'react-native';
+import { View, Text, FlatList, Pressable, Alert, ActivityIndicator, TextInput, ScrollView, Platform, Modal } from 'react-native';
 import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Task as OriginalTaskType } from '../task'; 
+import { fetchRecentTasksForGroup, updateTask, fetchUsersInGroup } from '../../../../../service/apiServices';
 
 type FrontendTaskType = OriginalTaskType & {
   endDate?: string;
 };
-import { fetchRecentTasksForGroup, updateTask } from '../../../../../service/apiServices';
+
 interface AiGeneratedTasksReviewScreenProps {
   generatedTasksJSON?: string;
   groupID?: string | null;
@@ -44,6 +45,12 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
   const [aiTasks, setAiTasks] = useState<FrontendTaskType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [assigneeOptions, setAssigneeOptions] = useState<{ label: string; value: string }[]>([]);
+  const [showRecurrenceDropdown, setShowRecurrenceDropdown] = useState(false);
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [showTimesDropdown, setShowTimesDropdown] = useState(false);
 
   const fetchAndDisplayRecentTasks = async () => {
     if (!groupID) {
@@ -168,6 +175,24 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
     Alert.alert('Success', 'All edited tasks updated.');
   };
 
+  useEffect(() => {
+    const fetchAssignees = async () => {
+      if (!groupID) return;
+      try {
+        const users = await fetchUsersInGroup(groupID);
+        setAssigneeOptions(
+          users.map((user: any) => ({
+            label: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email,
+            value: user._id
+          }))
+        );
+      } catch (e) {
+        setAssigneeOptions([]);
+      }
+    };
+    fetchAssignees();
+  }, [groupID]);
+
   if (aiTasks.length === 0 && !isLoading) { 
     return (
         <View className="flex-1 bg-white">
@@ -215,65 +240,122 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
 
         {/* Assigned To */}
         <Text className="font-semibold mb-2">Assigned To</Text>
-        <View className="border rounded-lg mb-8 px-3 py-3 bg-white">
-          {/** Replace this with your actual user list */}
-          {[
-            { id: 'user1', name: 'Alice' },
-            { id: 'user2', name: 'Bob' },
-            { id: 'user3', name: 'Charlie' },
-          ].map(user => (
-            <Pressable
-              key={user.id}
-              className={`py-2 ${formTasks[activeTab]?.assignedTo === user.id ? 'bg-blue-100' : ''}`}
-              onPress={() => handleInputChange('assignedTo', user.id)}
-            >
-              <Text className={`text-base ${formTasks[activeTab]?.assignedTo === user.id ? 'font-bold text-blue-700' : 'text-black'}`}>
-                {user.name}
-              </Text>
-            </Pressable>
-          ))}
+        <View className="border rounded-lg mb-8 px-3 py-3 bg-white relative">
+          <Pressable
+            className="flex-row items-center justify-between"
+            onPress={() => setShowAssigneeDropdown(prev => !prev)}
+          >
+            <Text className="text-base">
+              {assigneeOptions.find(opt => opt.value === formTasks[activeTab]?.assignedTo)?.label || 'Select Assignee'}
+            </Text>
+            <MaterialIcons name={showAssigneeDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
+          </Pressable>
+          {showAssigneeDropdown && (
+            <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg max-h-60">
+              <ScrollView>
+                {assigneeOptions.length === 0 ? (
+                  <Text className="text-slate-400 px-3 py-2">No users found</Text>
+                ) : (
+                  assigneeOptions.map(user => (
+                    <Pressable
+                      key={user.value}
+                      className={`py-2 px-3 ${formTasks[activeTab]?.assignedTo === user.value ? 'bg-blue-100' : ''}`}
+                      onPress={() => {
+                        handleInputChange('assignedTo', user.value);
+                        setShowAssigneeDropdown(false);
+                      }}
+                    >
+                      <Text className={`text-base ${formTasks[activeTab]?.assignedTo === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>
+                        {user.label}
+                      </Text>
+                    </Pressable>
+                  ))
+                )}
+              </ScrollView>
+            </View>
+          )}
         </View>
 
         {/* Start Date */}
         <Text className="font-semibold mb-2">Start Date</Text>
         <Pressable
+          className="border rounded-lg px-3 py-3 mb-8 bg-white flex-row items-center justify-between"
           onPress={() => {
-            DateTimePickerAndroid.open({
-              value: formTasks[activeTab]?.datetime ? new Date(formTasks[activeTab].datetime) : new Date(),
-              mode: 'date',
-              onChange: (event, selectedDate) => {
-                if (selectedDate) {
-                  // Keep time part if present, else just set date
-                  const prev = formTasks[activeTab]?.datetime ? new Date(formTasks[activeTab].datetime) : new Date();
-                  selectedDate.setHours(prev.getHours(), prev.getMinutes(), prev.getSeconds());
-                  handleInputChange('datetime', selectedDate.toISOString());
-                }
-              },
-            });
+            if (Platform.OS === 'android') {
+              DateTimePickerAndroid.open({
+                value: formTasks[activeTab]?.datetime ? new Date(formTasks[activeTab].datetime) : new Date(),
+                mode: 'date',
+                onChange: (event, selectedDate) => {
+                  if (selectedDate) {
+                    // Keep time part if present, else just set date
+                    const prev = formTasks[activeTab]?.datetime ? new Date(formTasks[activeTab].datetime) : new Date();
+                    selectedDate.setHours(prev.getHours(), prev.getMinutes(), prev.getSeconds());
+                    handleInputChange('datetime', selectedDate.toISOString());
+                  }
+                },
+              });
+            } else {
+              setShowStartDatePicker(true);
+            }
           }}
-          
         >
           <Text className="text-base text-black">
             {formTasks[activeTab]?.datetime
               ? new Date(formTasks[activeTab].datetime).toLocaleDateString()
               : 'Select Start Date'}
           </Text>
+          <MaterialIcons name="calendar-today" size={22} color="#888" />
         </Pressable>
+        {/* iOS Date Picker Modal for Start Date */}
+        {Platform.OS === 'ios' && (
+          <Modal
+            visible={showStartDatePicker}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setShowStartDatePicker(false)}
+          >
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+              <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 20, width: 320 }}>
+                <DateTimePicker
+                  value={formTasks[activeTab]?.datetime ? new Date(formTasks[activeTab].datetime) : new Date()}
+                  mode="date"
+                  display="spinner"
+                  onChange={(_, selectedDate) => {
+                    if (selectedDate) {
+                      // Keep time part if present, else just set date
+                      const prev = formTasks[activeTab]?.datetime ? new Date(formTasks[activeTab].datetime) : new Date();
+                      selectedDate.setHours(prev.getHours(), prev.getMinutes(), prev.getSeconds());
+                      handleInputChange('datetime', selectedDate.toISOString());
+                    }
+                    setShowStartDatePicker(false);
+                  }}
+                />
+                <Pressable onPress={() => setShowStartDatePicker(false)} style={{ marginTop: 10, alignSelf: 'flex-end' }}>
+                  <Text style={{ color: 'black', fontWeight: 'bold' }}>Done</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
+        )}
 
+        {/* End Date */}
         <Text className="font-semibold mb-2">End Date</Text>
         <Pressable
-          className="border rounded-lg px-3 py-3 mb-8 bg-white"
+          className="border rounded-lg px-3 py-3 mb-8 bg-white flex-row items-center justify-between"
           onPress={() => {
-            DateTimePickerAndroid.open({
-              value: formTasks[activeTab]?.endDate ? new Date(formTasks[activeTab].endDate) : new Date(),
-              mode: 'date',
-              onChange: (event, selectedDate) => {
-                if (selectedDate) {
-                  // Store as ISO string in a new field 'endDate'
-                  handleInputChange('endDate' as any, selectedDate.toISOString());
-                }
-              },
-            });
+            if (Platform.OS === 'android') {
+              DateTimePickerAndroid.open({
+                value: formTasks[activeTab]?.endDate ? new Date(formTasks[activeTab].endDate) : new Date(),
+                mode: 'date',
+                onChange: (event, selectedDate) => {
+                  if (selectedDate) {
+                    handleInputChange('endDate' as any, selectedDate.toISOString());
+                  }
+                },
+              });
+            } else {
+              setShowEndDatePicker(true);
+            }
           }}
         >
           <Text className="text-base text-black">
@@ -281,25 +363,105 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
               ? new Date(formTasks[activeTab].endDate).toLocaleDateString()
               : 'Select End Date'}
           </Text>
+          <MaterialIcons name="calendar-today" size={22} color="#888" />
         </Pressable>
+        {/* iOS Date Picker Modal for End Date */}
+        {Platform.OS === 'ios' && (
+          <Modal
+            visible={showEndDatePicker}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setShowEndDatePicker(false)}
+          >
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+              <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 20, width: 320 }}>
+                <DateTimePicker
+                  value={formTasks[activeTab]?.endDate ? new Date(formTasks[activeTab].endDate) : new Date()}
+                  mode="date"
+                  display="spinner"
+                  onChange={(_, selectedDate) => {
+                    if (selectedDate) {
+                      handleInputChange('endDate' as any, selectedDate.toISOString());
+                    }
+                    setShowEndDatePicker(false);
+                  }}
+                />
+                <Pressable onPress={() => setShowEndDatePicker(false)} style={{ marginTop: 10, alignSelf: 'flex-end' }}>
+                  <Text style={{ color: 'black', fontWeight: 'bold' }}>Done</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
+        )}
 
         {/* Times of Day */}
         <Text className="font-semibold mb-2">Times of Day</Text>
-        <TextInput
-          className="border rounded-lg px-3 py-3 mb-8"
-          placeholder="09:00,17:00"
-          value={formTasks[activeTab]?.detail || ''}
-          onChangeText={text => handleInputChange('detail', text)}
-        />
+        <View className="border rounded-lg mb-8 px-3 py-3 bg-white relative">
+          <Pressable
+            className="flex-row items-center justify-between"
+            onPress={() => setShowTimesDropdown(prev => !prev)}
+          >
+            <Text className="text-base">
+              {formTasks[activeTab]?.detail ? formTasks[activeTab]?.detail : 'Select Time'}
+            </Text>
+            <MaterialIcons name={showTimesDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
+          </Pressable>
+          {showTimesDropdown && (
+            <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg max-h-60">
+              <ScrollView>
+                {Array.from({ length: 24 }).map((_, hour) => {
+                  const label = hour.toString().padStart(2, '0') + ':00';
+                  return (
+                    <Pressable
+                      key={label}
+                      className={`py-2 px-3 ${formTasks[activeTab]?.detail === label ? 'bg-blue-100' : ''}`}
+                      onPress={() => {
+                        handleInputChange('detail', label);
+                        setShowTimesDropdown(false);
+                      }}
+                    >
+                      <Text className={`text-base ${formTasks[activeTab]?.detail === label ? 'font-bold text-blue-700' : 'text-black'}`}>{label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          )}
+        </View>
 
         {/* Recurrence */}
         <Text className="font-semibold mb-2">Recurrence</Text>
-        <TextInput
-          className="border rounded-lg px-3 py-3 mb-8"
-          placeholder="DAILY/WEEKLY/NONE"
-          value={formTasks[activeTab]?.subDetail || ''}
-          onChangeText={text => handleInputChange('subDetail', text)}
-        />
+        <View className="border rounded-lg mb-8 px-3 py-3 bg-white relative">
+          <Pressable
+            className="flex-row items-center justify-between"
+            onPress={() => setShowRecurrenceDropdown(!showRecurrenceDropdown)}
+          >
+            <Text className="text-base">
+              {['NONE', 'DAILY', 'WEEKLY', 'MONTHLY'].includes(formTasks[activeTab]?.subDetail || '') && formTasks[activeTab]?.subDetail
+                ? formTasks[activeTab]?.subDetail.charAt(0) + formTasks[activeTab]?.subDetail.slice(1).toLowerCase()
+                : 'Select Recurrence'}
+            </Text>
+            <MaterialIcons name={showRecurrenceDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
+          </Pressable>
+          {showRecurrenceDropdown && (
+            <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg">
+              {['NONE', 'DAILY', 'WEEKLY', 'MONTHLY'].map(option => (
+                <Pressable
+                  key={option}
+                  className={`py-2 px-3 ${formTasks[activeTab]?.subDetail === option ? 'bg-blue-100' : ''}`}
+                  onPress={() => {
+                    handleInputChange('subDetail', option);
+                    setShowRecurrenceDropdown(false);
+                  }}
+                >
+                  <Text className={`text-base ${formTasks[activeTab]?.subDetail === option ? 'font-bold text-blue-700' : 'text-black'}`}>
+                    {option.charAt(0) + option.slice(1).toLowerCase()}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </View>
 
         {/* Purpose */}
         <Text className="font-semibold mb-2">Purpose</Text>

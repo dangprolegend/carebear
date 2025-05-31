@@ -1,6 +1,6 @@
 import { Task as FrontendTaskType } from '../app/(protected)/dashboard/mydashboard/task'; 
 
-const API_BASE_URL = "https://dd22-171-252-107-57.ngrok-free.app" ; 
+const API_BASE_URL = "https://7c90-2402-800-6f5f-1c4b-95fe-42d6-aa61-12d7.ngrok-free.app" ; 
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
@@ -267,4 +267,26 @@ export const createManualTaskAPI = async (
   });
   const createdBackendTask: BackendTask = await handleApiResponse(response);
   return mapBackendTaskToFrontend(createdBackendTask);
+};
+
+/**
+ * Fetches all users in a group by groupID.
+ * @param groupID The ID of the group to fetch users for.
+ * @returns A promise that resolves to an array of user objects.
+ */
+export const fetchUsersInGroup = async (groupID: string): Promise<any[]> => {
+  const token = await getClerkToken();
+  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
+  if (!groupID) throw new ApiError("Group ID is required to fetch users.", 400);
+
+  const url = `${API_BASE_URL}/api/groups/${groupID}/users`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  const users = await handleApiResponse(response);
+  return users;
 };

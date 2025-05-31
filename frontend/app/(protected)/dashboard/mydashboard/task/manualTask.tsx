@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, Alert, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, Alert, ActivityIndicator, Platform, Modal } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
-import { createManualTaskAPI } from '../../../../../service/apiServices'; // ADJUST PATH
+import { createManualTaskAPI, fetchUsersInGroup } from '../../../../../service/apiServices'; // ADJUST PATH
 
 type ManualTaskFormProps = {
   currentUserID: string | null; 
@@ -37,12 +37,32 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const [showDateRangeModal, setShowDateRangeModal] = useState(false);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
   const [showTimesDropdown, setShowTimesDropdown] = useState(false);
   const [showRecurrenceDropdown, setShowRecurrenceDropdown] = useState(false);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [tempStartDate, setTempStartDate] = useState(manualForm.startDateString ? new Date(manualForm.startDateString) : new Date());
   const [tempEndDate, setTempEndDate] = useState(manualForm.endDateString ? new Date(manualForm.endDateString) : new Date());
+  const [assigneeOptions, setAssigneeOptions] = useState<{ label: string; value: string }[]>([]);
+
+  useEffect(() => {
+    const fetchAssignees = async () => {
+      if (!currentGroupID) return;
+      try {
+        const users = await fetchUsersInGroup(currentGroupID);
+        setAssigneeOptions(
+          users.map((user: any) => ({
+            label: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email,
+            value: user._id
+          }))
+        );
+      } catch (e) {
+        setAssigneeOptions([]);
+      }
+    };
+    fetchAssignees();
+  }, [currentGroupID]);
 
   const handleInputChange = (field: keyof ManualTaskData, value: string | null) => {
     setManualForm(prev => ({ ...prev, [field]: value }));
@@ -135,244 +155,223 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
         onChangeText={text => handleInputChange('title', text)}
       />
 
+      {/* Assigned To */}
       <Text className="font-semibold mb-2">Assigned To</Text>
-      <View className="border border-[0.5px] rounded-lg px-3 py-1 mb-8 bg-white">
+      <View className="border rounded-lg mb-8 px-3 py-3 bg-white relative">
         <Pressable
-          className="py-2.5"
-          onPress={() => setShowAssigneeDropdown(true)}
+          className="flex-row items-center justify-between"
+          onPress={() => setShowAssigneeDropdown(prev => !prev)}
         >
-          <Text>
-            {manualForm.assignedToId === '681ed8ef263e811447b9f1a1'
-              ? 'Minh Le'
-              : manualForm.assignedToId === '6822b2e0a8f4a090c6b13f8a'
-              ? 'Luigi'
-              : manualForm.assignedToId === '682d4cb8b00f754d18bc6584'
-              ? 'Dang Nguyen'
-              : 'Select Assignee'}
+          <Text className="text-base">
+            {assigneeOptions.find(opt => opt.value === manualForm.assignedToId)?.label || 'Select Assignee'}
           </Text>
+          <MaterialIcons name={showAssigneeDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
         </Pressable>
-        <Modal
-          visible={!!showAssigneeDropdown}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowAssigneeDropdown(false)}
-        >
-          <Pressable
-            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.2)' }}
-            onPress={() => setShowAssigneeDropdown(false)}
-          >
-            <View style={{
-              backgroundColor: 'white',
-              borderRadius: 8,
-              margin: 300,
-              marginLeft: 50,
-              padding: 10,
-              alignSelf: 'flex-start',
-              width: 220
-            }}>
-              {[
-          { label: 'Minh Le', value: '681ed8ef263e811447b9f1a1' },
-          { label: 'Luigi', value: '6822b2e0a8f4a090c6b13f8a' },
-          { label: 'Dang Nguyen', value: '682d4cb8b00f754d18bc6584' }
-              ].map(opt => (
-          <Pressable
-            key={opt.value}
-            onPress={() => {
-              handleInputChange('assignedToId', opt.value);
-              setShowAssigneeDropdown(false);
-            }}
-            style={{
-              paddingVertical: 12,
-              borderBottomWidth: opt.value !== 'user3' ? 0.5 : 0,
-              borderColor: '#eee'
-            }}
-          >
-            <Text>{opt.label}</Text>
-          </Pressable>
-              ))}
-            </View>
-          </Pressable>
-        </Modal>
-      </View>
-
-      <Text className="font-semibold mb-2">Date Range</Text>
-      <Pressable
-        className="border border-[0.5px] rounded-lg px-3 py-2 mb-4 bg-white"
-        onPress={() => setShowDateRangeModal(true)}
-      >
-        <Text>
-          {manualForm.startDateString && manualForm.endDateString
-            ? `${manualForm.startDateString} - ${manualForm.endDateString}`
-            : 'Select Date Range'}
-        </Text>
-      </Pressable>
-
-      {/* Date Range Modal */}
-      <Modal
-        visible={showDateRangeModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowDateRangeModal(false)}
-      >
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
-          <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 20, width: 320 }}>
-            <Text className="mb-2 font-semibold">Select Start Date</Text>
-            <DateTimePicker
-              value={tempStartDate}
-              mode="date"
-              display="default"
-              onChange={(_, selectedDate) => {
-                if (selectedDate) setTempStartDate(selectedDate);
-              }}
-            />
-            <Text className="mb-2 mt-4 font-semibold">Select End Date</Text>
-            <DateTimePicker
-              value={tempEndDate}
-              mode="date"
-              display="default"
-              onChange={(_, selectedDate) => {
-                if (selectedDate) setTempEndDate(selectedDate);
-              }}
-            />
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 20 }}>
-              <Pressable
-                style={{ marginRight: 16 }}
-                onPress={() => setShowDateRangeModal(false)}
-              >
-                <Text style={{ color: 'black', fontWeight: 'medium' }}>Cancel</Text>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  handleInputChange('startDateString', tempStartDate.toISOString().slice(0, 10));
-                  handleInputChange('endDateString', tempEndDate.toISOString().slice(0, 10));
-                  setShowDateRangeModal(false);
-                }}
-              >
-                <Text style={{ color: 'black', fontWeight: 'bold' }}>Save</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
-
-      <View className="flex-row mb-8 items-center">
-        <View className="flex-1 mr-2">
-          <Pressable
-        className="border border-[0.5px] rounded-lg px-2 py-2 bg-white"
-        onPress={() => setShowTimesDropdown(true)}
-          >
-        <Text>
-          {manualForm.timesOfDayInput
-            ? manualForm.timesOfDayInput
-            : 'Select Time'}
-        </Text>
-          </Pressable>
-          {/* Times Dropdown Modal */}
-          <Modal
-        visible={!!showTimesDropdown}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowTimesDropdown(false)}
-          >
-        <Pressable
-          style={{  backgroundColor: 'rgba(0,0,0,0.2)' }}
-          onPress={() => setShowTimesDropdown(false)}
-        >
-          <View style={{
-            backgroundColor: 'white',
-            borderRadius: 8,
-            margin: 360,
-            marginLeft: 50,
-            padding: 10,
-            alignSelf: 'flex-start',
-            width: 200
-          }}>
+        {showAssigneeDropdown && (
+          <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg max-h-60">
             <ScrollView>
-          {Array.from({ length: 24 }).map((_, hour) => {
-            const label = hour.toString().padStart(2, '0') + ':00';
-            return (
-              <Pressable
-            key={label}
-            onPress={() => {
-              handleInputChange('timesOfDayInput', label);
-              setShowTimesDropdown(false);
-            }}
-            style={{
-              paddingVertical: 10,
-              borderBottomWidth: hour < 23 ? 0.5 : 0,
-              borderColor: '#eee'
-            }}
-              >
-            <Text>{label}</Text>
-              </Pressable>
-            );
-          })}
+              {assigneeOptions.length === 0 ? (
+                <Text className="text-slate-400 px-3 py-2">No users found</Text>
+              ) : (
+                assigneeOptions.map(user => (
+                  <Pressable
+                    key={user.value}
+                    className={`py-2 px-3 ${manualForm.assignedToId === user.value ? 'bg-blue-100' : ''}`}
+                    onPress={() => {
+                      handleInputChange('assignedToId', user.value);
+                      setShowAssigneeDropdown(false);
+                    }}
+                  >
+                    <Text className={`text-base ${manualForm.assignedToId === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>{user.label}</Text>
+                  </Pressable>
+                ))
+              )}
             </ScrollView>
           </View>
-        </Pressable>
-          </Modal>
-        </View>
+        )}
+      </View>
 
-        {/* Recurrence Dropdown (Touchable) */}
-        <View className="w-32">
-          <Pressable
-        className="border border-[0.5px] rounded-lg px-2 py-2 bg-white"
-        onPress={() => setShowRecurrenceDropdown(true)}
-          >
-        <Text>
-          {{
-            NONE: 'None',
-            DAILY: 'Daily',
-            WEEKLY: 'Weekly',
-            MONTHLY: 'Monthly'
-          }[manualForm.recurrenceRule || 'NONE']}
+      {/* Start Date */}
+      <Text className="font-semibold mb-2">Start Date</Text>
+      <Pressable
+        className="border rounded-lg px-3 py-3 mb-8 bg-white flex-row items-center justify-between"
+        onPress={() => {
+          if (Platform.OS === 'android') {
+            DateTimePickerAndroid.open({
+              value: manualForm.startDateString ? new Date(manualForm.startDateString) : new Date(),
+              mode: 'date',
+              onChange: (event, selectedDate) => {
+                if (selectedDate) {
+                  handleInputChange('startDateString', selectedDate.toISOString().slice(0, 10));
+                }
+              },
+            });
+          } else {
+            setShowStartDatePicker(true);
+          }
+        }}
+      >
+        <Text className="text-base text-black">
+          {manualForm.startDateString ? manualForm.startDateString : 'Select Start Date'}
         </Text>
-          </Pressable>
-          {/* Recurrence Dropdown Modal */}
-          <Modal
-        visible={!!showRecurrenceDropdown}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowRecurrenceDropdown(false)}
-          >
-        <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.2)' }}
-          onPress={() => setShowRecurrenceDropdown(false)}
+        <MaterialIcons name="calendar-today" size={22} color="#888" />
+      </Pressable>
+      {/* iOS Date Picker Modal for Start Date */}
+      {Platform.OS === 'ios' && (
+        <Modal
+          visible={showStartDatePicker}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowStartDatePicker(false)}
         >
-          <View style={{
-            backgroundColor: 'white',
-            borderRadius: 8,
-            margin: 360,
-            marginLeft: 220,
-            padding: 10,
-            alignSelf: 'flex-start',
-            width: 160
-          }}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+            <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 20, width: 320 }}>
+              <DateTimePicker
+                value={manualForm.startDateString ? new Date(manualForm.startDateString) : new Date()}
+                mode="date"
+                display="spinner"
+                onChange={(_, selectedDate) => {
+                  if (selectedDate) {
+                    handleInputChange('startDateString', selectedDate.toISOString().slice(0, 10));
+                  }
+                  setShowStartDatePicker(false);
+                }}
+              />
+              <Pressable onPress={() => setShowStartDatePicker(false)} style={{ marginTop: 10, alignSelf: 'flex-end' }}>
+                <Text style={{ color: 'black', fontWeight: 'bold' }}>Done</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* End Date */}
+      <Text className="font-semibold mb-2">End Date</Text>
+      <Pressable
+        className="border rounded-lg px-3 py-3 mb-8 bg-white flex-row items-center justify-between"
+        onPress={() => {
+          if (Platform.OS === 'android') {
+            DateTimePickerAndroid.open({
+              value: manualForm.endDateString ? new Date(manualForm.endDateString) : new Date(),
+              mode: 'date',
+              onChange: (event, selectedDate) => {
+                if (selectedDate) {
+                  handleInputChange('endDateString', selectedDate.toISOString().slice(0, 10));
+                }
+              },
+            });
+          } else {
+            setShowEndDatePicker(true);
+          }
+        }}
+      >
+        <Text className="text-base text-black">
+          {manualForm.endDateString ? manualForm.endDateString : 'Select End Date'}
+        </Text>
+        <MaterialIcons name="calendar-today" size={22} color="#888" />
+      </Pressable>
+      {/* iOS Date Picker Modal for End Date */}
+      {Platform.OS === 'ios' && (
+        <Modal
+          visible={showEndDatePicker}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowEndDatePicker(false)}
+        >
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+            <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 20, width: 320 }}>
+              <DateTimePicker
+                value={manualForm.endDateString ? new Date(manualForm.endDateString) : new Date()}
+                mode="date"
+                display="spinner"
+                onChange={(_, selectedDate) => {
+                  if (selectedDate) {
+                    handleInputChange('endDateString', selectedDate.toISOString().slice(0, 10));
+                  }
+                  setShowEndDatePicker(false);
+                }}
+              />
+              <Pressable onPress={() => setShowEndDatePicker(false)} style={{ marginTop: 10, alignSelf: 'flex-end' }}>
+                <Text style={{ color: 'black', fontWeight: 'bold' }}>Done</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      )}
+
+      {/* Times of Day */}
+      <Text className="font-semibold mb-2">Times of Day</Text>
+      <View className="border rounded-lg mb-8 px-3 py-3 bg-white relative">
+        <Pressable
+          className="flex-row items-center justify-between"
+          onPress={() => setShowTimesDropdown(prev => !prev)}
+        >
+          <Text className="text-base">
+            {manualForm.timesOfDayInput ? manualForm.timesOfDayInput : 'Select Time'}
+          </Text>
+          <MaterialIcons name={showTimesDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
+        </Pressable>
+        {showTimesDropdown && (
+          <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg max-h-60">
+            <ScrollView>
+              {Array.from({ length: 24 }).map((_, hour) => {
+                const label = hour.toString().padStart(2, '0') + ':00';
+                return (
+                  <Pressable
+                    key={label}
+                    className={`py-2 px-3 ${manualForm.timesOfDayInput === label ? 'bg-blue-100' : ''}`}
+                    onPress={() => {
+                      handleInputChange('timesOfDayInput', label);
+                      setShowTimesDropdown(false);
+                    }}
+                  >
+                    <Text className={`text-base ${manualForm.timesOfDayInput === label ? 'font-bold text-blue-700' : 'text-black'}`}>{label}</Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+      </View>
+
+      {/* Recurrence */}
+      <Text className="font-semibold mb-2">Recurrence</Text>
+      <View className="border rounded-lg mb-8 px-3 py-3 bg-white relative">
+        <Pressable
+          className="flex-row items-center justify-between"
+          onPress={() => setShowRecurrenceDropdown(prev => !prev)}
+        >
+          <Text className="text-base">
+            {{
+              NONE: 'None',
+              DAILY: 'Daily',
+              WEEKLY: 'Weekly',
+              MONTHLY: 'Monthly'
+            }[manualForm.recurrenceRule || 'NONE']}
+          </Text>
+          <MaterialIcons name={showRecurrenceDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
+        </Pressable>
+        {showRecurrenceDropdown && (
+          <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg">
             {[
-          { label: 'None', value: 'NONE' },
-          { label: 'Daily', value: 'DAILY' },
-          { label: 'Weekly', value: 'WEEKLY' },
-          { label: 'Monthly', value: 'MONTHLY' }
+              { label: 'None', value: 'NONE' },
+              { label: 'Daily', value: 'DAILY' },
+              { label: 'Weekly', value: 'WEEKLY' },
+              { label: 'Monthly', value: 'MONTHLY' }
             ].map(opt => (
-          <Pressable
-            key={opt.value}
-            onPress={() => {
-              handleInputChange('recurrenceRule', opt.value);
-              setShowRecurrenceDropdown(false);
-            }}
-            style={{
-              paddingVertical: 10,
-              borderBottomWidth: opt.value !== 'MONTHLY' ? 0.5 : 0,
-              borderColor: '#eee'
-            }}
-          >
-            <Text>{opt.label}</Text>
-          </Pressable>
+              <Pressable
+                key={opt.value}
+                className={`py-2 px-3 ${manualForm.recurrenceRule === opt.value ? 'bg-blue-100' : ''}`}
+                onPress={() => {
+                  handleInputChange('recurrenceRule', opt.value);
+                  setShowRecurrenceDropdown(false);
+                }}
+              >
+                <Text className={`text-base ${manualForm.recurrenceRule === opt.value ? 'font-bold text-blue-700' : 'text-black'}`}>{opt.label}</Text>
+              </Pressable>
             ))}
           </View>
-        </Pressable>
-          </Modal>
-        </View>
+        )}
       </View>
 
             {/* Purpose */}
