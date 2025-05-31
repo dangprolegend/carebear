@@ -377,7 +377,7 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
             {/* Purpose */}
             <Text className="font-semibold mb-2">Purpose</Text>
             <TextInput
-              className="border border-[0.5px] rounded-lg px-3 py-2 mb-8"
+              className="border border-[0.5px] rounded-lg px-3 py-3 mb-8"
               placeholder="Purpose"
               value={manualForm.description || ''}
               onChangeText={text => handleInputChange('description', text)}
