@@ -2,6 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { View, Text, Pressable } from "react-native";
 
 export type Task = {
+    id: any;
     datetime: string; // ISO string, e.g., '2025-05-20T08:00:00'
     type?: string;
     title: string;
