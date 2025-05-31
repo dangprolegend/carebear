@@ -196,7 +196,7 @@ const AiTaskInputScreen = () => {
           )}
 
           <Pressable
-            className={`flex-row justify-center items-center py-4 rounded-xl mt-1 mb-3 ${isLoading ? 'bg-grey' : 'bg-black active:bg-grey'}`}
+            className={`flex-row justify-center items-center py-4 rounded-full mt-1 mb-3 ${isLoading ? 'bg-grey' : 'bg-black active:bg-grey'}`}
             onPress={handleSubmitToAI} 
             disabled={isLoading}
           >
@@ -215,7 +215,7 @@ const AiTaskInputScreen = () => {
           </Text>
 
           <Pressable
-            className="flex-row justify-center items-center py-3 rounded-xl border-2 mb-5 bg-black"
+            className="flex-row justify-center items-center py-3 rounded-full border-2 mb-5 bg-black"
             onPress={pickImage} 
             disabled={isLoading}
           >
