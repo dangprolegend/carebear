@@ -4,6 +4,7 @@ import { TypedRequest } from '../types/express';
 import Task from '../models/Task';
 import Notification from '../models/Notification';
 import Dashboard from '../models/Dashboard';
+import Group from '../models/Group';
 
 interface UserBody {
   email: string;
@@ -197,6 +198,9 @@ export const getUserIdByClerkId = async (req: Request, res: Response): Promise<v
     res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };
+
+// Get all users in a group by groupID
+
 
 // Get dashboard metrics for a user
 // export const getUserMetrics = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
