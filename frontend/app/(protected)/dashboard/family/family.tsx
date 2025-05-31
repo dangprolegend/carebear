@@ -361,52 +361,20 @@ export default function Family() {
     <View className="flex-1">
       <ScrollView className="flex-1">
         <View className='px-4'>
-          <View className='flex flex-row p-4 items-center gap-4 rounded-lg border border-[#2A1800] mx-4 mt-10'>
-            <Image
-              source={{ uri: userImageURL }}
-              className="w-10 h-10 rounded-full flex-shrink-0"
+          {/* User's Card */}
+          <View className="mt-6">
+            <FamilyMemberCard 
+              member={{
+                userID: userID || '',
+                fullName: userFullName || '',
+                imageURL: userImageURL || '',
+                mood: todayMoodEmoji,
+                body: todayBodyEmoji
+              }}
+              isCurrentUser={true}
             />
-            <View className="flex flex-col justify-center items-start gap-2 flex-1">
-              <View className="flex flex-row items-center gap-2">
-                <Text className="text-[#222] font-lato text-base font-extrabold leading-6 tracking-[0.3px]">
-                  {userFullName}
-                </Text>
-                <Text className='text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]'>
-                  Me
-                </Text>
-              </View>
-              
-              <View className="flex flex-row items-center gap-2">
-                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                  <Text className="text-xs">{todayMoodEmoji}</Text>
-                </View>
-                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                  <Text className="text-xs">{todayBodyEmoji}</Text>
-                </View>
-                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                  <Image source={PillIcon} className="w-3.5 h-3.5" />
-                </View>
-                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                  <Image source={PillBotte} className="w-3.5 h-3.5" />
-                </View>
-                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                  <Image source={Moon} className="w-3.5 h-3.5" />
-                </View>
-                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                  <Image source={Scale} className="w-3.5 h-3.5" />
-                </View>
-                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                  <Image source={Foot} className="w-3.5 h-3.5" />
-                </View>
-                <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-                  <Image source={Dumbbell} className="w-3.5 h-3.5" />
-                </View>
-              </View>
-              
-            </View>
           </View>
         </View>
-        {/* User's Card */}
 
         {/* Family Management Header */}
         <View className="px-4 mt-8">
