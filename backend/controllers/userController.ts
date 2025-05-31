@@ -4,6 +4,7 @@ import { TypedRequest } from '../types/express';
 import Task from '../models/Task';
 import Notification from '../models/Notification';
 import Dashboard from '../models/Dashboard';
+import Group from '../models/Group';
 
 interface UserBody {
   email: string;
@@ -210,6 +211,44 @@ export const getUserInfo = async (req: Request, res: Response): Promise<void> =>
     const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
     const imageURL = user.imageURL || null;
     res.status(200).json({ fullName, imageURL });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
+
+// Get all family members of the group a user belongs to (excluding the user themselves)
+export const getFamilyMembers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userID } = req.params;
+
+    // Get the user's groupID
+    const user = await User.findById(userID).select('groupID');
+    if (!user || !user.groupID) {
+      res.status(404).json({ message: 'User or group not found' });
+      return;
+    }
+
+    // Get the group and its members array
+    const group = await Group.findById(user.groupID).select('members');
+    if (!group || !group.members) {
+      res.status(404).json({ message: 'Group not found or has no members' });
+      return;
+    }
+
+    // Collect userIDs of all members except the user themselves
+    const memberUserIDs = group.members
+      .map((member: any) => member.user.toString())
+      .filter((id: string) => id !== userID);
+
+    // Fetch user info for each member
+    const members = await User.find({ _id: { $in: memberUserIDs } }).select('firstName lastName imageURL');
+    const familyMembers = members.map(member => ({
+      userID: member._id,
+      fullName: `${member.firstName || ''} ${member.lastName || ''}`.trim(),
+      imageURL: member.imageURL || null,
+    }));
+
+    res.status(200).json(familyMembers);
   } catch (error: any) {
     res.status(500).json({ message: 'Internal server error', error: error.message });
   }
