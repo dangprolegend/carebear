@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { View, Text, Pressable, ScrollView, Alert, ActivityIndicator, TouchableOpacity, Modal, Image } from 'react-native';
+import { View, Text, Pressable, ScrollView, Alert, ActivityIndicator, TouchableOpacity, Modal, Image, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -12,6 +12,9 @@ import Moon from '../../../../assets/icons/moon.png';
 import Scale from '../../../../assets/icons/scale.png';
 import Foot from '../../../../assets/icons/footprints.png';
 import Dumbbell from '../../../../assets/icons/dumbbell.png';
+import UserIcon from '../../../../assets/icons/user-round-plus.png';
+import Plus from '../../../../assets/icons/plus.png';
+import { UserPen } from 'lucide-react';
 
 // Define the FamilyMember type
 interface FamilyMember {
@@ -43,14 +46,23 @@ export default function Family() {
   const [userImageURL, setUserImageURL] = useState<string | null>(null);
   const [userFullName, setUserFullName] = useState<string | null>(null);
 
-  // Daily status display states
+  // Daily status display states (store both value and emoji for user)
+  const [todayMoodValue, setTodayMoodValue] = useState<string>('');
+  const [todayBodyValue, setTodayBodyValue] = useState<string>('');
   const [todayMoodEmoji, setTodayMoodEmoji] = useState<string>('');
   const [todayBodyEmoji, setTodayBodyEmoji] = useState<string>('');
 
    // Family members state
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [isLoadingFamily, setIsLoadingFamily] = useState(false);
-  
+
+  // add member
+  const [showAddMemberDropdown, setShowAddMemberDropdown] = useState(false);
+  const [memberName, setMemberName] = useState('');
+  const [memberRelation, setMemberRelation] = useState('');
+  const [selectedRole, setSelectedRole] = useState('CareBear');
+  const [memberEmail, setMemberEmail] = useState('');
+
   // Available families 
   const [availableFamilies, setAvailableFamilies] = useState<Family[]>([
     { id: '1', name: 'Family 1' },
@@ -92,12 +104,22 @@ export default function Family() {
     try {
       const response = await axios.get(`https://carebear-backend.onrender.com/api/daily/today/${userID}`);
       if (response.data && response.data.mood && response.data.body) {
+        setTodayMoodValue(response.data.mood);
+        setTodayBodyValue(response.data.body);
         setTodayMoodEmoji(getMoodEmoji(response.data.mood));
         setTodayBodyEmoji(getBodyEmoji(response.data.body));
+      } else {
+        setTodayMoodValue('');
+        setTodayBodyValue('');
+        setTodayMoodEmoji('');
+        setTodayBodyEmoji('');
       }
     } catch (error) {
       console.error('Error fetching today\'s status:', error);
-      // Keep emojis empty if there's an error or no data
+      setTodayMoodValue('');
+      setTodayBodyValue('');
+      setTodayMoodEmoji('');
+      setTodayBodyEmoji('');
     }
   };
 
@@ -368,8 +390,8 @@ export default function Family() {
                 userID: userID || '',
                 fullName: userFullName || '',
                 imageURL: userImageURL || '',
-                mood: todayMoodEmoji,
-                body: todayBodyEmoji
+                mood: todayMoodValue,
+                body: todayBodyValue
               }}
               isCurrentUser={true}
             />
@@ -424,10 +446,215 @@ export default function Family() {
             />
           ))
         )}
+
+        {/* Add Member Card */}
+        {/* <View className='flex flex-row p-4 items-center gap-4 rounded-lg border border-[#2A1800] mt-4 mx-4'>
+          <View className='flex w-10 h-10 p-[2px] pb-[1px] justify-center items-center gap-2 aspect-square rounded-full border border-[#2A1800] bg-[#623405]'>
+            <Image source={UserIcon} className="w-6 h-6" />
+          </View>
+            <Text className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px] overflow-hidden">
+              Add new member
+            </Text>
+            <View className='flex w-8 h-8 p-[6px] justify-center items-center rounded-full bg-[#2A1800]'>
+              <Image source={Plus} className="w-4 h-4" />
+            </View>
+          </View>
+        </View> */}
+
+        {/* Add Member Card */}
+<View className='flex flex-col mx-4 mt-4'>
+  <View className='flex flex-row p-4 items-center gap-4 rounded-lg border border-[#2A1800]'>
+    <View className='flex w-10 h-10 p-[2px] pb-[1px] justify-center items-center gap-2 aspect-square rounded-full border border-[#2A1800] bg-[#623405]'>
+      <Image source={UserIcon} className="w-6 h-6" />
+    </View>
+    
+    {!showAddMemberDropdown ? (
+      <>
+        <Text className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px] flex-1">
+          Add new member
+        </Text>
+        <Pressable 
+          className='flex w-8 h-8 p-[6px] justify-center items-center rounded-full bg-[#2A1800] ml-auto'
+          onPress={() => setShowAddMemberDropdown(true)}
+        >
+          <Image source={Plus} className="w-4 h-4" />
+        </Pressable>
+      </>
+    ) : (
+      <>
+        <View className="flex-1 flex-row gap-4">
+          <Text className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px] flex-1">
+            Member's Name
+          </Text>
+          <Text className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]">
+            Relation
+          </Text>
         </View>
+        <Pressable 
+          className='flex w-8 h-8 p-[6px] justify-center items-center rounded-full bg-[#2A1800] ml-auto'
+          onPress={() => {
+            setShowAddMemberDropdown(false);
+            setMemberName('');
+            setMemberRelation('');
+            setMemberEmail('');
+            setSelectedRole('CareBear');
+          }}
+        >
+          <Image source={PillBotte} className="w-4 h-4" />
+        </Pressable>
+      </>
+    )}
+  </View>
+
+  {/* Dropdown Content */}
+  {showAddMemberDropdown && (
+    <View className="bg-white border-l border-r border-b border-[#2A1800] rounded-b-lg p-6 -mt-1">
+      {/* Member Name and Relation Input */}
+      <View className="flex-row gap-3 mb-6 p-4 rounded-lg border border-[#2A1800]">
+        <View className="w-10 h-10 rounded-full bg-[#623405] flex items-center justify-center">
+          <Image source={UserIcon} className="w-6 h-6" />
+        </View>
+        <View className="flex-1 flex-row gap-4">
+          <TextInput
+            className="flex-1 text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]"
+            placeholder="Member's Name"
+            placeholderTextColor="#888"
+            value={memberName}
+            onChangeText={setMemberName}
+          />
+          <TextInput
+            className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px] min-w-[80px]"
+            placeholder="Relation"
+            placeholderTextColor="#888"
+            value={memberRelation}
+            onChangeText={setMemberRelation}
+          />
+        </View>
+        <View className="w-6 h-6 rounded-full bg-[#2A1800] flex items-center justify-center">
+          <Text className="text-white text-xs">⚙️</Text>
+        </View>
+      </View>
+
+      {/* Default Relationship */}
+      <View className="mb-6">
+        <Text className="text-[#222] font-lato text-lg font-semibold mb-3">Default Relationship</Text>
+        <View className="bg-[#F5F5F5] p-3 rounded-lg">
+          <Text className="text-[#666] font-lato text-sm">Ex: Mother, Grandfather, Daughter</Text>
+        </View>
+      </View>
+
+      {/* Bear Role */}
+      <View className="mb-6">
+        <Text className="text-[#222] font-lato text-lg font-semibold mb-4">Bear Role</Text>
+        
+        {/* CareBear Option */}
+        <Pressable 
+          className={`p-4 rounded-lg border-2 mb-3 flex-row items-center gap-3 ${
+            selectedRole === 'CareBear' ? 'border-[#2A1800] bg-[#E8F4FD]' : 'border-[#E0E0E0] bg-white'
+          }`}
+          onPress={() => setSelectedRole('CareBear')}
+        >
+          <View className="w-12 h-12 rounded-lg bg-[#E8F4FD] flex items-center justify-center">
+            <Text className="text-2xl">🧸</Text>
+          </View>
+          <View className="flex-1">
+            <Text className="text-[#222] font-lato text-lg font-semibold">CareBear</Text>
+            <Text className="text-[#666] font-lato text-sm">Care giver & receiver</Text>
+          </View>
+        </Pressable>
+
+        {/* BabyBear Option */}
+        <Pressable 
+          className={`p-4 rounded-lg border-2 mb-3 flex-row items-center gap-3 ${
+            selectedRole === 'BabyBear' ? 'border-[#2A1800] bg-[#FFF8E1]' : 'border-[#E0E0E0] bg-white'
+          }`}
+          onPress={() => setSelectedRole('BabyBear')}
+        >
+          <View className="w-12 h-12 rounded-lg bg-[#FFF8E1] flex items-center justify-center">
+            <Text className="text-2xl">🐻</Text>
+          </View>
+          <View className="flex-1">
+            <Text className="text-[#222] font-lato text-lg font-semibold">BabyBear</Text>
+            <Text className="text-[#666] font-lato text-sm">Care receiver</Text>
+          </View>
+        </Pressable>
+
+        {/* BearBoss Option */}
+        <Pressable 
+          className={`p-4 rounded-lg border-2 mb-3 flex-row items-center gap-3 ${
+            selectedRole === 'BearBoss' ? 'border-[#2A1800] bg-[#F0F8FF]' : 'border-[#E0E0E0] bg-white'
+          }`}
+          onPress={() => setSelectedRole('BearBoss')}
+        >
+          <View className="w-12 h-12 rounded-lg bg-[#F0F8FF] flex items-center justify-center">
+            <Text className="text-2xl">🐻‍❄️</Text>
+          </View>
+          <View className="flex-1">
+            <Text className="text-[#222] font-lato text-lg font-semibold">BearBoss</Text>
+            <Text className="text-[#666] font-lato text-sm">Admin</Text>
+          </View>
+        </Pressable>
+      </View>
+
+      {/* Email Input */}
+      <View className="mb-6">
+        <Text className="text-[#222] font-lato text-lg font-semibold mb-3">
+          Email<Text className="text-red-500">*</Text>
+        </Text>
+        <TextInput
+          className="border border-[#E0E0E0] rounded-lg p-3 text-[#222] font-lato text-base"
+          placeholder="abc@gmail.com"
+          placeholderTextColor="#888"
+          value={memberEmail}
+          onChangeText={setMemberEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+      </View>
+
+      {/* Action Buttons */}
+      <View className="flex-row gap-3">
+        <Pressable 
+          className="flex-1 py-3 px-6 rounded-full border border-[#E0E0E0] bg-white flex items-center justify-center"
+          onPress={() => {
+            setShowAddMemberDropdown(false);
+            setMemberName('');
+            setMemberRelation('');
+            setMemberEmail('');
+            setSelectedRole('CareBear');
+          }}
+        >
+          <Text className="text-[#666] font-lato text-base font-medium">Save</Text>
+        </Pressable>
+        
+        <Pressable 
+          className="flex-1 py-3 px-6 rounded-full bg-[#2A1800] flex items-center justify-center"
+          onPress={() => {
+            // Handle send invitation logic here
+            console.log('Sending invitation:', {
+              name: memberName,
+              relation: memberRelation,
+              role: selectedRole,
+              email: memberEmail
+            });
+            // After successful invitation, reset form
+            setShowAddMemberDropdown(false);
+            setMemberName('');
+            setMemberRelation('');
+            setMemberEmail('');
+            setSelectedRole('CareBear');
+          }}
+        >
+          <Text className="text-white font-lato text-base font-medium">Send Invitation</Text>
+        </Pressable>
+      </View>
+    </View>
+  )}
+</View>
+</View>
       </ScrollView>
 
-  
+      
 
       {/* Add Family Modal Component */}
       <AddFamily
