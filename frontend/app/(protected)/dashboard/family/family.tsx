@@ -18,6 +18,7 @@ import UserPen from '../../../../assets/icons/user-pen.png';
 import CareBear from '../../../../assets/icons/carebear.png';
 import BabyBear from '../../../../assets/icons/babybear.png';
 import BearBoss from '../../../../assets/icons/bearboss.png';
+import Invitation from '../../../../assets/icons/bear-letter.png';
 
 // Define the FamilyMember type
 interface FamilyMember {
@@ -65,6 +66,18 @@ export default function Family() {
   const [memberRelation, setMemberRelation] = useState('');
   const [selectedRole, setSelectedRole] = useState('CareBear');
   const [memberEmail, setMemberEmail] = useState('');
+
+  // Invitation states
+  const [isSendingInvitation, setIsSendingInvitation] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // save member data state
+  const [isDataSaved, setIsDataSaved] = useState(false);
+  const [savedMemberData, setSavedMemberData] = useState<{
+    memberRelation: string;
+    selectedRole: string;
+    memberEmail: string;
+  } | null>(null);
 
   // Available families 
   const [availableFamilies, setAvailableFamilies] = useState<Family[]>([
@@ -174,6 +187,71 @@ export default function Family() {
       setIsLoadingFamily(false);
     }
   };
+
+   // Handle saving member info (persist form data)
+ const handleSaveMember = () => {
+   if (!memberRelation.trim() || !memberEmail.trim()) {
+     Alert.alert('Missing Information', 'Please fill in both relation and email fields.');
+     return;
+   }
+
+   setSavedMemberData({
+      memberRelation,
+      selectedRole,
+      memberEmail,
+    });
+
+   setIsDataSaved(true);
+   Alert.alert('Success', 'Member information saved. You can now send the invitation anytime.');
+ };
+
+ // Handle sending invitation
+ const handleSendInvitation = async () => {
+   if (!memberRelation.trim() || !memberEmail.trim()) {
+     Alert.alert('Missing Information', 'Please fill in both relation and email fields.');
+     return;
+   }
+
+   if (!userID) {
+     Alert.alert('Error', 'User ID not found. Please try again.');
+     return;
+   }
+
+   try {
+     setIsSendingInvitation(true);
+
+     const invitationData = {
+       email: memberEmail.trim(),
+       role: selectedRole,
+       familialRelation: memberRelation.trim(),
+       inviterName: userFullName || 'A family member'
+     };
+
+     await axios.post(`https://carebear-backend.onrender.com/api/users/${userID}/invite`, invitationData);
+
+     // Reset form after successful invitation
+     setMemberRelation('');
+     setMemberEmail('');
+     setSelectedRole('CareBear');
+     setIsDataSaved(false);
+     setShowAddMemberDropdown(false);
+
+     // Show success modal
+     setShowSuccessModal(true);
+
+   } catch (error) {
+     console.error('Error sending invitation:', error);
+     
+     let errorMessage = 'Failed to send invitation. Please try again.';
+     if (error.response?.data?.message) {
+       errorMessage = error.response.data.message;
+     }
+     
+     Alert.alert('Error', errorMessage);
+   } finally {
+     setIsSendingInvitation(false);
+   }
+ };
 
   // Check if user has submitted daily status
   useEffect(() => {
@@ -464,7 +542,14 @@ export default function Family() {
                   </Text>
                   <Pressable 
                     className='flex w-8 h-8 p-[6px] justify-center items-center rounded-full bg-[#2A1800] ml-auto'
-                    onPress={() => setShowAddMemberDropdown(true)}
+                    onPress={() => {
+                      setShowAddMemberDropdown(true);
+                      if (savedMemberData) {
+                        setMemberRelation(savedMemberData.memberRelation);
+                        setSelectedRole(savedMemberData.selectedRole);
+                        setMemberEmail(savedMemberData.memberEmail);
+                      }
+                    }}
                   >
                     <Image source={Plus} className="w-4 h-4" />
                   </Pressable>
@@ -581,44 +666,75 @@ export default function Family() {
                   />
                 </View>
 
+                {/* Display Save Status */}
+               {isDataSaved && (
+                 <View className="mb-6 p-3 bg-green-50 rounded-lg border border-green-200">
+                   <Text className="text-green-700 font-lato text-sm text-center">
+                     ✓ Information saved! You can now send the invitation.
+                   </Text>
+                 </View>
+               )}
+
                 {/* Action Buttons */}
                 <View className="flex-row gap-3 mt-8 mb-6">
                   <Pressable 
                     className="flex-1 py-3 px-6 rounded-full border border-[#FAE5CA] bg-white flex items-center justify-center"
-                    onPress={() => {}}
+                    onPress={handleSaveMember}
                   >
-                    <Text className="text-[#666] font-lato text-base font-medium">Save</Text>
+                    <Text className={`font-lato text-base font-medium ${
+                     isDataSaved ? 'text-green-700' : 'text-[#666]'
+                   }`}>
+                     {isDataSaved ? '✓ Saved' : 'Save'}
+                   </Text>
                   </Pressable>
                   
-                  <Pressable 
-                    className="flex-1 py-3 px-6 rounded-full bg-[#2A1800] flex items-center justify-center"
-                    onPress={() => {
-                      // Handle send invitation logic here
-                      console.log('Sending invitation:', {
-                        name: memberName,
-                        relation: memberRelation,
-                        role: selectedRole,
-                        email: memberEmail
-                      });
-                      // After successful invitation, reset form
-                      setShowAddMemberDropdown(false);
-                      setMemberName('');
-                      setMemberRelation('');
-                      setMemberEmail('');
-                      setSelectedRole('CareBear');
-                    }}
-                  >
-                    <Text className="text-white font-lato text-base font-medium">Send Invitation</Text>
-                  </Pressable>
+                  <Pressable
+                   className={`flex-1 py-3 px-6 rounded-full flex items-center justify-center ${
+                     isSendingInvitation ? 'bg-gray-400' : 'bg-[#2A1800]'
+                   }`}
+                   onPress={handleSendInvitation}
+                   disabled={isSendingInvitation}
+                 >
+                   {isSendingInvitation ? (
+                     <ActivityIndicator size="small" color="white" />
+                   ) : (
+                     <Text className="text-white font-lato text-base font-medium">Send Invitation</Text>
+                   )}
+                 </Pressable>
                 </View>
               </View>
             )}
           </View>
+
+          {/* Success Modal */}
+         <Modal
+           visible={showSuccessModal}
+           transparent={true}
+           animationType="fade"
+         >
+           <View className="flex-1 justify-center items-center bg-black/50">
+             <View className="bg-white rounded-lg p-6 mx-4 w-80">
+               <View className="items-center mb-4">
+                 <Image source={Invitation} className="w-10 h-10 mb-2" />
+                 <Text className="text-[#222] font-lato text-xl font-semibold text-center">
+                   Invitation Sent Successfully!
+                 </Text>
+               </View>
+               <Text className="text-[#666] font-lato text-base text-center mb-6">
+                 The invitation has been sent to the provided email address.
+               </Text>
+               <Pressable
+                 className="bg-[#2A1800] py-3 px-6 rounded-full flex items-center justify-center"
+                 onPress={() => setShowSuccessModal(false)}
+               >
+                 <Text className="text-white font-lato text-base font-medium">OK</Text>
+               </Pressable>
+             </View>
+           </View>
+         </Modal>
         </View>
       </ScrollView>
-
-      
-
+ 
       {/* Add Family Modal Component */}
       <AddFamily
         visible={modalVisible}
