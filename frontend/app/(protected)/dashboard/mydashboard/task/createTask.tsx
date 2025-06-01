@@ -245,7 +245,7 @@ const AiTaskInputScreen = () => {
             </View>
           ) : (
           
-            <View className="mt-2 border-slate-200 pt-1s">
+            <View className="mt-2 border-slate-200 pt-1">
               <Text className="text-center text-sm text-black">
                 Or fill manually below
               </Text>
