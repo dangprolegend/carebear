@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { createGroup, getAllGroups, getGroup, updateGroup, deleteGroup, getUserGroups, getGroupMembers, getGroupTasks } from '../controllers/groupController';
+import { createGroup, getAllGroups, getGroup, updateGroup, deleteGroup, getUserGroups, getGroupMembers, getGroupTasks, getUsersByGroupID } from '../controllers/groupController';
 
 const router: Router = express.Router();
 
@@ -10,7 +10,9 @@ router.get('/user/:userID', getUserGroups);  // Migrated
 router.get('/:groupID', getGroup);            // Migrated
 router.put('/:groupID', updateGroup);         // Migrated
 router.delete('/:groupID', deleteGroup);      // Migrated
-router.get('/:groupID/members', getGroupMembers); // Added new route to get members of a group
 router.get('/:groupID/tasks', getGroupTasks); // Added new route to get tasks of a group
-
+router.get('/:groupID/users', (req, res, next) => {
+	// @ts-ignore
+	return getUsersByGroupID(req, res, next);
+});
 export default router;

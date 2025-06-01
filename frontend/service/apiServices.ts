@@ -1,6 +1,6 @@
 import { Task as FrontendTaskType } from '../app/(protected)/dashboard/mydashboard/task'; 
 
-const API_BASE_URL = "https://6135-42-119-213-161.ngrok-free.app" ; 
+const API_BASE_URL = "https://7c90-2402-800-6f5f-1c4b-95fe-42d6-aa61-12d7.ngrok-free.app" ; 
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
@@ -190,4 +190,103 @@ export const processAndCreateAiTasksAPI = async (payload: AiGenerateTasksPayload
 
   const responseData: AiGenerateTasksResponse = await handleApiResponse(response);
   return responseData;
+};
+
+/**
+ * Updates an existing task by ID.
+ * @param taskID The ID of the task to update.
+ * @param payload The data to update.
+ * @returns A promise that resolves to the updated task data, mapped to FrontendTaskType.
+ */
+export const updateTask = async (
+  taskID: string,
+  payload: Partial<BackendTask>
+): Promise<FrontendTaskType> => {
+  const token = await getClerkToken();
+  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
+  if (!taskID) throw new ApiError("Task ID is required to update a task.", 400);
+
+  const url = `${API_BASE_URL}/api/tasks/${taskID}`;
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  const updatedBackendTask: BackendTask = await handleApiResponse(response);
+  return mapBackendTaskToFrontend(updatedBackendTask);
+};
+
+/**
+ * Fetches the most recent tasks for a specific group, up to a limit.
+ * @param groupID The ID of the group to fetch tasks for.
+ * @param limit The maximum number of tasks to fetch (defaults to 5).
+ * @returns A promise that resolves to an array of tasks, mapped to FrontendTaskType.
+ */
+export const fetchRecentTasksForGroup = async (
+  groupID: string,
+  limit: number = 5
+): Promise<FrontendTaskType[]> => {
+  const token = await getClerkToken();
+  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
+  if (!groupID) throw new ApiError("Group ID is required to fetch recent tasks.", 400);
+
+  const url = `${API_BASE_URL}/api/tasks/group/${groupID}/recent?limit=${limit}`;
+  const response = await fetch(url, {  
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  const backendTasks: BackendTask[] = await handleApiResponse(response);
+  return backendTasks.map(mapBackendTaskToFrontend);
+};
+
+/**
+ * Creates a new manual task.
+ * @param payload The data for the new task.
+ * @returns A promise that resolves to the created task data, mapped to FrontendTaskType.
+ */
+export const createManualTaskAPI = async (
+  payload: Partial<BackendTask>
+): Promise<FrontendTaskType> => {
+  const token = await getClerkToken();
+  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
+
+  const url = `${API_BASE_URL}/api/tasks`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  const createdBackendTask: BackendTask = await handleApiResponse(response);
+  return mapBackendTaskToFrontend(createdBackendTask);
+};
+
+/**
+ * Fetches all users in a group by groupID.
+ * @param groupID The ID of the group to fetch users for.
+ * @returns A promise that resolves to an array of user objects.
+ */
+export const fetchUsersInGroup = async (groupID: string): Promise<any[]> => {
+  const token = await getClerkToken();
+  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
+  if (!groupID) throw new ApiError("Group ID is required to fetch users.", 400);
+
+  const url = `${API_BASE_URL}/api/groups/${groupID}/users`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  const users = await handleApiResponse(response);
+  return users;
 };
