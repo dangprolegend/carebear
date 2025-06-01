@@ -199,6 +199,7 @@ export const getUserIdByClerkId = async (req: Request, res: Response): Promise<v
   }
 };
 
+
 // Get full name and image URL of a user by userID
 export const getUserInfo = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -253,6 +254,7 @@ export const getFamilyMembers = async (req: Request, res: Response): Promise<voi
     res.status(500).json({ message: 'Internal server error', error: error.message });
   }
 };
+
 
 // Get dashboard metrics for a user
 // export const getUserMetrics = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {

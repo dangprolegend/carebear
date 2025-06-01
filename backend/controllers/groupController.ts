@@ -246,3 +246,15 @@ export const joinGroup = async (req: any, res: any): Promise<void> => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const getUsersByGroupID = async (req: Request, res: Response) => {
+  try {
+    const { groupID } = req.params;
+    // Find all users whose groupID matches
+    const users = await User.find({ groupID });
+    return res.status(200).json(users);
+  } catch (error: any) {
+    console.error('Error fetching users by groupID:', error);
+    return res.status(500).json({ message: 'Failed to fetch users by groupID', error: error.message });
+  }
+};
