@@ -53,20 +53,38 @@ export default function DashboardLayout() {
     router.replace(route as any);
   };
 
-  // Update the renderIcon function
+  // Update the renderIcon function in _layout.tsx
   const renderIcon = (icon: any, isActive: boolean) => {
     return (
-      <Image 
-        source={icon}
-        style={{ 
-          width: 24, 
-          height: 24,
-          tintColor: isActive ? '#1A0933' : '#777'
-        }} 
-        resizeMode="contain"
-      />
+      <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+        {/* Background shade for active tab */}
+        {isActive && (
+          <View 
+            style={{
+              position: 'absolute',
+              width: 64,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: '#FAE5CA', // Light peach background
+              zIndex: 0
+            }}
+          />
+        )}
+        
+        {/* Icon */}
+        <Image 
+          source={icon}
+          style={{ 
+            width: 24, 
+            height: 24,
+            tintColor: isActive ? '#1A0933' : '#777',
+            zIndex: 1
+          }} 
+          resizeMode="contain"
+        />
+      </View>
     );
-};
+  };
 
   return (
     <View className="flex-1 relative">
