@@ -9,14 +9,14 @@ import { Image } from 'react-native';
 
 const tabs = [
   { 
-    name: 'My Dashboard', 
-    route: '/dashboard/mydashboard/dashboard',
-    icon: require('../../../assets/icons/dashboard.png')
-  },
-  { 
     name: 'Family Group', 
     route: '/dashboard/family/family', 
     icon: require('../../../assets/icons/family.png')
+  },
+  { 
+    name: 'My Dashboard', 
+    route: '/dashboard/mydashboard/dashboard',
+    icon: require('../../../assets/icons/dashboard.png')
   },
   { 
     name: 'Safezone', 
