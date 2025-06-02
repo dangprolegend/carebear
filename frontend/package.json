@@ -18,7 +18,7 @@
     "@clerk/clerk-expo": "^2.10.0",
     "@expo/vector-icons": "^14.0.2",
     "@hookform/resolvers": "^5.0.1",
-    "@react-native-community/datetimepicker": "^8.4.1",
+    "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-google-signin/google-signin": "^13.2.0",
     "@react-native-picker/picker": "^2.11.0",
     "@react-navigation/bottom-tabs": "^7.2.0",
