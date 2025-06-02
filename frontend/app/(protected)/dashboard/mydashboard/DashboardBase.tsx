@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, Pressable } from 'react-native';
+import { ScrollView, View, Text, Pressable, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Calendar from 'expo-calendar';
 import { groupTasksByTimeAndType, TaskGroup, Task } from './task';
@@ -139,42 +139,65 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
               const date = new Date(selectedDate);
               date.setDate(date.getDate() - 3 + index);
               const isSelected = date.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const dateToCompare = new Date(date);
+              dateToCompare.setHours(0, 0, 0, 0);
+              const isPastDate = dateToCompare <= today;
 
               return (
                 <Pressable
                   key={index}
                   onPress={() => setSelectedDate(new Date(date))}
-                  className={`w-[40px] h-[88px] items-center mx-2 p-2 space-y-1 ${
-                    isSelected ? 'bg-[#EBEBEB] rounded-[100px] border border-gray-200' : ''
-                  }`}
+                  style={{
+                    width: 35,
+                    height: 88,
+                    borderRadius: 4,
+                    borderStyle: 'solid',
+                    borderWidth: isSelected ? 1 : 0,
+                    borderColor: isSelected ? '#2A1800' : 'transparent',
+                    padding: 8,
+                    alignItems: 'center',
+                    backgroundColor: isSelected ? '#FAE5CA' : 'transparent',
+                    marginHorizontal: 2,
+                  }}
                 >
                   <Text
-                    className={`w-[24px] h-6 text-center text-xs ${
+                    className={`w-[24px] h-[24px] text-center text-xs ${
                       isSelected ? 'text-gray-800' : 'text-gray-500'
                     }`}
                   >
-                    {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                    {date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0).toUpperCase()}
                   </Text>
                   <Text
-                    className={`w-[19px] h-6 text-center text-xs ${
+                    className={`w-[19px] h-[24px] text-center text-xs ${
                       isSelected ? 'text-gray-800' : 'text-gray-500'
                     }`}
                   >
                     {date.getDate()}
                   </Text>
+
+                  {isPastDate ? (
+                    <Image
+                      source={require('../../../../assets/icons/elipse.png')}
+                      style={{ width: 22, height: 22, borderRadius: 20 }}
+                      resizeMode="contain"
+                    />
+                  ) : (
                   <View
                     className={`w-[19px] h-6 rounded-full flex items-center justify-center bg-[#B0B0B0]`}
                   />
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-            {/* High Priority */}
-          
+          )}
+      </Pressable>
+    );
+  })}
+</View>
+</View>
+    {/* High Priority */}
+
       
           {/* Schedule Section */}
-          <View className="px-4 mb-6 pt-7">
+          <View className="px-4 mb-0 pt-7">
              <View className="w-[393px] h-[56px] flex-row items-center justify-between border-t border-gray-200 px-6 py-4">
               <Text className="text-lg font-semibold">High Priority Today</Text>
               <Link href="/dashboard/mydashboard/task/createTask" asChild> 
@@ -192,14 +215,14 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
 
         <View className="flex-1 mt-6">
           {/* Schedule Section */}
-          <View className="px-4 mb-6">
+          <View className="px-4 mb-0">
             <Pressable
               onPress={() => setShowTodaySchedule(!showTodaySchedule)}
               className="w-[393px] h-[56px] flex-row items-center justify-between border-t border-b border-gray-200 px-6 py-4"
             >
               <Text className="text-lg font-semibold">Today Schedule</Text>
               <MaterialIcons
-                name={showTodaySchedule ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                name='keyboard-arrow-right'
                 size={24}
                 color="#666"
               />
@@ -228,7 +251,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
               >
                 <Text className="text-lg font-semibold">Your Health</Text>
                 <MaterialIcons
-                  name={showYourHealth ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                  name='keyboard-arrow-right'
                   size={24}
                   color="#666"
                 />
