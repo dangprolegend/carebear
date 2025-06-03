@@ -49,6 +49,9 @@ export default function DashboardLayout() {
 
   const activeTitle = getActiveTitle();
 
+  // TODO: Replace this with real notification logic
+  const hasUnreadNotifications = false;
+
   const handleTabPress = (route: string) => {
     router.replace(route as any);
   };
@@ -106,8 +109,35 @@ export default function DashboardLayout() {
           </Text>
 
           {/* Notification Button */}
-          <Pressable onPress={() => console.log('Notification pressed')}>
-            <MaterialIcons name="notifications" size={24} color="#362209" />
+          <Pressable 
+            onPress={() => console.log("Notification pressed")}
+            style={{ 
+              position: 'relative',
+              padding: 5
+            }}
+          >
+            <Image
+              source={require('../../../assets/icons/bell.png')}
+              style={{ width: 22, height: 22, borderRadius: 20 }}
+              resizeMode="contain"
+            />
+
+            {/* Only show badge if there are unread notifications */}
+            {hasUnreadNotifications && (
+              <View 
+                style={{
+                  position: 'absolute',
+                  right: 1,
+                  top: 1,
+                  backgroundColor: '#FF3B30', 
+                  width: 10,
+                  height: 10,
+                  borderRadius: 5,
+                  borderWidth: 1.5,
+                  borderColor: '#FFFFFF'
+                }}
+              />
+            )}
           </Pressable>
         </View>
 

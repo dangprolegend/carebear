@@ -193,12 +193,11 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
   })}
 </View>
 </View>
-    {/* High Priority */}
 
       
-          {/* Schedule Section */}
-          <View className="px-4 mb-0 pt-7">
-             <View className="w-[393px] h-[56px] flex-row items-center justify-between border-t border-gray-200 px-6 py-4">
+          {/* High Priority */}
+          <View className="mb-0 pt-7">
+             <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
               <Text className="text-lg font-semibold">High Priority Today</Text>
               <Link href="/dashboard/mydashboard/task/createTask" asChild> 
               <Pressable
@@ -215,10 +214,10 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
 
         <View className="flex-1 mt-6">
           {/* Schedule Section */}
-          <View className="px-4 mb-0">
+          <View className="mb-0">
             <Pressable
               onPress={() => setShowTodaySchedule(!showTodaySchedule)}
-              className="w-[393px] h-[56px] flex-row items-center justify-between border-t border-b border-gray-200 px-6 py-4"
+              className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] px-6 py-4"
             >
               <Text className="text-lg font-semibold">Today Schedule</Text>
               <MaterialIcons
@@ -244,10 +243,10 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
 
           {/* Your Health Section */}
           {showHealthSection && (
-            <View className="px-4 pb-6">
+            <View className="pb-6">
               <Pressable
                 onPress={() => setShowYourHealth(!showYourHealth)}
-                className="w-[393px] h-[56px] flex-row items-center justify-between border-t border-b border-gray-200 px-6 py-4"
+                className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] px-6 py-4"
               >
                 <Text className="text-lg font-semibold">Your Health</Text>
                 <MaterialIcons
@@ -258,8 +257,22 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
               </Pressable>
 
               {showYourHealth && (
-                <View className="mt-4 pb-6">
-                  <View className="flex-row flex-wrap justify-between">
+                <View 
+                  style={{
+                    display: 'flex',
+                    height: 494,
+                    paddingHorizontal: 24,
+                    paddingVertical: 16,
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    gap: 24,
+                    flexShrink: 0,
+                    alignSelf: 'stretch',
+                    width: '100%',
+                    backgroundColor: '#FAE5CA',
+                  }}
+                >
+                  <View className="flex-row flex-wrap justify-between w-full">
                     <HealthMetric label="Sleep" value="81%" detail="6 hr 15 min / 8 hr" />
                     <HealthMetric label="Steps" value="81%" detail="9,500 / 10,000" />
                     <HealthMetric label="Weight" value="81%" detail="55 kg / 50 kg" />

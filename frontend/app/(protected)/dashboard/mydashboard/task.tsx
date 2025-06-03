@@ -83,7 +83,7 @@ export const TaskGroup = ({
   type,
   tasks
 }: TaskGroupProps) => (
-  <View className="mb-6">
+  <View className="px-4 mb-6">
     {/* Time and Type Header */}
     <View className="flex-row items-center mb-3">
       <Text className="text-sm font-semibold text-slate-700 w-20">{time}</Text>
