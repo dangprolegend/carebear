@@ -13,22 +13,20 @@ const PRIORITY_FLAG = {
 };
 
 const TaskInfoScreen = () => {
-  // Get the taskId from the route params
-  const params = useLocalSearchParams();
-  const { taskId } = params;
+  const { taskId } = useLocalSearchParams();
   const [task, setTask] = useState<any>(null);
+  const [assignedByUser, setAssignedByUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [assignedByUser, setAssignedByUser] = useState<any>(null);
 
+  // Fetch task
   useEffect(() => {
     const fetchTask = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch the task by its ID
         const foundTask = await fetchTaskById(taskId as string);
         setTask(foundTask);
       } catch (err: any) {
@@ -40,31 +38,25 @@ const TaskInfoScreen = () => {
     if (taskId) fetchTask();
   }, [taskId]);
 
+  // Fetch assigned by user info
   useEffect(() => {
-    const fetchAssignedByUser = async () => {
-      if (task && task.assignedBy) {
+    const fetchAssignedBy = async () => {
+      if (task?.assignedBy) {
         try {
-          const user = await fetchUserInfoById(task.assignedBy);
+          const userId = typeof task.assignedBy === 'object' ? task.assignedBy._id : task.assignedBy;
+          const user = await fetchUserInfoById(userId);
           setAssignedByUser(user);
-        } catch (err) {
+        } catch {
           setAssignedByUser(null);
         }
       } else {
         setAssignedByUser(null);
       }
     };
-    fetchAssignedByUser();
+    fetchAssignedBy();
   }, [task]);
 
-  // Debug log for reminder object
-  useEffect(() => {
-    if (task && task.reminder) {
-      console.log('DEBUG: reminder object', task.reminder);
-      console.log('DEBUG: start_date', task.reminder.start_date);
-      console.log('DEBUG: end_date', task.reminder.end_date);
-    }
-  }, [task]);
-
+  // Image picker
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
@@ -82,6 +74,7 @@ const TaskInfoScreen = () => {
     }
   };
 
+  // Mark done with image
   const handleMarkDone = async () => {
     if (!photoUri) {
       Alert.alert('Photo Required', 'Please upload a photo as evidence before marking as done.');
@@ -89,7 +82,6 @@ const TaskInfoScreen = () => {
     }
     setUploading(true);
     try {
-      // Convert image to base64
       const response = await fetch(photoUri);
       const blob = await response.blob();
       const reader = new FileReader();
@@ -100,7 +92,6 @@ const TaskInfoScreen = () => {
           setUploading(false);
           return;
         }
-        // Update task with image and status
         await updateTaskWithImage(taskId as string, { status: 'done', image: base64data });
         Alert.alert('Success', 'Task marked as done!');
         router.back();
@@ -128,7 +119,7 @@ const TaskInfoScreen = () => {
     );
   }
 
-  // Priority flag color (fix TS error)
+  // Priority flag color
   let flagColor = '#B0B0B0';
   if (task.priority === 'high') flagColor = PRIORITY_FLAG.high.color;
   else if (task.priority === 'medium') flagColor = PRIORITY_FLAG.medium.color;
@@ -159,8 +150,18 @@ const TaskInfoScreen = () => {
         <View className="mt-4 w-full aspect-[4/3] bg-gray-100 relative items-center justify-center">
           {taskImage ? (
             <Image source={{ uri: taskImage }} className="absolute w-full h-full" resizeMode="cover" />
+          ) : photoUri ? (
+            <Image source={{ uri: photoUri }} className="absolute w-full h-full" resizeMode="cover" />
           ) : (
             <Text className="text-gray-400 text-center mt-16">No photo uploaded</Text>
+          )}
+          {!taskImage && (
+            <Pressable
+              className="absolute bottom-3 right-3 bg-[#2A1800] rounded-full p-2"
+              onPress={pickImage}
+            >
+              <MaterialIcons name="photo-camera" size={24} color="white" />
+            </Pressable>
           )}
         </View>
 
@@ -168,7 +169,7 @@ const TaskInfoScreen = () => {
         <View className="px-4 pt-4">
           <View className="mb-3">
             <Text className="font-bold mb-2">Instructions</Text>
-            <Text>{ task.description || 'No instructions provided.'}</Text>
+            <Text>{task.description || 'No instructions provided.'}</Text>
           </View>
           <View className="mb-3">
             <Text className="font-bold mb-2">Purpose</Text>
@@ -176,23 +177,33 @@ const TaskInfoScreen = () => {
           </View>
           <View className="mb-3">
             <Text className="font-bold mb-2">Start and End Date</Text>
+            {/* Debug logs for reminder and dates */}
+            {(() => {
+              if (task.reminder) {
+              }
+              return null;
+            })()}
             <Text>
-              {task.reminder?.start_date ?
-                (isNaN(new Date(task.reminder.start_date).getTime())
-                  ? `Raw: ${task.reminder.start_date}`
-                  : new Date(task.reminder.start_date).toLocaleDateString()
-                )
+              {task.reminder?.start_date
+                ? (() => {
+                    const start = new Date(task.reminder.start_date);
+                    const startStr = isNaN(start.getTime()) ? String(task.reminder.start_date) : start.toLocaleDateString();
+                    if (task.reminder.end_date) {
+                      const end = new Date(task.reminder.end_date);
+                      const endStr = isNaN(end.getTime()) ? String(task.reminder.end_date) : end.toLocaleDateString();
+                      return `${startStr} - ${endStr}`;
+                    } else {
+                      return startStr;
+                    }
+                  })()
                 : 'N/A'}
-              {task.reminder?.end_date ?
-                (isNaN(new Date(task.reminder.end_date).getTime())
-                  ? ` - Raw: ${task.reminder.end_date}`
-                  : ` - ${new Date(task.reminder.end_date).toLocaleDateString()}`
-                )
-                : ''}
             </Text>
           </View>
           <View className="mb-3 flex-row items-center">
-            <Text className="font-bold">Assigned to You by </Text>
+            <Text>
+                <Text className="font-bold">Assigned </Text>
+                to <Text className="font-bold">You</Text> by{' '}
+            </Text>
             {assignedByUser ? (
               <>
                 <Image

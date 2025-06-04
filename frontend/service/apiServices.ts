@@ -1,6 +1,6 @@
 import { Task as FrontendTaskType } from '../app/(protected)/dashboard/mydashboard/task'; 
 
-const API_BASE_URL = "https://0b8e-2402-800-61ae-d326-6494-772f-23df-fb01.ngrok-free.app" ; 
+const API_BASE_URL = "https://e874-2402-800-61ae-d326-c08f-9b0a-d3d-5268.ngrok-free.app" ; 
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
@@ -38,6 +38,7 @@ interface BackendTask {
   createdAt: string; 
   updatedAt: string; 
   type?: string; 
+  image?: string | null; // <-- Added image field
 }
 
 // Payload for AI-task-generate
@@ -120,6 +121,7 @@ const mapBackendTaskToFrontend = (bt: BackendTask): FrontendTaskType => {
     status: bt.status,
     assignedTo: bt.assignedTo, 
     assignedBy: bt.assignedBy,
+    reminder: bt.reminder, // <-- Ensure reminder is always included
   } as FrontendTaskType; 
 };
 
@@ -369,8 +371,6 @@ export const updateTaskWithImage = async (
   taskID: string,
   payload: Partial<BackendTask> & { image?: string }
 ): Promise<FrontendTaskType> => {
-  const token = await getClerkToken();
-  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
   if (!taskID) throw new ApiError("Task ID is required to update a task.", 400);
 
   const url = `${API_BASE_URL}/api/tasks/${taskID}`;
@@ -378,7 +378,6 @@ export const updateTaskWithImage = async (
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
   });
