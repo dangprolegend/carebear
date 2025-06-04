@@ -5,7 +5,7 @@ import * as Calendar from 'expo-calendar';
 import { groupTasksByTimeAndType, TaskGroup, Task } from './task';
 import { HealthMetric } from './healthmetric';
 import TaskCard from './taskcard';
-import {Link} from 'expo-router'
+import {Link, useRouter} from 'expo-router'
 
 type DashboardBaseProps = {
   tasks: Task[];
@@ -23,32 +23,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
   // Add state for TaskCard
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [showTaskCard, setShowTaskCard] = useState(false);
-
-
-  // Function to handle task press
-  const handleTaskPress = (task: Task) => {
-    console.log('Task pressed:', task);
-    const enhancedTask = {
-      title: task.title,
-      purpose: 'For pain relief and inflammation reduction',
-      dosageStrength: task.detail,
-      howToTake: 'Oral, by mouth',
-      instructions: [
-        task.subDetail,
-      ],
-      startDate: 'Monday, May 9, 2025',
-      endDate: 'Saturday, May 17, 2025',
-      importantNotes: [
-        'Side effects: May cause drowsiness',
-        'Do not take with alcohol',
-        'Store in a cool, dry place',
-        'Follow-up appointment: Sunday, May 19'
-      ],
-      contactNumber: '123-456-7890'
-    };
-    setSelectedTask(enhancedTask);
-    setShowTaskCard(true);
-  };
+  const router = useRouter();
 
   const isTaskForSelectedDate = (task: Task) => {
   const taskDate = new Date(task.datetime);
@@ -237,96 +212,100 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
                         <View
                           key={taskIndex}
                           className="border border-[#FAE5CA] rounded-lg p-4 mb-4"
-                          onTouchEnd={() => handleTaskPress(task)} // Open modal on task click
                         >
-                          {/* First Line */}
-                          <View className="flex-row items-center justify-between mb-2">
-                            <View className="flex-row items-center gap-4">
-                              {/* Medication or Home Icon */}
-                              <MaterialIcons
-                                name={task.type === 'medicine' ? 'medication' : 'home'}
-                                size={24}
-                                color="#666"
-                              />
-                              {/* Flag Icon */}
-                              <MaterialIcons
-                                name="flag"
-                                size={20}
-                                color={
-                                  task.priority === 'high'
-                                    ? '#FF0000'
-                                    : task.priority === 'medium'
-                                    ? '#FFD700'
-                                    : '#0000FF'
-                                }
-                              />
-                              {/* Task Name */}
-                              <Text
-                                style={{ fontFamily: 'Lato', fontSize: 16 }}
-                                className="text-sm font-semibold text-[#2A1800]"
-                              >
-                                {task.title}
-                              </Text>
-                            </View>
-                            {/* Avatar of Assignee */}
-                            <Image
-                              source={{
-                                uri:
-                                  typeof task.assignedTo === 'object' && task.assignedTo !== null && 'imageURL' in task.assignedTo
-                                    ? (task.assignedTo as { imageURL: string }).imageURL
-                                    : typeof task.assignedTo === 'string'
-                                    ? task.assignedTo
-                                    : 'https://via.placeholder.com/40',
-                              }}
-                              className="w-6 h-6 rounded-full"
-                            />
-                          </View>
-
-                          {/* Second Line */}
-                          <View className="flex-row items-center gap-4 mb-2">
-                            {/* Brief Instruction */}
-                            <Text
-                              style={{ fontFamily: 'Lato', fontSize: 14 }}
-                              className="text-xs text-[#666] flex-1"
-                            >
-                              {task.description}
-                            </Text>
-                            {/* Checkbox */}
-                            <Pressable
-                              onPress={() => console.log('Task completed:', task.title)}
-                              className="w-6 h-6 border border-[#FAE5CA] rounded-lg flex items-center justify-center"
-                            >
-                              {task.checked && (
-                                <MaterialIcons name="check" size={16} color="#2A1800" />
-                              )}
-                            </Pressable>
-                          </View>
-
-                          {/* Third Line */}
-                          <View className="flex-row items-center justify-between gap-4">
-                            {/* Assigned By */}
-                            <View className="flex-row items-center gap-2">
-                              <Text
-                                style={{ fontFamily: 'Lato', fontSize: 14 }}
-                                className="text-xs text-[#666]"
-                              >
-                                Assigned by
-                              </Text>
+                          <Pressable onPress={() => router.push({
+                              pathname: './task/taskInfo',
+                              params: { taskId: task._id, groupID: task.groupID?._id || task.groupID }
+                            })} className="flex-1">
+                            {/* First Line */}
+                            <View className="flex-row items-center justify-between mb-2">
+                              <View className="flex-row items-center gap-4">
+                                {/* Medication or Home Icon */}
+                                <MaterialIcons
+                                  name={task.type === 'medicine' ? 'medication' : 'home'}
+                                  size={24}
+                                  color="#666"
+                                />
+                                {/* Flag Icon */}
+                                <MaterialIcons
+                                  name="flag"
+                                  size={20}
+                                  color={
+                                    task.priority === 'high'
+                                      ? '#FF0000'
+                                      : task.priority === 'medium'
+                                      ? '#FFD700'
+                                      : '#0000FF'
+                                  }
+                                />
+                                {/* Task Name */}
+                                <Text
+                                  style={{ fontFamily: 'Lato', fontSize: 16 }}
+                                  className="text-sm font-semibold text-[#2A1800]"
+                                >
+                                  {task.title}
+                                </Text>
+                              </View>
+                              {/* Avatar of Assignee */}
                               <Image
                                 source={{
-                                  uri: task.assignedBy?.imageURL || 'https://via.placeholder.com/40',
+                                  uri:
+                                    typeof task.assignedTo === 'object' && task.assignedTo !== null && 'imageURL' in task.assignedTo
+                                      ? (task.assignedTo as { imageURL: string }).imageURL
+                                      : typeof task.assignedTo === 'string'
+                                      ? task.assignedTo
+                                      : 'https://via.placeholder.com/40',
                                 }}
                                 className="w-6 h-6 rounded-full"
                               />
                             </View>
-                            {/* Notification Bell */}
-                            <Pressable
-                              onPress={() => console.log('Notification for:', task.title)}
-                              className="w-6 h-6 flex items-center justify-center"
-                            >
-                              <MaterialIcons name="notifications" size={20} color="#FFD700" />
-                            </Pressable>
-                          </View>
+
+                            {/* Second Line */}
+                            <View className="flex-row items-center gap-4 mb-2">
+                              {/* Brief Instruction */}
+                              <Text
+                                style={{ fontFamily: 'Lato', fontSize: 14 }}
+                                className="text-xs text-[#666] flex-1"
+                              >
+                                {task.description}
+                              </Text>
+                              {/* Checkbox */}
+                              <Pressable
+                                onPress={() => console.log('Task completed:', task.title)}
+                                className="w-6 h-6 border border-[#FAE5CA] rounded-lg flex items-center justify-center"
+                              >
+                                {task.checked && (
+                                  <MaterialIcons name="check" size={16} color="#2A1800" />
+                                )}
+                              </Pressable>
+                            </View>
+
+                            {/* Third Line */}
+                            <View className="flex-row items-center justify-between gap-4">
+                              {/* Assigned By */}
+                              <View className="flex-row items-center gap-2">
+                                <Text
+                                  style={{ fontFamily: 'Lato', fontSize: 14 }}
+                                  className="text-xs text-[#666]"
+                                >
+                                  Assigned by
+                                </Text>
+                                <Image
+                                  source={{
+                                    uri: task.assignedBy?.imageURL || 'https://via.placeholder.com/40',
+                                  }}
+                                  className="w-6 h-6 rounded-full"
+                                />
+                              </View>
+                              {/* Notification Bell */}
+                              <Pressable
+                                onPress={() => console.log('Notification for:', task.title)}
+                                className="w-6 h-6 flex items-center justify-center"
+                              >
+                                <MaterialIcons name="notifications" size={20} color="#FFD700" />
+                              </Pressable>
+                            </View>
+                          </Pressable>
                         </View>
                       ))}
                     </View>
