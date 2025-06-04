@@ -328,3 +328,29 @@ export const fetchUsersInGroup = async (groupID: string): Promise<any[]> => {
   const users = await handleApiResponse(response);
   return users;
 };
+
+/**
+ * Fetches the name of a user based on their userID.
+ * @param userID The ID of the user whose name is to be fetched.
+ * @returns A promise that resolves to the user's name as a string.
+ */
+export const fetchUserNameByID = async (userID: string): Promise<string> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/users/${userID}/info`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch user name: ${response.statusText}`);
+    }
+
+    const userData = await handleApiResponse(response);
+    return userData.fullName || 'Unknown User'; // Assuming the API returns `fullName`
+  } catch (error) {
+    console.error('Error fetching user name:', error);
+    throw new Error('Unable to retrieve user name');
+  }
+};

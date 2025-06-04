@@ -109,7 +109,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
                 setSelectedDate(newDate);
               }}
             >
-              <MaterialIcons name="chevron-left" size={24} color="#666" />
+              <MaterialIcons name="arrow-left" size={24} color="#666" />
             </Pressable>
             <View className="flex-row items-center">
               <MaterialIcons name="calendar-today" size={20} color="#666" />
@@ -128,7 +128,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
                 setSelectedDate(newDate);
               }}
             >
-              <MaterialIcons name="chevron-right" size={24} color="#666" />
+              <MaterialIcons name="arrow-right" size={24} color="#666" />
             </Pressable>
           </View>
 
@@ -217,7 +217,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
               className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] px-6 py-4"
             >
               <Text className="text-lg font-semibold text-[#2A1800]">Today Schedule</Text>
-              <MaterialIcons name="keyboard-arrow-right" size={24} color="#666" />
+              <MaterialIcons name="arrow-right" size={24} color="#666" />
             </Pressable>
 
             {showTodaySchedule && (
@@ -345,7 +345,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
               >
                 <Text className="text-lg font-semibold">Your Health</Text>
                 <MaterialIcons
-                  name='keyboard-arrow-right'
+                  name='arrow-right'
                   size={24}
                   color="#666"
                 />
