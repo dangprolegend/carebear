@@ -223,95 +223,113 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
             {showTodaySchedule && (
               <View className="bg-white rounded-xl p-4">
                 {groupTasksByTimeAndType(filteredTasks).map((group, index) => (
-                  <View key={index} className="mb-6">
-                    <Text className="text-sm font-semibold text-[#2A1800] mb-2">{group.time}</Text>
-                    {group.tasks.map((task, taskIndex) => (
-                      <View
-                        key={taskIndex}
-                        className="border border-[#FAE5CA] rounded-lg p-4 mb-4"
-                      >
-                        {/* First Line */}
-                        <View className="flex-row items-center justify-between mb-2">
-                          <View className="flex-row items-center gap-4">
-                            {/* Medication or Home Icon */}
-                            <MaterialIcons
-                              name={task.type === 'medicine' ? 'medication' : 'home'}
-                              size={24}
-                              color="#666"
-                            />
-                            {/* Flag Icon */}
-                            <MaterialIcons
-                              name="flag"
-                              size={20}
-                              color={
-                                task.priority === 'high'
-                                  ? '#FF0000'
-                                  : task.priority === 'medium'
-                                  ? '#FFD700'
-                                  : '#0000FF'
-                              }
-                            />
-                            {/* Task Name */}
-                            <Text 
-                              style={{ fontFamily: 'Lato', fontSize: 16 }}
-                              className="text-sm font-semibold text-[#2A1800]">{task.title}</Text>
-                          </View>
-                          {/* Avatar of Assignee */}
-                          <Image
-                            source={{
-                              uri:
-                                typeof task.assignedTo === 'object' && task.assignedTo !== null && 'imageURL' in task.assignedTo
-                                  ? (task.assignedTo as { imageURL: string }).imageURL
-                                  : typeof task.assignedTo === 'string'
-                                  ? task.assignedTo
-                                  : 'https://via.placeholder.com/40',
-                            }}
-                            className="w-6 h-6 rounded-full"
-                          />
-                        </View>
+                  <View key={index} className="mb-6 flex-row">
+                    {/* Vertical Timeline */}
+                    {/* <View className="w-[24px] flex items-center">
+                      <View className="h-full w-[2px] bg-[#FAE5CA]" />
+                      <View className="w-[8px] h-[8px] bg-[#FAE5CA] rounded-full mt-[-4px]" />
+                    </View> */}
 
-                        {/* Second Line */}
-                        <View className="flex-row items-center gap-4 mb-2">
-                          {/* Brief Instruction */}
-                          <Text 
-                            style={{ fontFamily: 'Lato', fontSize: 14 }}
-                            className="text-xs text-[#666] flex-1">{task.description}
-                          </Text>
-                          {/* Checkbox */}
-                          <Pressable
-                            onPress={() => console.log('Task completed:', task.title)}
-                            className="w-6 h-6 border border-[#FAE5CA] rounded-lg flex items-center justify-center"
-                          >
-                            {task.checked && (
-                              <MaterialIcons name="check" size={16} color="#2A1800" />
-                            )}
-                          </Pressable>
-                        </View>
-
-                        {/* Third Line */}
-                        <View className="flex-row items-center justify-between gap-4">
-                          {/* Assigned By */}
-                          <View className="flex-row items-center gap-2">
-                            <Text 
-                              style={{ fontFamily: 'Lato', fontSize: 14 }}
-                              className="text-xs text-[#666]">
-                                Assigned by
-                            </Text>
+                    {/* Task Group */}
+                    <View className="flex-1">
+                      <Text className="text-sm font-semibold text-[#2A1800] mb-2">{group.time}</Text>
+                      {group.tasks.map((task, taskIndex) => (
+                        <View
+                          key={taskIndex}
+                          className="border border-[#FAE5CA] rounded-lg p-4 mb-4"
+                          onTouchEnd={() => handleTaskPress(task)} // Open modal on task click
+                        >
+                          {/* First Line */}
+                          <View className="flex-row items-center justify-between mb-2">
+                            <View className="flex-row items-center gap-4">
+                              {/* Medication or Home Icon */}
+                              <MaterialIcons
+                                name={task.type === 'medicine' ? 'medication' : 'home'}
+                                size={24}
+                                color="#666"
+                              />
+                              {/* Flag Icon */}
+                              <MaterialIcons
+                                name="flag"
+                                size={20}
+                                color={
+                                  task.priority === 'high'
+                                    ? '#FF0000'
+                                    : task.priority === 'medium'
+                                    ? '#FFD700'
+                                    : '#0000FF'
+                                }
+                              />
+                              {/* Task Name */}
+                              <Text
+                                style={{ fontFamily: 'Lato', fontSize: 16 }}
+                                className="text-sm font-semibold text-[#2A1800]"
+                              >
+                                {task.title}
+                              </Text>
+                            </View>
+                            {/* Avatar of Assignee */}
                             <Image
-                              source={{ uri: task.assignedBy?.imageURL || 'https://via.placeholder.com/40' }}
+                              source={{
+                                uri:
+                                  typeof task.assignedTo === 'object' && task.assignedTo !== null && 'imageURL' in task.assignedTo
+                                    ? (task.assignedTo as { imageURL: string }).imageURL
+                                    : typeof task.assignedTo === 'string'
+                                    ? task.assignedTo
+                                    : 'https://via.placeholder.com/40',
+                              }}
                               className="w-6 h-6 rounded-full"
                             />
                           </View>
-                          {/* Notification Bell */}
-                          <Pressable
-                            onPress={() => console.log('Notification for:', task.title)}
-                            className="w-6 h-6 flex items-center justify-center"
-                          >
-                            <MaterialIcons name="notifications" size={20} color="#FFD700" />
-                          </Pressable>
+
+                          {/* Second Line */}
+                          <View className="flex-row items-center gap-4 mb-2">
+                            {/* Brief Instruction */}
+                            <Text
+                              style={{ fontFamily: 'Lato', fontSize: 14 }}
+                              className="text-xs text-[#666] flex-1"
+                            >
+                              {task.description}
+                            </Text>
+                            {/* Checkbox */}
+                            <Pressable
+                              onPress={() => console.log('Task completed:', task.title)}
+                              className="w-6 h-6 border border-[#FAE5CA] rounded-lg flex items-center justify-center"
+                            >
+                              {task.checked && (
+                                <MaterialIcons name="check" size={16} color="#2A1800" />
+                              )}
+                            </Pressable>
+                          </View>
+
+                          {/* Third Line */}
+                          <View className="flex-row items-center justify-between gap-4">
+                            {/* Assigned By */}
+                            <View className="flex-row items-center gap-2">
+                              <Text
+                                style={{ fontFamily: 'Lato', fontSize: 14 }}
+                                className="text-xs text-[#666]"
+                              >
+                                Assigned by
+                              </Text>
+                              <Image
+                                source={{
+                                  uri: task.assignedBy?.imageURL || 'https://via.placeholder.com/40',
+                                }}
+                                className="w-6 h-6 rounded-full"
+                              />
+                            </View>
+                            {/* Notification Bell */}
+                            <Pressable
+                              onPress={() => console.log('Notification for:', task.title)}
+                              className="w-6 h-6 flex items-center justify-center"
+                            >
+                              <MaterialIcons name="notifications" size={20} color="#FFD700" />
+                            </Pressable>
+                          </View>
                         </View>
-                      </View>
-                    ))}
+                      ))}
+                    </View>
                   </View>
                 ))}
               </View>
