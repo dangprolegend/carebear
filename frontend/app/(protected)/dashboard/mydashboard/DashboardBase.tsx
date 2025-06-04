@@ -189,28 +189,25 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
                   />
           )}
       </Pressable>
-    );
-  })}
-</View>
+      );
+    })}
+  </View>
 </View>
 
       
-          {/* High Priority */}
-          <View className="mb-0 pt-7">
-             <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
-              <Text className="text-lg font-semibold">High Priority Today</Text>
-              <Link href="/dashboard/mydashboard/task/createTask" asChild> 
+          {/* High Priority Section */}
+        <View className="mb-0 pt-7">
+          <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
+            <Text className="text-lg font-semibold">High Priority Today</Text>
+            <Link href="/dashboard/mydashboard/task/createTask" asChild>
               <Pressable
-                className="pt-5 mr-2 absolute w-12 h-12 items-center justify-center right-6 bg-black rounded-full "
+                className="absolute right-6 w-10 h-10 items-center justify-center bg-black rounded-full"
               >
-                <MaterialIcons name="add" size={20} color="white" className="justify-center items-center pb-10" />
-                
+                <MaterialIcons name="add" size={18} color="white" />
               </Pressable>
             </Link>
-            </View>
-
-            
           </View>
+        </View>
 
         <View className="flex-1 mt-6">
           {/* Schedule Section */}
