@@ -346,3 +346,42 @@ export const fetchTaskById = async (
   const backendTask: BackendTask = await handleApiResponse(response);
   return mapBackendTaskToFrontend(backendTask);
 };
+
+/**
+ * Fetches user info by userID.
+ * @param userID The ID of the user to fetch info for.
+ * @returns A promise that resolves to the user info object.
+ */
+export const fetchUserInfoById = async (userID: string): Promise<any> => {
+  if (!userID) throw new ApiError("User ID is required to fetch user info.", 400);
+  const url = `${API_BASE_URL}/api/users/${userID}/info`;
+  const response = await fetch(url, { method: 'GET' });
+  return handleApiResponse(response);
+};
+
+/**
+ * Updates an existing task by ID, including uploading an image.
+ * @param taskID The ID of the task to update.
+ * @param payload The data to update (can include image as base64 or URL).
+ * @returns A promise that resolves to the updated task data, mapped to FrontendTaskType.
+ */
+export const updateTaskWithImage = async (
+  taskID: string,
+  payload: Partial<BackendTask> & { image?: string }
+): Promise<FrontendTaskType> => {
+  const token = await getClerkToken();
+  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
+  if (!taskID) throw new ApiError("Task ID is required to update a task.", 400);
+
+  const url = `${API_BASE_URL}/api/tasks/${taskID}`;
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  const updatedBackendTask: BackendTask = await handleApiResponse(response);
+  return mapBackendTaskToFrontend(updatedBackendTask);
+};

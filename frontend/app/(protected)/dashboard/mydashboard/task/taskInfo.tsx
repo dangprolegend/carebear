@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Pressable, Image, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { fetchTaskById, updateTask } from '../../../../../service/apiServices';
+import { fetchTaskById, updateTaskWithImage, fetchUserInfoById } from '../../../../../service/apiServices';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -21,6 +21,7 @@ const TaskInfoScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [assignedByUser, setAssignedByUser] = useState<any>(null);
 
   useEffect(() => {
     const fetchTask = async () => {
@@ -38,6 +39,31 @@ const TaskInfoScreen = () => {
     };
     if (taskId) fetchTask();
   }, [taskId]);
+
+  useEffect(() => {
+    const fetchAssignedByUser = async () => {
+      if (task && task.assignedBy) {
+        try {
+          const user = await fetchUserInfoById(task.assignedBy);
+          setAssignedByUser(user);
+        } catch (err) {
+          setAssignedByUser(null);
+        }
+      } else {
+        setAssignedByUser(null);
+      }
+    };
+    fetchAssignedByUser();
+  }, [task]);
+
+  // Debug log for reminder object
+  useEffect(() => {
+    if (task && task.reminder) {
+      console.log('DEBUG: reminder object', task.reminder);
+      console.log('DEBUG: start_date', task.reminder.start_date);
+      console.log('DEBUG: end_date', task.reminder.end_date);
+    }
+  }, [task]);
 
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -63,12 +89,25 @@ const TaskInfoScreen = () => {
     }
     setUploading(true);
     try {
-      await updateTask(taskId as string, { status: 'done' });
-      Alert.alert('Success', 'Task marked as done!');
-      router.back();
+      // Convert image to base64
+      const response = await fetch(photoUri);
+      const blob = await response.blob();
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64data = reader.result?.toString().split(',')[1];
+        if (!base64data) {
+          Alert.alert('Error', 'Failed to read image data.');
+          setUploading(false);
+          return;
+        }
+        // Update task with image and status
+        await updateTaskWithImage(taskId as string, { status: 'done', image: base64data });
+        Alert.alert('Success', 'Task marked as done!');
+        router.back();
+      };
+      reader.readAsDataURL(blob);
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to update task status.');
-    } finally {
       setUploading(false);
     }
   };
@@ -95,16 +134,19 @@ const TaskInfoScreen = () => {
   else if (task.priority === 'medium') flagColor = PRIORITY_FLAG.medium.color;
   else if (task.priority === 'low') flagColor = PRIORITY_FLAG.low.color;
 
+  // Determine if the task has an attached image
+  const taskImage = task.imageUrl || task.image || null;
+
   return (
     <View className="flex-1 bg-transparent">
       {/* Header */}
-    <View className="flex-row items-center justify-between px-4 pt-8 pb-2 border-b border-black bg-white">
-      <MaterialIcons name="flag" size={22} color={flagColor} />
-      <Text className="text-lg font-bold text-black flex-1 text-center" numberOfLines={1}>{task.title}</Text>
-      <Pressable onPress={() => router.back()} className="p-1">
-        <MaterialIcons name="close" size={26} color="black" />
-      </Pressable>
-    </View>
+      <View className="flex-row items-center justify-between px-4 pt-8 pb-2 border-b border-black bg-white">
+        <MaterialIcons name="flag" size={22} color={flagColor} />
+        <Text className="text-lg font-bold text-black flex-1 text-center" numberOfLines={1}>{task.title}</Text>
+        <Pressable onPress={() => router.back()} className="p-1">
+          <MaterialIcons name="close" size={26} color="black" />
+        </Pressable>
+      </View>
 
       {/* Banner */}
       <View className="bg-[#2A1800] mx-4 mt-4 rounded-lg py-4 pl-1 pr-1 items-center">
@@ -115,17 +157,11 @@ const TaskInfoScreen = () => {
       <ScrollView className="flex-1 bg-white" contentContainerStyle={{ paddingBottom: 32 }}>
         {/* Image section - full width, scrolls with content */}
         <View className="mt-4 w-full aspect-[4/3] bg-gray-100 relative items-center justify-center">
-          {photoUri ? (
-            <Image source={{ uri: photoUri }} className="absolute w-full h-full" resizeMode="cover" />
+          {taskImage ? (
+            <Image source={{ uri: taskImage }} className="absolute w-full h-full" resizeMode="cover" />
           ) : (
             <Text className="text-gray-400 text-center mt-16">No photo uploaded</Text>
           )}
-          <Pressable
-            className="absolute bottom-3 right-3 bg-[#2A1800] rounded-full p-2"
-            onPress={pickImage}
-          >
-            <MaterialIcons name="photo-camera" size={24} color="white" />
-          </Pressable>
         </View>
 
         {/* Info section */}
@@ -141,19 +177,29 @@ const TaskInfoScreen = () => {
           <View className="mb-3">
             <Text className="font-bold mb-2">Start and End Date</Text>
             <Text>
-              {task.reminder?.start_date ? new Date(task.reminder.start_date).toLocaleDateString() : 'N/A'}
-              {task.reminder?.end_date ? ` - ${new Date(task.reminder.end_date).toLocaleDateString()}` : ''}
+              {task.reminder?.start_date ?
+                (isNaN(new Date(task.reminder.start_date).getTime())
+                  ? `Raw: ${task.reminder.start_date}`
+                  : new Date(task.reminder.start_date).toLocaleDateString()
+                )
+                : 'N/A'}
+              {task.reminder?.end_date ?
+                (isNaN(new Date(task.reminder.end_date).getTime())
+                  ? ` - Raw: ${task.reminder.end_date}`
+                  : ` - ${new Date(task.reminder.end_date).toLocaleDateString()}`
+                )
+                : ''}
             </Text>
           </View>
           <View className="mb-3 flex-row items-center">
             <Text className="font-bold">Assigned to You by </Text>
-            {task.assignedBy?.name ? (
+            {assignedByUser ? (
               <>
                 <Image
-                  source={{ uri: task.assignedBy?.avatar || 'https://via.placeholder.com/32' }}
+                  source={{ uri: assignedByUser.imageURL || 'https://via.placeholder.com/32' }}
                   className="w-6 h-6 rounded-full mx-1"
                 />
-                <Text className="font-bold">{task.assignedBy.name}</Text>
+                <Text className="font-bold">{assignedByUser.fullName || 'Unknown'}</Text>
               </>
             ) : (
               <Text className="font-bold">Nobody</Text>
@@ -162,16 +208,18 @@ const TaskInfoScreen = () => {
         </View>
       </ScrollView>
 
-      {/* Mark Done Button */}
-      <View className="px-3 pb-8 pt-2">
-        <Pressable
-          className={`rounded-full py-4 items-center ${photoUri ? 'bg-[#3A2B13]' : 'bg-gray-400'}`}
-          onPress={handleMarkDone}
-          disabled={!photoUri || uploading}
-        >
-          <Text className="text-white text-lg font-semibold">{uploading ? 'Marking...' : 'Mark Done'}</Text>
-        </Pressable>
-      </View>
+      {/* Mark Done Button - hidden if task has image */}
+      {!taskImage && (
+        <View className="px-3 pb-8 pt-2">
+          <Pressable
+            className={`rounded-full py-4 items-center ${photoUri ? 'bg-[#3A2B13]' : 'bg-gray-400'}`}
+            onPress={handleMarkDone}
+            disabled={!photoUri || uploading}
+          >
+            <Text className="text-white text-lg font-semibold">{uploading ? 'Marking...' : 'Mark Done'}</Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 };
