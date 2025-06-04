@@ -52,7 +52,6 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
 
   const isTaskForSelectedDate = (task: Task) => {
   const taskDate = new Date(task.datetime);
-  console.log('Task Date:', taskDate, 'Selected Date:', selectedDate);
 
   // Example fetch:
   // fetch(`${process.env.NGROK_API_URL}/api/tasks/682ed36cb380744bd1ed4559`)
@@ -209,35 +208,116 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
           </View>
         </View>
 
+
+        {/* Today Schedule Section */}
         <View className="flex-1 mt-6">
-          {/* Schedule Section */}
           <View className="mb-0">
             <Pressable
               onPress={() => setShowTodaySchedule(!showTodaySchedule)}
               className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] px-6 py-4"
             >
-              <Text className="text-lg font-semibold">Today Schedule</Text>
-              <MaterialIcons
-                name='keyboard-arrow-right'
-                size={24}
-                color="#666"
-              />
+              <Text className="text-lg font-semibold text-[#2A1800]">Today Schedule</Text>
+              <MaterialIcons name="keyboard-arrow-right" size={24} color="#666" />
             </Pressable>
 
             {showTodaySchedule && (
               <View className="bg-white rounded-xl p-4">
                 {groupTasksByTimeAndType(filteredTasks).map((group, index) => (
-                  <TaskGroup key={index} time={group.time} type={group.type} 
-                      tasks={group.tasks.map(task => ({
-                        ...task,
-                        onPress: () => handleTaskPress(task)
-                      }))}
-                  />
+                  <View key={index} className="mb-6">
+                    <Text className="text-sm font-semibold text-[#2A1800] mb-2">{group.time}</Text>
+                    {group.tasks.map((task, taskIndex) => (
+                      <View
+                        key={taskIndex}
+                        className="border border-[#FAE5CA] rounded-lg p-4 mb-4"
+                      >
+                        {/* First Line */}
+                        <View className="flex-row items-center justify-between mb-2">
+                          <View className="flex-row items-center gap-4">
+                            {/* Medication or Home Icon */}
+                            <MaterialIcons
+                              name={task.type === 'medicine' ? 'medication' : 'home'}
+                              size={24}
+                              color="#666"
+                            />
+                            {/* Flag Icon */}
+                            <MaterialIcons
+                              name="flag"
+                              size={20}
+                              color={
+                                task.priority === 'high'
+                                  ? '#FF0000'
+                                  : task.priority === 'medium'
+                                  ? '#FFD700'
+                                  : '#0000FF'
+                              }
+                            />
+                            {/* Task Name */}
+                            <Text 
+                              style={{ fontFamily: 'Lato', fontSize: 16 }}
+                              className="text-sm font-semibold text-[#2A1800]">{task.title}</Text>
+                          </View>
+                          {/* Avatar of Assignee */}
+                          <Image
+                            source={{
+                              uri:
+                                typeof task.assignedTo === 'object' && task.assignedTo !== null && 'imageURL' in task.assignedTo
+                                  ? (task.assignedTo as { imageURL: string }).imageURL
+                                  : typeof task.assignedTo === 'string'
+                                  ? task.assignedTo
+                                  : 'https://via.placeholder.com/40',
+                            }}
+                            className="w-6 h-6 rounded-full"
+                          />
+                        </View>
+
+                        {/* Second Line */}
+                        <View className="flex-row items-center gap-4 mb-2">
+                          {/* Brief Instruction */}
+                          <Text 
+                            style={{ fontFamily: 'Lato', fontSize: 14 }}
+                            className="text-xs text-[#666] flex-1">{task.description}
+                          </Text>
+                          {/* Checkbox */}
+                          <Pressable
+                            onPress={() => console.log('Task completed:', task.title)}
+                            className="w-6 h-6 border border-[#FAE5CA] rounded-lg flex items-center justify-center"
+                          >
+                            {task.checked && (
+                              <MaterialIcons name="check" size={16} color="#2A1800" />
+                            )}
+                          </Pressable>
+                        </View>
+
+                        {/* Third Line */}
+                        <View className="flex-row items-center justify-between gap-4">
+                          {/* Assigned By */}
+                          <View className="flex-row items-center gap-2">
+                            <Text 
+                              style={{ fontFamily: 'Lato', fontSize: 14 }}
+                              className="text-xs text-[#666]">
+                                Assigned by
+                            </Text>
+                            <Image
+                              source={{ uri: task.assignedBy?.imageURL || 'https://via.placeholder.com/40' }}
+                              className="w-6 h-6 rounded-full"
+                            />
+                          </View>
+                          {/* Notification Bell */}
+                          <Pressable
+                            onPress={() => console.log('Notification for:', task.title)}
+                            className="w-6 h-6 flex items-center justify-center"
+                          >
+                            <MaterialIcons name="notifications" size={20} color="#FFD700" />
+                          </Pressable>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
                 ))}
               </View>
             )}
           </View>
-
+          
           {/* Your Health Section */}
           {showHealthSection && (
             <View className="pb-6">

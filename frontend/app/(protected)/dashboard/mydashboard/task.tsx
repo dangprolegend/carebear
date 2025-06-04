@@ -3,6 +3,7 @@ import { View, Text, Pressable } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 
 export type Task = {
+  [x: string]: any;
   _id: string; 
   datetime: string; 
   type?: string;     
