@@ -166,7 +166,8 @@ export default function Family() {
     try {
       setIsLoadingFamily(true);
       const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/familyMembers`);
-      
+      console.log(`Fetched user ID: ${userID}`);
+
       // Fetch daily status for each family member
       const membersWithStatus = await Promise.all(
         response.data.map(async (member: any) => {
