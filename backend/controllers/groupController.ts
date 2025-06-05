@@ -178,9 +178,15 @@ export const joinGroup = async (req: any, res: any): Promise<void> => {
     
     // Find the group
     const group = await Group.findById(groupID);
-
     if (!group) {
       res.status(404).json({ message: 'Group not found' });
+      return;
+    }
+
+    // Find the user to get their email
+    const user = await User.findById(userID);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
       return;
     }
 
@@ -191,11 +197,30 @@ export const joinGroup = async (req: any, res: any): Promise<void> => {
       return;
     }
 
-    // Determine the role (default to caregiver for now)
-    const role = 'caregiver'; // This can be updated later based on additional logic
+    let role = 'caregiver'; // default role
+    let familialRelation = '';
+
+    // Check if there's a pending invitation for this user
+    const pendingInvitationIndex = group.pendingInvitations.findIndex(
+      (invitation) => invitation.email === user.email
+    );
+
+    if (pendingInvitationIndex !== -1) {
+      // Use the role and familial relation from the invitation
+      const invitation = group.pendingInvitations[pendingInvitationIndex];
+      role = invitation.role;
+      familialRelation = invitation.familialRelation || '';
+      
+      // Remove the pending invitation since it's now being used
+      group.pendingInvitations.splice(pendingInvitationIndex, 1);
+    }
 
     // Add the user to the group's members array
-    group.members.push({ user: userID, role });
+    group.members.push({ 
+      user: userID, 
+      role,
+      familialRelation 
+    });
     group.numberOfMembers += 1;
 
     const updatedGroup = await group.save();
@@ -207,18 +232,29 @@ export const joinGroup = async (req: any, res: any): Promise<void> => {
       { new: true, runValidators: true }
     );
 
-    if (!updatedUser) {
-      res.status(404).json({ message: 'User not found' });
-      return;
-    }
-
     res.status(200).json({
       message: 'User joined the group successfully',
       group: updatedGroup,
       user: updatedUser,
+      memberInfo: {
+        role,
+        familialRelation
+      }
     });
   } catch (err: any) {
     console.error('Error joining group:', err);
     res.status(500).json({ error: err.message });
+  }
+};
+
+export const getUsersByGroupID = async (req: Request, res: Response) => {
+  try {
+    const { groupID } = req.params;
+    // Find all users whose groupID matches
+    const users = await User.find({ groupID });
+    return res.status(200).json(users);
+  } catch (error: any) {
+    console.error('Error fetching users by groupID:', error);
+    return res.status(500).json({ message: 'Failed to fetch users by groupID', error: error.message });
   }
 };

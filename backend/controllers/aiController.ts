@@ -54,7 +54,7 @@ export const suggestTasksFromInput = async (req: UserRequest, res: Response): Pr
     const currentDateFormatted = today.toLocaleDateString('en-CA'); 
 
     const llmPrompt = `
-      You are an expert assistant for the CareBear app. Your goal is to help users create caregiving tasks.
+      You are an expert assistant for the CareBear app. Your goal is to help users create caregiving tasks (strictly less than or equal to 5 tasks).
       Today's date is ${currentDateFormatted}.
       The user making this request has ID: ${userID}.
       They are in group ID: ${groupID}.
@@ -68,7 +68,7 @@ export const suggestTasksFromInput = async (req: UserRequest, res: Response): Pr
       - "recurrence_rule": A string describing the recurrence. Use simple terms like "DAILY", "WEEKLY", "MONTHLY", "NONE", or a more specific iCalendar RRULE if applicable (e.g., "FREQ=WEEKLY;BYDAY=MO,WE,FR"). If no recurrence, use "NONE" or null.
       - "assignedTo": This MUST be null.
       - "priority": This can strictly either be 'low','high' or null. You can suggest.
-      Based on the input, also try to suggest 4-5 other relevant ancillary tasks if appropriate (e.g., "Refill prescription for [Medicine Name]", "Schedule follow-up appointment with doctor"). These ancillary tasks should also follow the same JSON object structure.
+      Based on the input, also try to suggest 4 other relevant ancillary tasks if appropriate (e.g., "Refill prescription for [Medicine Name]", "Schedule follow-up appointment with doctor"). These ancillary tasks should also follow the same JSON object structure.
       Return your entire response as 1 or many JSONs object depends on how many task you think of and suggest. Each with one top-level key:: "tasks". The value of "tasks" MUST be an array of these task JSON objects. Do not include any other text or explanation outside of the JSON object.
       User's Input:
       """

@@ -6,6 +6,7 @@ import * as Notifications from 'expo-notifications';
 import { groupTasksByTimeAndType, TaskGroup, Task } from './task';
 import { HealthMetric } from './healthmetric';
 import TaskCard from './taskcard';
+import {Link} from 'expo-router'
 
 // Configure how notifications are handled when app is in foreground
 Notifications.setNotificationHandler({
@@ -18,12 +19,12 @@ Notifications.setNotificationHandler({
 
 type DashboardBaseProps = {
   tasks: Task[];
-  showHealthSection?: boolean; // Whether to show the health section
-  title?: string; // Title for the dashboard
+  showHealthSection?: boolean; 
+  title?: string; 
 };
 
 
-const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }: DashboardBaseProps) => {
+const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboard' }: DashboardBaseProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showTodaySchedule, setShowTodaySchedule] = useState(true);
   const [showYourHealth, setShowYourHealth] = useState(true);
@@ -286,6 +287,25 @@ const DashboardBase = ({ tasks, showHealthSection = true, title = 'Dashboard' }:
             })}
           </View>
         </View>
+            {/* High Priority */}
+          
+      
+          {/* Schedule Section */}
+          <View className="px-4 mb-6 pt-7">
+             <View className="w-[393px] h-[56px] flex-row items-center justify-between border-t border-gray-200 px-6 py-4">
+              <Text className="text-lg font-semibold">High Priority Today</Text>
+              <Link href="/dashboard/mydashboard/task/createTask" asChild> 
+              <Pressable
+                className="pt-5 mr-2 absolute w-12 h-12 items-center justify-center right-6 bg-black rounded-full "
+              >
+                <MaterialIcons name="add" size={20} color="white" className="justify-center items-center pb-10" />
+                
+              </Pressable>
+            </Link>
+            </View>
+
+            
+          </View>
 
         <View className="flex-1 mt-6">
           {/* Schedule Section */}

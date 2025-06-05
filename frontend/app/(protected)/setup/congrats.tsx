@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 
 export default function CompleteScreen() {
 
@@ -10,7 +10,11 @@ export default function CompleteScreen() {
         Congrats!
       </Text>
       <View className="w-48 h-64 bg-black-500 rounded-lg mb-6 items-center justify-center">
-        <Text>(Placeholder)</Text>
+        <Image
+          source={require('../../../assets/images/Bear Illustration.png')}
+          style={{ width: 280, height: 320, borderRadius: 12 }}
+          resizeMode="contain"
+        />
       </View>
       <Text className="text-lg text-foreground text-center">
         You joined successfully!

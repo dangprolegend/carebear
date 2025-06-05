@@ -7,7 +7,9 @@ import {
   deleteTask,
   acceptTask,
   completeTask,
-  getUserTasks
+  getUserTasks,
+  getGroupTasks,
+  getRecentGroupTasks
 } from '../controllers/taskController';
 import { canManageTasks, hasTaskPermission, isAdmin, canManageSpecificTask } from '../middlewares/permissions';
 
@@ -53,7 +55,7 @@ const router: Router = express.Router();
  */
 
 // Create new task (carebear only)
-router.post('/', canManageTasks, createTask);
+router.post('/', createTask);
 
 
 /**
@@ -234,5 +236,49 @@ router.put('/:taskID', updateTask);
  *                   type: string
  */
 router.delete('/:taskID', deleteTask);
+
+/**
+ * @swagger
+ * /api/tasks/group/:groupID:
+ *   get:
+ *     summary: Get all tasks for a group
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: groupID
+ *         required: true
+ *         description: The ID of the group
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Tasks retrieved successfully
+ */
+router.get('/group/:groupID', getGroupTasks);
+
+/**
+ * @swagger
+ * /api/tasks/group/:groupID/recent:
+ *   get:
+ *     summary: Get recent (just created) tasks for a group
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: groupID
+ *         required: true
+ *         description: The ID of the group
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         description: Max number of recent tasks to return
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Recent tasks retrieved successfully
+ */
+router.get('/group/:groupID/recent', getRecentGroupTasks);
 
 export default router;

@@ -12,6 +12,7 @@
   "dependencies": {
     "@clerk/express": "^1.4.9",
     "@google-cloud/vision": "^5.1.0",
+    "@types/nodemailer": "^6.4.17",
     "axios": "^1.8.4",
     "body-parse": "^0.1.0",
     "body-parser": "^2.2.0",
@@ -21,7 +22,9 @@
     "express": "^5.1.0",
     "mongodb": "^6.15.0",
     "mongoose": "^8.13.2",
+    "nodemailer": "^7.0.3",
     "openai": "^4.100.0",
+    "resend": "^4.5.1",
     "svix": "^1.64.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
