@@ -341,7 +341,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
             <View className="pb-6">
               <Pressable
                 onPress={() => setShowYourHealth(!showYourHealth)}
-                className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] px-6 py-4"
+                className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] bg-[#FAE5CA] px-6 py-4"
               >
                 <Text className="text-lg font-semibold">Your Health</Text>
                 <MaterialIcons
