@@ -181,22 +181,24 @@ export default function Profile() {
         </View>
 
       {/* User Info Section */}
-      <View className="flex-row justify-between items-center w-5/6 self-center mt-8">
-        <View className="flex-1">
+      <View className="flex-row items-center w-5/6 self-center mt-8">
+        <View className="flex-1 pr-4">
           <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">
             {userFullName}
           </Text>
-          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">
+          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]" numberOfLines={1} ellipsizeMode="tail">
             {user?.emailAddresses[0]?.emailAddress}
           </Text>
         </View>
-        <View className="flex-1 ml-3">
+        <View className="items-center px-4">
           <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">1</Text>
           <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">Family Group</Text>
         </View>
-        <Pressable onPress={() => router.push('/(protected)/dashboard/profile/settings')}>
-          <Image source={Settings} className="w-6 h-6" />
-        </Pressable>
+        <View className="pl-4">
+          <Pressable onPress={() => router.push('/(protected)/dashboard/profile/settings')}>
+            <Image source={Settings} className="w-6 h-6" />
+          </Pressable>
+        </View>
       </View>
 
       {/* Diary Section */}
