@@ -1,6 +1,6 @@
 import { Task as FrontendTaskType } from '../app/(protected)/dashboard/mydashboard/task'; 
 
-const API_BASE_URL = "https://4da6-2402-800-6f5f-1c4b-5dc3-6afc-3bb0-afbc.ngrok-free.app" ; 
+const API_BASE_URL = "https://e874-2402-800-61ae-d326-c08f-9b0a-d3d-5268.ngrok-free.app" ; 
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
@@ -139,28 +139,66 @@ export const setCurrentGroupIDForApiService = (groupID: string | null) => {
 export const getCurrentUserID = () => currentUserID;
 export const getCurrentGroupID = () => currentGroupID;
 
-export const fetchTasksForDashboard = async (groupID?: string): Promise<FrontendTaskType[]> => {
-  const token = await getClerkToken();
-  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
+export const getBackendUserID = async (clerkID: string): Promise<string> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/users/clerk/${clerkID}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
 
-  let url = `${API_BASE_URL}/api/tasks`;
-  if (groupID) {
-    url = `${API_BASE_URL}/api/tasks/group/${groupID}`; 
-  } else {
-    console.warn("fetchTasksForDashboard: groupID not provided, calling general tasks endpoint.");
+    if (!response.ok) {
+      throw new Error(`Failed to fetch backend user ID: ${response.statusText}`);
+    }
+
+    const user = await response.json();
+    return user.userID; // Assuming the backend user object contains `_id`
+  } catch (error) {
+    console.error("Error fetching backend user ID:", error);
+    throw new Error("Unable to retrieve backend user ID");
   }
+};
 
-  console.log(`Workspaceing tasks from: ${url}`);
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
-  });
+export const getGroupID = async (userID: string): Promise<string> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/users/${userID}/group`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  const backendTasks: BackendTask[] = await handleApiResponse(response);
-  return backendTasks.map(mapBackendTaskToFrontend);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch group for user: ${response.statusText}`);
+    }
+
+    const group = await response.json();
+    return group._id || group.id; // Assuming the group object contains `_id`
+  } catch (error) {
+    console.error("Error fetching group ID:", error);
+    throw new Error("Unable to retrieve group ID");
+  }
+};
+
+export const fetchTasksForDashboard = async (groupID: string): Promise<FrontendTaskType[]> => {
+  try {
+    const url = `${API_BASE_URL}/api/groups/${groupID}/tasks`;
+
+    console.log(`Fetching tasks from: ${url}`);
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const backendTasks: BackendTask[] = await handleApiResponse(response);
+    return backendTasks.map(mapBackendTaskToFrontend);
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    throw new Error("Unable to retrieve tasks");
+  }
 };
 
 export const processAndCreateAiTasksAPI = async (payload: AiGenerateTasksPayload): Promise<AiGenerateTasksResponse> => {
@@ -289,4 +327,30 @@ export const fetchUsersInGroup = async (groupID: string): Promise<any[]> => {
   });
   const users = await handleApiResponse(response);
   return users;
+};
+
+/**
+ * Fetches the name of a user based on their userID.
+ * @param userID The ID of the user whose name is to be fetched.
+ * @returns A promise that resolves to the user's name as a string.
+ */
+export const fetchUserNameByID = async (userID: string): Promise<string> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/users/${userID}/info`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch user name: ${response.statusText}`);
+    }
+
+    const userData = await handleApiResponse(response);
+    return userData.fullName || 'Unknown User'; // Assuming the API returns `fullName`
+  } catch (error) {
+    console.error('Error fetching user name:', error);
+    throw new Error('Unable to retrieve user name');
+  }
 };

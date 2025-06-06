@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, View, Text, Pressable, Platform } from 'react-native';
+import { ScrollView, View, Text, Pressable, Platform, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Calendar from 'expo-calendar';
 import * as Notifications from 'expo-notifications';
@@ -169,7 +169,6 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
 
   const isTaskForSelectedDate = (task: Task) => {
   const taskDate = new Date(task.datetime);
-  console.log('Task Date:', taskDate, 'Selected Date:', selectedDate);
 
   // Example fetch:
   // fetch(`${process.env.NGROK_API_URL}/api/tasks/682ed36cb380744bd1ed4559`)
@@ -227,7 +226,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
                 setSelectedDate(newDate);
               }}
             >
-              <MaterialIcons name="chevron-left" size={24} color="#666" />
+              <MaterialIcons name="arrow-left" size={24} color="#666" />
             </Pressable>
             <View className="flex-row items-center">
               <MaterialIcons name="calendar-today" size={20} color="#666" />
@@ -246,7 +245,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
                 setSelectedDate(newDate);
               }}
             >
-              <MaterialIcons name="chevron-right" size={24} color="#666" />
+              <MaterialIcons name="arrow-right" size={24} color="#666" />
             </Pressable>
           </View>
 
@@ -256,104 +255,236 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
               const date = new Date(selectedDate);
               date.setDate(date.getDate() - 3 + index);
               const isSelected = date.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              const dateToCompare = new Date(date);
+              dateToCompare.setHours(0, 0, 0, 0);
+              const isPastDate = dateToCompare <= today;
 
               return (
                 <Pressable
                   key={index}
                   onPress={() => setSelectedDate(new Date(date))}
-                  className={`w-[40px] h-[88px] items-center mx-2 p-2 space-y-1 ${
-                    isSelected ? 'bg-[#EBEBEB] rounded-[100px] border border-gray-200' : ''
-                  }`}
+                  style={{
+                    width: 35,
+                    height: 88,
+                    borderRadius: 4,
+                    borderStyle: 'solid',
+                    borderWidth: isSelected ? 1 : 0,
+                    borderColor: isSelected ? '#2A1800' : 'transparent',
+                    padding: 8,
+                    alignItems: 'center',
+                    backgroundColor: isSelected ? '#FAE5CA' : 'transparent',
+                    marginHorizontal: 2,
+                  }}
                 >
                   <Text
-                    className={`w-[24px] h-6 text-center text-xs ${
+                    className={`w-[24px] h-[24px] text-center text-xs ${
                       isSelected ? 'text-gray-800' : 'text-gray-500'
                     }`}
                   >
-                    {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                    {date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0).toUpperCase()}
                   </Text>
                   <Text
-                    className={`w-[19px] h-6 text-center text-xs ${
+                    className={`w-[19px] h-[24px] text-center text-xs ${
                       isSelected ? 'text-gray-800' : 'text-gray-500'
                     }`}
                   >
                     {date.getDate()}
                   </Text>
+
+                  {isPastDate ? (
+                    <Image
+                      source={require('../../../../assets/icons/elipse.png')}
+                      style={{ width: 22, height: 22, borderRadius: 20 }}
+                      resizeMode="contain"
+                    />
+                  ) : (
                   <View
                     className={`w-[19px] h-6 rounded-full flex items-center justify-center bg-[#B0B0B0]`}
                   />
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-            {/* High Priority */}
-          
+          )}
+      </Pressable>
+      );
+    })}
+  </View>
+</View>
+
       
-          {/* Schedule Section */}
-          <View className="px-4 mb-6 pt-7">
-             <View className="w-[393px] h-[56px] flex-row items-center justify-between border-t border-gray-200 px-6 py-4">
-              <Text className="text-lg font-semibold">High Priority Today</Text>
-              <Link href="/dashboard/mydashboard/task/createTask" asChild> 
+          {/* High Priority Section */}
+        <View className="mb-0 pt-7">
+          <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
+            <Text className="text-lg font-semibold">High Priority Today</Text>
+            <Link href="/dashboard/mydashboard/task/createTask" asChild>
               <Pressable
-                className="pt-5 mr-2 absolute w-12 h-12 items-center justify-center right-6 bg-black rounded-full "
+                className="absolute right-6 w-10 h-10 items-center justify-center bg-black rounded-full"
               >
-                <MaterialIcons name="add" size={20} color="white" className="justify-center items-center pb-10" />
-                
+                <MaterialIcons name="add" size={18} color="white" />
               </Pressable>
             </Link>
-            </View>
-
-            
           </View>
+        </View>
 
+
+        {/* Today Schedule Section */}
         <View className="flex-1 mt-6">
-          {/* Schedule Section */}
-          <View className="px-4 mb-6">
+          <View className="mb-0">
             <Pressable
               onPress={() => setShowTodaySchedule(!showTodaySchedule)}
-              className="w-[393px] h-[56px] flex-row items-center justify-between border-t border-b border-gray-200 px-6 py-4"
+              className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] px-6 py-4"
             >
-              <Text className="text-lg font-semibold">Today Schedule</Text>
-              <MaterialIcons
-                name={showTodaySchedule ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
-                size={24}
-                color="#666"
-              />
+              <Text className="text-lg font-semibold text-[#2A1800]">Today Schedule</Text>
+              <MaterialIcons name="arrow-right" size={24} color="#666" />
             </Pressable>
 
             {showTodaySchedule && (
               <View className="bg-white rounded-xl p-4">
                 {groupTasksByTimeAndType(filteredTasks).map((group, index) => (
-                  <TaskGroup key={index} time={group.time} type={group.type} 
-                      tasks={group.tasks.map(task => ({
-                        ...task,
-                        onPress: () => handleTaskPress(task)
-                      }))}
-                  />
+                  <View key={index} className="mb-6 flex-row">
+                    {/* Vertical Timeline */}
+                    {/* <View className="w-[24px] flex items-center">
+                      <View className="h-full w-[2px] bg-[#FAE5CA]" />
+                      <View className="w-[8px] h-[8px] bg-[#FAE5CA] rounded-full mt-[-4px]" />
+                    </View> */}
+
+                    {/* Task Group */}
+                    <View className="flex-1">
+                      <Text className="text-sm font-semibold text-[#2A1800] mb-2">{group.time}</Text>
+                      {group.tasks.map((task, taskIndex) => (
+                        <View
+                          key={taskIndex}
+                          className="border border-[#FAE5CA] rounded-lg p-4 mb-4"
+                          onTouchEnd={() => handleTaskPress(task)} // Open modal on task click
+                        >
+                          {/* First Line */}
+                          <View className="flex-row items-center justify-between mb-2">
+                            <View className="flex-row items-center gap-4">
+                              {/* Medication or Home Icon */}
+                              <MaterialIcons
+                                name={task.type === 'medicine' ? 'medication' : 'home'}
+                                size={24}
+                                color="#666"
+                              />
+                              {/* Flag Icon */}
+                              <MaterialIcons
+                                name="flag"
+                                size={20}
+                                color={
+                                  task.priority === 'high'
+                                    ? '#FF0000'
+                                    : task.priority === 'medium'
+                                    ? '#FFD700'
+                                    : '#0000FF'
+                                }
+                              />
+                              {/* Task Name */}
+                              <Text
+                                style={{ fontFamily: 'Lato', fontSize: 16 }}
+                                className="text-sm font-semibold text-[#2A1800]"
+                              >
+                                {task.title}
+                              </Text>
+                            </View>
+                            {/* Avatar of Assignee */}
+                            <Image
+                              source={{
+                                uri:
+                                  typeof task.assignedTo === 'object' && task.assignedTo !== null && 'imageURL' in task.assignedTo
+                                    ? (task.assignedTo as { imageURL: string }).imageURL
+                                    : typeof task.assignedTo === 'string'
+                                    ? task.assignedTo
+                                    : 'https://via.placeholder.com/40',
+                              }}
+                              className="w-6 h-6 rounded-full"
+                            />
+                          </View>
+
+                          {/* Second Line */}
+                          <View className="flex-row items-center gap-4 mb-2">
+                            {/* Brief Instruction */}
+                            <Text
+                              style={{ fontFamily: 'Lato', fontSize: 14 }}
+                              className="text-xs text-[#666] flex-1"
+                            >
+                              {task.description}
+                            </Text>
+                            {/* Checkbox */}
+                            <Pressable
+                              onPress={() => console.log('Task completed:', task.title)}
+                              className="w-6 h-6 border border-[#FAE5CA] rounded-lg flex items-center justify-center"
+                            >
+                              {task.checked && (
+                                <MaterialIcons name="check" size={16} color="#2A1800" />
+                              )}
+                            </Pressable>
+                          </View>
+
+                          {/* Third Line */}
+                          <View className="flex-row items-center justify-between gap-4">
+                            {/* Assigned By */}
+                            <View className="flex-row items-center gap-2">
+                              <Text
+                                style={{ fontFamily: 'Lato', fontSize: 14 }}
+                                className="text-xs text-[#666]"
+                              >
+                                Assigned by
+                              </Text>
+                              <Image
+                                source={{
+                                  uri: task.assignedBy?.imageURL || 'https://via.placeholder.com/40',
+                                }}
+                                className="w-6 h-6 rounded-full"
+                              />
+                            </View>
+                            {/* Notification Bell */}
+                            <Pressable
+                              onPress={() => console.log('Notification for:', task.title)}
+                              className="w-6 h-6 flex items-center justify-center"
+                            >
+                              <MaterialIcons name="notifications" size={20} color="#FFD700" />
+                            </Pressable>
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
                 ))}
               </View>
             )}
           </View>
-
+          
           {/* Your Health Section */}
           {showHealthSection && (
-            <View className="px-4 pb-6">
+            <View className="pb-6">
               <Pressable
                 onPress={() => setShowYourHealth(!showYourHealth)}
-                className="w-[393px] h-[56px] flex-row items-center justify-between border-t border-b border-gray-200 px-6 py-4"
+                className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] bg-[#FAE5CA] px-6 py-4"
               >
                 <Text className="text-lg font-semibold">Your Health</Text>
                 <MaterialIcons
-                  name={showYourHealth ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+                  name='arrow-right'
                   size={24}
                   color="#666"
                 />
               </Pressable>
 
               {showYourHealth && (
-                <View className="mt-4 pb-6">
-                  <View className="flex-row flex-wrap justify-between">
+                <View 
+                  style={{
+                    display: 'flex',
+                    height: 494,
+                    paddingHorizontal: 24,
+                    paddingVertical: 16,
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    gap: 24,
+                    flexShrink: 0,
+                    alignSelf: 'stretch',
+                    width: '100%',
+                    backgroundColor: '#FAE5CA',
+                  }}
+                >
+                  <View className="flex-row flex-wrap justify-between w-full">
                     <HealthMetric label="Sleep" value="81%" detail="6 hr 15 min / 8 hr" />
                     <HealthMetric label="Steps" value="81%" detail="9,500 / 10,000" />
                     <HealthMetric label="Weight" value="81%" detail="55 kg / 50 kg" />
