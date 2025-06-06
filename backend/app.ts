@@ -16,6 +16,7 @@ import dashboardRoutes from './routes/dashboardRoutes';
 import authRoutes from './routes/authRoutes';
 import aiRoutes from './routes/aiRoutes';
 import dailyRoutes from './routes/dailyRoutes';
+import feedRoutes from './routes/feedRoutes';
 
 
 import job from './config/cron';
@@ -78,6 +79,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/daily', dailyRoutes);
+app.use('/api/feed', feedRoutes);
 
 
 

@@ -253,3 +253,80 @@ export const getStatusStats = async (
     res.status(500).json({ error: err.message });
   }
 };
+
+// Update existing daily status
+export const updateDailyStatus = async (
+  req: TypedRequest<StatusSubmitBody, UserParams>, 
+  res: Response
+): Promise<void> => {
+  try {
+    const { mood, body } = req.body;
+    const { userID } = req.params;
+
+    // Validate required fields
+    if (!mood || !body) {
+      res.status(400).json({
+        success: false,
+        message: 'Both mood and body status are required'
+      });
+      return;
+    }
+
+    // Validate enum values
+    const validMoods = ['happy', 'excited', 'sad', 'angry', 'nervous', 'peaceful'];
+    const validBodyStates = ['energized', 'sore', 'tired', 'sick', 'relaxed', 'tense'];
+
+    if (!validMoods.includes(mood) || !validBodyStates.includes(body)) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid mood or body status value'
+      });
+      return;
+    }
+
+    // Find user status document
+    const userStatus = await Daily.findOne({ userID: userID });
+    
+    if (!userStatus) {
+      res.status(404).json({
+        success: false,
+        message: 'No daily status record found for user'
+      });
+      return;
+    }
+
+    const todayDate = Daily.getTodayDate();
+    const todayIndex = userStatus.statusHistory.findIndex(status => 
+      status.date.getTime() === todayDate.getTime()
+    );
+
+    if (todayIndex === -1) {
+      res.status(404).json({
+        success: false,
+        message: 'No status entry found for today'
+      });
+      return;
+    }
+
+    // Update existing entry
+    userStatus.statusHistory[todayIndex].mood = mood;
+    userStatus.statusHistory[todayIndex].body = body;
+    userStatus.statusHistory[todayIndex].timestamp = new Date();
+    userStatus.lastUpdated = new Date();
+
+    await userStatus.save();
+
+    const updatedStatus = userStatus.statusHistory[todayIndex];
+    res.status(200).json({
+      id: updatedStatus._id,
+      mood: updatedStatus.mood,
+      body: updatedStatus.body,
+      date: updatedStatus.date,
+      timestamp: updatedStatus.timestamp
+    });
+
+  } catch (err: any) {
+    console.error('Error updating daily status:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
