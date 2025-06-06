@@ -1,12 +1,19 @@
-import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, SafeAreaView, Modal } from 'react-native';
+//@ts-nocheck
+import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, SafeAreaView, Modal, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { Toggle } from '~/components/ui/toggle';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { router } from 'expo-router';
+import CameraIcon from '../../../../assets/icons/camera.png';
+import Bell from '../../../../assets/icons/bell.png';
+import Privacy from '../../../../assets/icons/pocket.png';
+import Profile from '../../../../assets/icons/circle-user-round.png';
+import Account from '../../../../assets/icons/user-cog.png';
+import Help from '../../../../assets/icons/circle-help.png';
+import axios from 'axios';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -45,17 +52,15 @@ const SettingItem = ({
     onPress={onPress}
     className="flex-row items-center justify-between py-4 px-2"
   >
-    <View className="flex-row items-center flex-1">
-      <View className="w-10 h-10 rounded-full bg-white items-center justify-center mr-4">
-        <MaterialIcons name={icon} size={20} color={iconColor} />
-      </View>
+    <View className="flex-row items-center flex-1 ml-2">
+          <Image source={icon} className="w-5 h-5 mr-3" />
+          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">{title}</Text>
+        </View>
       <View className="flex-1">
-        <Text className="text-gray-900 font-semibold text-base">{title}</Text>
         {description && (
           <Text className="text-gray-500 text-sm mt-0.5">{description}</Text>
         )}
       </View>
-    </View>
     {showChevron && (
       <MaterialIcons 
         name={isExpanded ? "keyboard-arrow-up" : "chevron-right"} 
@@ -69,7 +74,6 @@ const SettingItem = ({
 const DropdownSettingItem = ({ 
   icon, 
   title, 
-  description, 
   iconColor = "#6366f1", 
   isExpanded, 
   onToggleExpanded, 
@@ -80,17 +84,10 @@ const DropdownSettingItem = ({
       onPress={onToggleExpanded}
       className="flex-row items-center justify-between py-4 px-2"
     >
-      <View className="flex-row items-center flex-1">
-        <View className="w-10 h-10 rounded-full bg-white items-center justify-center mr-4">
-          <MaterialIcons name={icon} size={20} color={iconColor} />
+      <View className="flex-row items-center flex-1 ml-2">
+          <Image source={icon} className="w-5 h-5 mr-3" />
+          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">{title}</Text>
         </View>
-        <View className="flex-1">
-          <Text className="text-gray-900 font-semibold text-base">{title}</Text>
-          {description && (
-            <Text className="text-gray-500 text-sm mt-0.5">{description}</Text>
-          )}
-        </View>
-      </View>
       <MaterialIcons 
         name={isExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
         size={24} 
@@ -134,7 +131,11 @@ const ToggleSetting = ({
 );
 
 export default function SettingsPage({ onBack }: SettingsPageProps) {
-  const { signOut } = useAuth();
+  const { signOut, isSignedIn, userId } = useAuth();
+  const [userID, setUserID] = useState(null);
+  const [userImageURL, setUserImageURL] = useState<string | null>(null);
+  const [userFullName, setUserFullName] = useState<string | null>(null);
+
   const { user } = useUser();
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
@@ -256,6 +257,26 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
     }
   };
 
+  useEffect(() => {
+    const getUserInfo = async () => {
+      if (isSignedIn && userId) {
+        try {
+          const userResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/clerk/${userId}`);
+          const fetchedUserID = userResponse.data.userID;
+          setUserID(fetchedUserID);
+
+          const res = await axios.get(`https://carebear-backend.onrender.com/api/users/${fetchedUserID}/info`);
+          setUserImageURL(res.data.imageURL);
+          setUserFullName(res.data.fullName);
+        } catch (error) {
+          console.error('Error fetching user info:', error);
+        } 
+      }
+    };
+
+    getUserInfo();
+  }, [isSignedIn, userId]);
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView 
@@ -265,51 +286,33 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       >
         {/* Header Section */}
         <View className="px-6 py-5 pt-12">
-          <View className="flex-row items-center justify-between mb-6">
-            {onBack && (
-              <TouchableOpacity onPress={onBack} className="p-2">
-                <MaterialIcons name="arrow-back" size={24} color="#374151" />
-              </TouchableOpacity>
-            )}
-            {/* <Text className="text-2xl font-bold text-gray-900 flex-1 text-center mr-10">
-              Settings
-            </Text> */}
-          </View>
-
           {/* Avatar */}
-          <View className="items-center mb-6">
-            <TouchableOpacity 
-              className="relative"
-              onPress={() => Alert.alert('Coming Soon', 'Avatar upload will be available in a future update')}
-            >
-              <View className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center">
-                <Text className="text-white text-2xl font-bold">
-                  {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-                </Text>
+          <View className='flex flex-col mt-6 items-center gap-4'>
+            <View className="relative">
+              <Image
+                source={{ uri: userImageURL }}
+                className='w-20 h-20 flex-shrink-0 aspect-square rounded-full border-2 border-[#2A1800] bg-cover bg-center'
+              />
+              {/* Camera icon overlay */}
+              <View className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center border-2 border-white">
+                <Image source={CameraIcon} className="w-3.5 h-3.5" />
               </View>
-              <View className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-amber-900 items-center justify-center border-2 border-white">
-                <MaterialIcons name="camera-alt" size={16} color="white" />
-              </View>
-            </TouchableOpacity>
-            <Text className="text-lg font-semibold text-gray-900 mt-3">
-              {user?.firstName} {user?.lastName}
-            </Text>
-            <Text className="text-gray-500 text-sm">
-              {user?.emailAddresses[0]?.emailAddress}
-            </Text>
+            </View>
+            <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">
+            {userFullName}
+          </Text>
           </View>
         </View>    
 
         {/* Profile */}
-        <View className="mb-8 px-6">
-          <Text className="text-lg font-bold text-gray-900 mb-5">Profile Information</Text>
+        <View className="mb-8 px-6 mt-8">
+          <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px] mb-4">Settings</Text>
 
-          <View className="bg-amber-900 px-0.5 py-0.5 rounded-lg">
+          <View className="border border-[#623405] px-0.5 py-0.5 rounded-lg">
             <View className="bg-white rounded-lg">
               <DropdownSettingItem
-                icon="person"
+                icon={Profile}
                 title="Profile Details"
-                description="Edit your personal information and physical details"
                 iconColor="#78350f"
                 isExpanded={isProfileDetailsExpanded}
                 onToggleExpanded={() => setIsProfileDetailsExpanded(!isProfileDetailsExpanded)}
@@ -437,7 +440,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                 </View>
 
                 <TouchableOpacity
-                  className={`bg-amber-900 py-2 px-7 rounded-lg ${isUpdating ? 'opacity-70' : ''}`}
+                  className={`bg-[#2A1800] py-2 px-7 rounded-lg ${isUpdating ? 'opacity-70' : ''}`}
                   onPress={handleUpdateProfile}
                   disabled={isUpdating}
                 >
@@ -447,12 +450,11 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                 </TouchableOpacity>
               </DropdownSettingItem>
 
-              <View className="h-px bg-amber-700 mx-2" />
+              <View className="bg-[#FAE5CA] mx-2 h-px" />
 
               <DropdownSettingItem
-                icon="account-circle"
+                icon={Account}
                 title="Account"
-                description="Manage your account settings and connections"
                 iconColor="#78350f"
                 isExpanded={isAccountExpanded}
                 onToggleExpanded={() => setIsAccountExpanded(!isAccountExpanded)}
@@ -509,33 +511,12 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
           </View>
         </View>          
 
-        {/* Preferences */}
         <View className="mb-8 px-6">
-          <Text className="text-lg font-bold text-gray-900 mb-5">Preferences</Text>
-
-          <View className="bg-amber-900 px-0.5 py-0.5 rounded-lg">
+          <View className="border border-[#623405] px-0.5 py-0.5 rounded-lg">
             <View className="bg-white rounded-lg">
               <DropdownSettingItem
-                icon="privacy-tip"
-                title="Privacy Settings"
-                description="Control your visibility and privacy"
-                iconColor="#78350f"
-                isExpanded={isPrivacyExpanded}
-                onToggleExpanded={() => setIsPrivacyExpanded(!isPrivacyExpanded)}
-              >
-                <ToggleSetting
-                  title="Show Online Status"
-                  description="Let others see when you're active"
-                  value={showOnlineStatus}
-                  onValueChange={setShowOnlineStatus}
-                />
-              </DropdownSettingItem>
-
-              <View className="h-px bg-amber-700 mx-2" />                
-              <DropdownSettingItem
-                icon="notifications"
+                icon={Bell}
                 title="Notifications"
-                description="Manage your notification preferences"
                 iconColor="#78350f"
                 isExpanded={isNotificationsExpanded}
                 onToggleExpanded={() => setIsNotificationsExpanded(!isNotificationsExpanded)}
@@ -566,10 +547,26 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                 />
               </DropdownSettingItem>
 
-              <View className="h-px bg-amber-700 mx-2" />
+              <View className="bg-[#FAE5CA] mx-2 h-px" />    
+              
+              <DropdownSettingItem
+                icon={Privacy}
+                title="Privacy"
+                iconColor="#78350f"
+                isExpanded={isPrivacyExpanded}
+                onToggleExpanded={() => setIsPrivacyExpanded(!isPrivacyExpanded)}
+              >
+                <ToggleSetting
+                  title="Show Online Status"
+                  value={showOnlineStatus}
+                  onValueChange={setShowOnlineStatus}
+                />
+              </DropdownSettingItem>
+
+              <View className="bg-[#FAE5CA] mx-2 h-px" />
 
               <SettingItem
-                icon="help"
+                icon={Help}
                 title="Help"
                 onPress={() => Alert.alert('Coming Soon', 'Help & Support will be available in a future update')}
                 iconColor="#78350f"
@@ -580,22 +577,17 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
 
         {/* Sign Out*/}
         <View className="mb-4 px-6">
-          <Text className="text-lg font-bold text-gray-900 mb-5">Danger Zone</Text>
-
-          <View className="bg-amber-900 px-0.5 py-0.5 rounded-lg">
+          <View className="border border-[#623405] px-0.5 py-0.5 rounded-lg">
             <View className="bg-white rounded-lg">
               <TouchableOpacity 
                 onPress={handleSignOut}
                 className="flex-row items-center justify-between py-4 px-2"
               >
                 <View className="flex-row items-center flex-1">
-                  <View className="w-10 h-10 rounded-full bg-white items-center justify-center mr-4">
-                    <MaterialIcons name="logout" size={20} color="#dc2626" />
+                  <View className="w-10 h-10 rounded-full bg-white items-center justify-center">
+                    <MaterialIcons name="logout" size={20} color="#2A1800" />
                   </View>
-                  <View className="flex-1">
-                    <Text className="text-red-600 font-semibold text-base">Sign Out</Text>
-                    <Text className="text-red-500 text-sm mt-0.5">Sign out of your account</Text>
-                  </View>
+                    <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">Log Out</Text>
                 </View>
               </TouchableOpacity>
               {/* Sign Out Modal */}
@@ -607,7 +599,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
               >
                 <View className="flex-1 bg-black/40 justify-center items-center">
                   <View className="bg-white rounded-xl p-6 w-80 items-center">
-                    <Text className="text-xl font-bold text-red-600 mb-2">Sign Out</Text>
+                    <Text className="text-xl font-bold text-[#2A1800] mb-2">Sign Out</Text>
                     <Text className="text-gray-700 text-base mb-6 text-center">
                       Are you sure you want to sign out?
                     </Text>
@@ -620,7 +612,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={handleSignOutConfirm}
-                        className="flex-1 ml-2 py-2 rounded-lg bg-red-600 items-center"
+                        className="flex-1 ml-2 py-2 rounded-lg bg-[#2A1800] items-center"
                       >
                         <Text className="text-white font-semibold text-base">Sign Out</Text>
                       </TouchableOpacity>

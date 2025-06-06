@@ -12,6 +12,11 @@ import Foot from '../../../../assets/icons/footprints.png';
 import Dumbbell from '../../../../assets/icons/dumbbell.png';
 import Settings from '../../../../assets/icons/settings.png';
 import Heart from '../../../../assets/icons/heart.png';
+import Plus from '../../../../assets/icons/plus.png';
+import Steps from '../../../../assets/icons/steps.png';
+import Fitbit from '../../../../assets/icons/fitbit.png';
+import AppleHealth from '../../../../assets/icons/apple_health.png';
+import AppleWatch from '../../../../assets/icons/apple_watch.png';
 import CalendarStrip from '~/components/CalendarStrip';
 
 export default function Profile() {
@@ -222,6 +227,55 @@ export default function Profile() {
             <Text className='text-[#2A1800] font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]'>39</Text>
         </View>
           <Text className='text-[#2A1800] font-lato text-[16px] font-light leading-[24px] tracking-[-0.1px]'>Days Healthy</Text>
+        </View>
+
+        <View className="w-5/6 self-center mt-10">
+          <View className="flex-row justify-between items-center">
+            <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">Automatic Tracking</Text>
+            <View className="flex items-center justify-center p-[6px] gap-0 rounded-[100px] bg-[#2A1800]">
+              <Image source={Plus} className="w-4 h-4" />
+            </View>
+          </View>
+
+          <View className="flex flex-row items-center justify-around mt-[33px] gap-4">
+            <View className="flex flex-col items-center gap-[14px]">
+              <View className="relative">
+                <View className="w-8 h-8 bg-[#2A1800] rounded-full flex items-center justify-center">
+                  <Image source={Steps} className="w-6 h-6" />
+                </View>
+                <View className="absolute -top-1 -right-1 w-3 h-3 bg-[#4ADE80] rounded-full border-2 border-white" />
+              </View>
+              <Text className="text-[#2A1800] text-center font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px]">Steps iPhone</Text>
+            </View>
+
+            <View className="flex flex-col items-center gap-[14px]">
+              <View className="relative">
+                <View className="w-8 h-8 bg-[#2A1800] rounded-full flex items-center justify-center">
+                  <Image source={AppleHealth} className="w-6 h-6" />
+                </View>
+                <View className="absolute -top-1 -right-1 w-3 h-3 bg-[#4ADE80] rounded-full border-2 border-white" />
+              </View>
+              <Text className="text-[#2A1800] text-center font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px]">Apple Health</Text>
+            </View>
+
+            <View className="flex flex-col items-center gap-[14px]">
+              <View className="relative">
+                <View className="w-8 h-8 bg-[#2A1800] rounded-full flex items-center justify-center">
+                  <Image source={AppleWatch} className="w-6 h-6" />
+                </View>
+              </View>
+              <Text className="text-[#2A1800] text-center font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px]">Apple Watch</Text>
+            </View>
+
+            <View className="flex flex-col items-center gap-[14px]">
+              <View className="relative">
+                <View className="w-8 h-8 bg-[#2A1800] rounded-full flex items-center justify-center">
+                  <Image source={Fitbit} className="w-6 h-6" />
+                </View>
+              </View>
+              <Text className="text-[#2A1800] text-center font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px]">FitBit</Text>
+            </View>
+          </View>
         </View>
 
     </ScrollView>
