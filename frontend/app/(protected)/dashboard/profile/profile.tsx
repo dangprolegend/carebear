@@ -1,94 +1,214 @@
-import { View, Text, Pressable, Image, ScrollView } from 'react-native';
+//@ts-nocheck
+import { useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { View, Text, Pressable, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { useAuth } from '@clerk/clerk-expo';
+import axios from 'axios';
+import PillIcon from '../../../../assets/icons/pill.png';
+import PillBotte from '../../../../assets/icons/pill-bottle.png';
+import Moon from '../../../../assets/icons/moon.png';
+import Scale from '../../../../assets/icons/scale.png';
+import Foot from '../../../../assets/icons/footprints.png';
+import Dumbbell from '../../../../assets/icons/dumbbell.png';
+import Settings from '../../../../assets/icons/settings.png';
+import CalendarStrip from '~/components/CalendarStrip';
 
 export default function Profile() {
+  const router = useRouter();
+  const { isSignedIn, userId } = useAuth();
+  const [userID, setUserID] = useState(null);
+  const [userImageURL, setUserImageURL] = useState<string | null>(null);
+  const [userFullName, setUserFullName] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Daily status display states (store both value and emoji for user)
+  const [todayMoodValue, setTodayMoodValue] = useState<string>('');
+  const [todayBodyValue, setTodayBodyValue] = useState<string>('');
+  const [todayMoodEmoji, setTodayMoodEmoji] = useState<string>('');
+  const [todayBodyEmoji, setTodayBodyEmoji] = useState<string>('');
+  const [isCheckingStatus, setIsCheckingStatus] = useState<boolean>(false);
+
+  const moods = [
+    { id: 'happy', emoji: '😊', label: 'Happy', value: 'happy' },
+    { id: 'excited', emoji: '🤩', label: 'Excited', value: 'excited' },
+    { id: 'sad',  emoji: '😢',label: 'Sad', value: 'sad' },
+    { id: 'angry',  emoji: '😠',label: 'Angry', value: 'angry' },
+    { id: 'nervous',  emoji: '😬',label: 'Nervous', value: 'nervous' },
+    { id: 'peaceful',  emoji: '🧘',label: 'Peaceful', value: 'peaceful' },
+  ];
+
+  const bodyFeelings = [
+    { id: 'energized',  emoji: '⚡',label: 'Energized', value: 'energized' },
+    { id: 'sore',  emoji: '💪',label: 'Sore', value: 'sore' },
+    { id: 'tired',  emoji: '😴',label: 'Tired', value: 'tired' },
+    { id: 'sick',  emoji: '🤒',label: 'Sick', value: 'sick' },
+    { id: 'relaxed',  emoji: '😌',label: 'Relaxed', value: 'relaxed' },
+    { id: 'tense',  emoji: '😣',label: 'Tense', value: 'tense' },
+  ];
+
+  // Helper function to get emoji from value
+  const getMoodEmoji = (moodValue: string): string => {
+    if (moodValue === '') return '👤';
+    const mood = moods.find(m => m.value === moodValue);
+    return mood ? mood.emoji : '';
+  };
+
+  const getBodyEmoji = (bodyValue: string): string => {
+    if (bodyValue === '') return '👤';
+    const body = bodyFeelings.find(b => b.value === bodyValue);
+    return body ? body.emoji : '';
+  };
+
+  // Fetch today's daily status
+  const fetchTodayStatus = async (userID: string) => {
+    try {
+      const response = await axios.get(`https://carebear-backend.onrender.com/api/daily/today/${userID}`);
+      if (response.data && response.data.mood && response.data.body) {
+        setTodayMoodValue(response.data.mood);
+        setTodayBodyValue(response.data.body);
+        setTodayMoodEmoji(getMoodEmoji(response.data.mood));
+        setTodayBodyEmoji(getBodyEmoji(response.data.body));
+      } else {
+        setTodayMoodValue('');
+        setTodayBodyValue('');
+        setTodayMoodEmoji('');
+        setTodayBodyEmoji('');
+      }
+    } catch (error) {
+      console.error('Error fetching today\'s status:', error);
+      setTodayMoodValue('');
+      setTodayBodyValue('');
+      setTodayMoodEmoji('');
+      setTodayBodyEmoji('');
+    }
+  };
+
+  useEffect(() => {
+    const getUserInfo = async () => {
+      if (isSignedIn && userId) {
+        try {
+          const userResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/clerk/${userId}`);
+          const fetchedUserID = userResponse.data.userID;
+          setUserID(fetchedUserID);
+
+          const res = await axios.get(`https://carebear-backend.onrender.com/api/users/${fetchedUserID}/info`);
+          setUserImageURL(res.data.imageURL);
+          setUserFullName(res.data.fullName);
+        } catch (error) {
+          console.error('Error fetching user info:', error);
+        } 
+      }
+    };
+
+    getUserInfo();
+  }, [isSignedIn, userId]);
+
+  // Check if user has submitted daily status
+  useEffect(() => {
+    const checkDailyStatus = async () => {
+      if (isSignedIn && userId) {
+        setIsCheckingStatus(true);
+        try {
+          // Step 1: Fetch userID using clerkID
+          const userResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/clerk/${userId}`);
+          const fetchedUserID = userResponse.data.userID;
+          setUserID(fetchedUserID);
+
+          // Step 2: Check if user has submitted today
+          const statusResponse = await axios.get(`https://carebear-backend.onrender.com/api/daily/check/${fetchedUserID}`);
+          
+          // If user has submitted today, fetch their status to display emojis
+          if (statusResponse.data.hasSubmittedToday) {
+            await fetchTodayStatus(fetchedUserID);
+          } 
+        } catch (error) {
+          console.error('Error checking daily status:', error);
+        } finally {
+          setIsCheckingStatus(false);
+        }
+      }
+    };
+
+    checkDailyStatus();
+  }, [isSignedIn, userId]);
+
+  // Show loading screen while checking status
+    if (isCheckingStatus) {
+      return (
+        <View className="flex-1 justify-center items-center bg-gray-50">
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text className="mt-4 text-gray-600">Loading...</Text>
+        </View>
+      );
+    }
+
   return (
     <ScrollView className="flex-1">
-      {/* Header */}
+      <View className='flex flex-col items-center gap-4 mt-6'>
+        <Image
+          source={{ uri: userImageURL }}
+          className='w-20 h-20 flex-shrink-0 aspect-square rounded-full border-2 border-[#2A1800] bg-cover bg-center'
+          />
 
-      {/* Profile Section */}
-      <View className="h-32" />
-      <View className="px-4 -mt-12">
-        <View className="p-4 rounded-lg shadow-md">
-          <View className="flex-row justify-between items-center">
-            <View>
-              <Text className="text-lg font-bold text-gray-800">Your Name</Text>
-              <Text className="text-sm text-gray-500">@account_name</Text>
-              <Text className="text-sm text-gray-500">Family Group</Text>
-            </View>
-            <Pressable className="bg-blue-100 px-3 py-1 rounded-full">
-              <Text className="text-sm text-blue-500">Edit</Text>
-            </Pressable>
+        <View className="flex flex-row items-center gap-4">
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Text className="text-xs">{todayMoodEmoji}</Text>
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Text className="text-xs">{todayBodyEmoji}</Text>
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Image source={PillIcon} className="w-3.5 h-3.5" />
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Image source={PillBotte} className="w-3.5 h-3.5" />
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Image source={Moon} className="w-3.5 h-3.5" />
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Image source={Scale} className="w-3.5 h-3.5" />
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Image source={Foot} className="w-3.5 h-3.5" />
+          </View>
+          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Image source={Dumbbell} className="w-3.5 h-3.5" />
           </View>
         </View>
+        </View>
+
+      {/* User Info Section */}
+      <View className="flex-row justify-between items-center px-5 mt-8">
+        <View className="flex-1">
+          <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">
+            {userFullName}
+          </Text>
+          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">myuy@gmail.com</Text>
+        </View>
+        <View className="flex-1">
+          <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">1</Text>
+          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">Family Group</Text>
+        </View>
+        <Pressable onPress={() => router.push('/(protected)/dashboard/profile/settings')}>
+          <Image source={Settings} className="w-6 h-6" />
+        </Pressable>
       </View>
 
-      {/* Streak Section */}
-      <View className="px-4 mt-6">
+      {/* Diary Section */}
+      <View className="px-5 mt-10">
         <View className="flex-row justify-between items-center">
-          <Text className="text-sm font-medium text-gray-800">Streak</Text>
-          <Text className="text-sm text-gray-500">39 Days Streak</Text>
+          <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">Diary</Text>
+          <View className="flex-row items-center">
+            <Text className="text-black font-lato text-[24px] font-extrabold leading-[32px] tracking-[0.3px]">39</Text>
+            <Text className="text-black font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px] ml-2">Days</Text>
+          </View>
         </View>
-        <View className="flex-row justify-between mt-2">
-          {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
-            <View key={index} className="items-center">
-              <Text className="text-xs text-gray-500">{day}</Text>
-              <View
-                className={`w-4 h-4 mt-1 rounded-full ${
-                  index < 5 ? 'bg-green-500' : 'bg-gray-300'
-                }`}
-              />
-            </View>
-          ))}
+
+        <View className='items-center'>
+          <CalendarStrip selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
         </View>
       </View>
-
-      {/* Stats Section */}
-      <View className="px-4 mt-6">
-        <View className="flex-row justify-between">
-          <View className="w-[48%] bg-gray-100 p-4 rounded-lg items-center">
-            <Text className="text-lg font-bold text-gray-800">110</Text>
-            <Text className="text-sm text-gray-500">Task Completed</Text>
-          </View>
-          <View className="w-[48%] bg-gray-100 p-4 rounded-lg items-center">
-            <Text className="text-lg font-bold text-gray-800">1</Text>
-            <Text className="text-sm text-gray-500">Top Caregiver</Text>
-          </View>
-        </View>
-        <View className="flex-row justify-between mt-4">
-          <View className="w-[48%] bg-gray-100 p-4 rounded-lg items-center">
-            <Text className="text-lg font-bold text-gray-800">90</Text>
-            <Text className="text-sm text-gray-500">Gifts Received</Text>
-          </View>
-          <View className="w-[48%] bg-gray-100 p-4 rounded-lg items-center">
-            <Text className="text-lg font-bold text-gray-800">Hero Bear</Text>
-            <Text className="text-sm text-gray-500">Your Level</Text>
-          </View>
-        </View>
-      </View>
-
-      {/* Automatic Tracking Section */}
-        <View className="px-4 mt-6">
-            <Text className="text-sm font-medium text-gray-800">Automatic Tracking</Text>
-            <View className="flex-row justify-between mt-4">
-                {[
-                    { label: 'Steps iPhone', icon: require('../../../../assets/icons/steps.png') },
-                    { label: 'Apple Health', icon: require('../../../../assets/icons/apple_health.png') },
-                    { label: 'Apple Watch', icon: require('../../../../assets/icons/apple_watch.png') },
-                    { label: 'FitBit', icon: require('../../../../assets/icons/fitbit.png') },
-                    ].map((item, index) => (
-                    <View key={index} className="items-center">
-                    {/* Grey Round Background */}
-                        <View className="w-16 h-16 bg-gray-200 rounded-full items-center justify-center mb-2">
-                            <Image
-                                source={item.icon}
-                                style={{ width: 24, height: 24 }}
-                            />
-                        </View>
-                        <Text className="text-xs text-gray-500 text-center">{item.label}</Text>
-                    </View>
-                ))}
-            </View>
-        </View>
     </ScrollView>
   );
 }
