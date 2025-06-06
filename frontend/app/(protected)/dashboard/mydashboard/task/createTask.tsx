@@ -83,6 +83,8 @@ const AiTaskInputScreen = () => {
     }
   };
   const [generatedAiTasks, setGeneratedAiTasks] = useState<FrontendTaskType[]>([]);
+  const [loadingStep, setLoadingStep] = useState<number>(1);
+
   const handleSubmitToAI = async () => {
       if (!promptText && !imageBase64) {
         Alert.alert("Input Required", "Please provide a text prompt or select an image.");
@@ -98,6 +100,20 @@ const AiTaskInputScreen = () => {
       }
       setIsLoading(true);
       setGeneratedAiTasks([]); 
+      setLoadingStep(1);
+
+      // Simulate loading steps for UI feedback
+      let step = 1;
+      const interval = setInterval(() => {
+        setLoadingStep((prev) => {
+          if (prev < 6) {
+            step = prev + 1;
+            return step;
+          }
+          return prev;
+        });
+      }, 500);
+
       try {
         const responseData = await processAndCreateAiTasksAPI({
           groupID: currentGroupID,
@@ -132,21 +148,14 @@ const AiTaskInputScreen = () => {
         Alert.alert("Submission Error", error?.message || "An error occurred. Please try adding manually.");
         setGeneratedAiTasks([]); 
       } finally {
-        setIsLoading(false);
+        clearInterval(interval);
+        setLoadingStep(6);
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
       }
     };
 
-    const navigateToEditAiTask = (task: FrontendTaskType) => {
-    if (task._id) {
-      console.log("Navigating to edit AI task:", task.title);
-      router.push({
-        pathname: `./aiTask`, 
-        params: { taskData: JSON.stringify(task) } 
-      });
-    } else {
-      Alert.alert("Error", "Task ID is missing, cannot edit.");
-    }
-  };
 
   return (
     <View className="flex-1 bg-white">
@@ -228,8 +237,54 @@ const AiTaskInputScreen = () => {
           {/* Placeholder for Manual Input Section */}
           {isLoading ? ( 
             <View className="items-center my-5">
-              <ActivityIndicator size="large" color="#FF9800" />
-              <Text className="text-slate-600 mt-2">AI is processing and creating tasks...</Text>
+              {/* Transition of 6 different images, last image = finished */}
+                <View className="items-center mb-3">
+                <Image
+                  source={
+                  [
+                    require('../../../../../assets/images/Property 1=Sending.png'),
+                    require('../../../../../assets/images/Property 1=Variant2.png'),
+                    require('../../../../../assets/images/Property 1=Variant3.png'),
+                    require('../../../../../assets/images/Property 1=Variant4.png'),
+                    require('../../../../../assets/images/Property 1=Variant5.png'),
+                    require('../../../../../assets/images/Property 1=Variant6.png'),
+                  ][(loadingStep - 1) % 5] // loop steps 1-5, 6 is finish
+                  }
+                  style={{
+                  width: 250,
+                  height: 100,
+                  opacity: 1,
+                  borderRadius: 12,
+                  borderWidth: loadingStep === 6 ? 2 : 0,
+                  borderColor: loadingStep === 6 ? 'transparent' : 'transparent',
+                  }}
+                  resizeMode="cover"
+                  progressiveRenderingEnabled={true}
+                  blurRadius={0}
+                />
+                {loadingStep === 6 && (
+                  <Image
+                  source={require('../../../../../assets/images/Property 1=Variant6.png')}
+                  style={{
+                    width: 250,
+                    height: 100,
+                    opacity: 1,
+                    borderRadius: 12,
+                    borderWidth: 2,
+                    borderColor: 'transparent',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                  }}
+                  resizeMode="cover"
+                  progressiveRenderingEnabled={true}
+                  blurRadius={0}
+                  />
+                )}
+                </View>
+              <Text className="text-slate-600 mt-2">
+              {`AI is processing and creating tasks...`}
+              </Text>
             </View>
           ) : generatedAiTasks.length > 0 ? (
             <View className="mt-6 border-t border-slate-200 pt-4">
