@@ -166,7 +166,8 @@ export default function Family() {
     try {
       setIsLoadingFamily(true);
       const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/familyMembers`);
-      
+      console.log(`Fetched user ID: ${userID}`);
+
       // Fetch daily status for each family member
       const membersWithStatus = await Promise.all(
         response.data.map(async (member: any) => {
@@ -396,14 +397,25 @@ export default function Family() {
   );
 
   // FamilyMemberCard Component
-  const FamilyMemberCard = ({ 
-    member, 
-    isCurrentUser = false 
-  }: { 
-    member: FamilyMember; 
-    isCurrentUser?: boolean; 
-  }) => (
-    <View className='flex flex-row p-4 items-center gap-4 rounded-lg border border-[#2A1800] mx-4 mt-4'>
+const FamilyMemberCard = ({ 
+  member, 
+  isCurrentUser = false 
+}: { 
+  member: FamilyMember; 
+  isCurrentUser?: boolean; 
+}) => {
+  const router = useRouter(); // Use router for navigation
+
+  const handleCardPress = () => {
+    // Navigate to the dashboard of the selected family member
+    router.push(`/dashboard/mydashboard/member-dashboard?userID=${member.userID}`);
+  };
+
+  return (
+    <Pressable
+      onPress={handleCardPress} // Trigger navigation on card press
+      className="flex flex-row p-4 items-center gap-4 rounded-lg border border-[#2A1800] mx-4 mt-4"
+    >
       <Image
         source={{ uri: member.imageURL }}
         className="w-10 h-10 rounded-full flex-shrink-0"
@@ -414,7 +426,7 @@ export default function Family() {
             {member.fullName}
           </Text>
           {isCurrentUser && (
-            <Text className='text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]'>
+            <Text className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]">
               Me
             </Text>
           )}
@@ -427,6 +439,7 @@ export default function Family() {
           <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
             <Text className="text-xs">{getBodyEmoji(member.body || '')}</Text>
           </View>
+          {/* Additional icons */}
           <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
             <Image source={PillIcon} className="w-3.5 h-3.5" />
           </View>
@@ -447,8 +460,9 @@ export default function Family() {
           </View>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
+};
 
   // Show loading screen while checking status
   if (isCheckingStatus) {
