@@ -1,6 +1,6 @@
 import { Task as FrontendTaskType } from '../app/(protected)/dashboard/mydashboard/task'; 
 
-const API_BASE_URL = "https://e874-2402-800-61ae-d326-c08f-9b0a-d3d-5268.ngrok-free.app" ; 
+const API_BASE_URL = "https://ee8c-2402-800-6f5f-1fc4-d4b2-675f-8ae9-f261.ngrok-free.app" ; 
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
@@ -38,7 +38,6 @@ interface BackendTask {
   createdAt: string; 
   updatedAt: string; 
   type?: string; 
-  image?: string | null; // <-- Added image field
 }
 
 // Payload for AI-task-generate
@@ -121,7 +120,6 @@ const mapBackendTaskToFrontend = (bt: BackendTask): FrontendTaskType => {
     status: bt.status,
     assignedTo: bt.assignedTo, 
     assignedBy: bt.assignedBy,
-    reminder: bt.reminder, // <-- Ensure reminder is always included
   } as FrontendTaskType; 
 };
 
@@ -332,55 +330,27 @@ export const fetchUsersInGroup = async (groupID: string): Promise<any[]> => {
 };
 
 /**
- * Fetches a single task by its ID.
- * @param taskID The ID of the task to fetch.
- * @returns A promise that resolves to the task, mapped to FrontendTaskType.
+ * Fetches the name of a user based on their userID.
+ * @param userID The ID of the user whose name is to be fetched.
+ * @returns A promise that resolves to the user's name as a string.
  */
-export const fetchTaskById = async (
-  taskID: string
-): Promise<FrontendTaskType> => {
-  if (!taskID) throw new ApiError("Task ID is required to fetch a task.", 400);
+export const fetchUserNameByID = async (userID: string): Promise<string> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/users/${userID}/info`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-  const url = `${API_BASE_URL}/api/tasks/${taskID}`;
-  const response = await fetch(url, {
-    method: 'GET'
-  });
-  const backendTask: BackendTask = await handleApiResponse(response);
-  return mapBackendTaskToFrontend(backendTask);
-};
+    if (!response.ok) {
+      throw new Error(`Failed to fetch user name: ${response.statusText}`);
+    }
 
-/**
- * Fetches user info by userID.
- * @param userID The ID of the user to fetch info for.
- * @returns A promise that resolves to the user info object.
- */
-export const fetchUserInfoById = async (userID: string): Promise<any> => {
-  if (!userID) throw new ApiError("User ID is required to fetch user info.", 400);
-  const url = `${API_BASE_URL}/api/users/${userID}/info`;
-  const response = await fetch(url, { method: 'GET' });
-  return handleApiResponse(response);
-};
-
-/**
- * Updates an existing task by ID, including uploading an image.
- * @param taskID The ID of the task to update.
- * @param payload The data to update (can include image as base64 or URL).
- * @returns A promise that resolves to the updated task data, mapped to FrontendTaskType.
- */
-export const updateTaskWithImage = async (
-  taskID: string,
-  payload: Partial<BackendTask> & { image?: string }
-): Promise<FrontendTaskType> => {
-  if (!taskID) throw new ApiError("Task ID is required to update a task.", 400);
-
-  const url = `${API_BASE_URL}/api/tasks/${taskID}`;
-  const response = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
-  const updatedBackendTask: BackendTask = await handleApiResponse(response);
-  return mapBackendTaskToFrontend(updatedBackendTask);
+    const userData = await handleApiResponse(response);
+    return userData.fullName || 'Unknown User'; // Assuming the API returns `fullName`
+  } catch (error) {
+    console.error('Error fetching user name:', error);
+    throw new Error('Unable to retrieve user name');
+  }
 };
