@@ -177,7 +177,6 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
   };
   const handleSignOutConfirm = () => {
     setSignOutModalVisible(false);
-    router.push('/');
     signOut();
   };
   const handleSignOutCancel = () => {

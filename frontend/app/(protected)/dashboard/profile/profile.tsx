@@ -11,6 +11,7 @@ import Scale from '../../../../assets/icons/scale.png';
 import Foot from '../../../../assets/icons/footprints.png';
 import Dumbbell from '../../../../assets/icons/dumbbell.png';
 import Settings from '../../../../assets/icons/settings.png';
+import Heart from '../../../../assets/icons/heart.png';
 import CalendarStrip from '~/components/CalendarStrip';
 
 export default function Profile() {
@@ -180,7 +181,7 @@ export default function Profile() {
         </View>
 
       {/* User Info Section */}
-      <View className="flex-row justify-between items-center px-5 mt-8">
+      <View className="flex-row justify-between items-center w-5/6 self-center mt-8">
         <View className="flex-1">
           <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">
             {userFullName}
@@ -189,7 +190,7 @@ export default function Profile() {
             {user?.emailAddresses[0]?.emailAddress}
           </Text>
         </View>
-        <View className="flex-1">
+        <View className="flex-1 ml-3">
           <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">1</Text>
           <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">Family Group</Text>
         </View>
@@ -199,7 +200,7 @@ export default function Profile() {
       </View>
 
       {/* Diary Section */}
-      <View className="px-5 mt-10">
+      <View className="w-5/6 self-center mt-10">
         <View className="flex-row justify-between items-center">
           <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">Diary</Text>
           <View className="flex-row items-center">
@@ -208,15 +209,19 @@ export default function Profile() {
           </View>
         </View>
 
-        <View className='items-center'>
           <CalendarStrip selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
-        </View>
       </View>
 
-       <View className="flex flex-col items-start gap-[5px] flex-1 p-4 rounded-lg bg-[#FAE5CA] mt-10">
-          <Text>39</Text>
-          <Text>Days</Text>
+        <View className="flex flex-col items-start gap-[8px] p-4 rounded-lg bg-[#FAE5CA] mt-10 w-5/6 self-center">
+          <View className="flex flex-row items-center gap-2">
+            <View className="flex w-6 h-6 p-0.5 justify-center items-center gap-2 aspect-square rounded-full border border-[#2A1800] bg-[#198AE9]">
+              <Image source={Heart} className='w-4 h-4'/>
+            </View>
+            <Text className='text-[#2A1800] font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]'>39</Text>
         </View>
+          <Text className='text-[#2A1800] font-lato text-[16px] font-light leading-[24px] tracking-[-0.1px]'>Days Healthy</Text>
+        </View>
+
     </ScrollView>
   );
 }
