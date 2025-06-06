@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, SafeAreaView, Modal, Image, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, SafeAreaView, Modal, Image, TextInput, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-expo';
@@ -139,6 +139,16 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [isUpdating, setIsUpdating] = useState(false);
 
+  // Store original values to track changes
+  const [originalValues, setOriginalValues] = useState({
+    firstName: '',
+    lastName: '',
+    dob: '',
+    gender: '',
+    weight: '',
+    height: ''
+  });
+
   // Dropdown states
   const [isPrivacyExpanded, setIsPrivacyExpanded] = useState(false);
   const [isNotificationsExpanded, setIsNotificationsExpanded] = useState(false);
@@ -223,12 +233,103 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
   };
 
   const handleUpdateProfile = async () => {
+    if (!userID) {
+      Alert.alert('Error', 'User ID not found. Please try again.');
+      return;
+    }
+
     setIsUpdating(true);
+    
     try {
-      Alert.alert('Success', 'Profile details updated successfully');
+      const updateData = {};
+      
+      if (firstName.trim() !== originalValues.firstName) {
+        updateData.firstName = firstName.trim();
+      }
+      
+      if (lastName.trim() !== originalValues.lastName) {
+        updateData.lastName = lastName.trim();
+      }
+      
+      if (dob !== originalValues.dob) {
+        updateData.dateOfBirth = dob;
+      }
+      
+      if (gender !== originalValues.gender) {
+        updateData.gender = gender;
+      }
+      
+      if (weight !== originalValues.weight) {
+        updateData.weight = weight;
+      }
+      
+      if (height !== originalValues.height) {
+        updateData.height = height;
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        Alert.alert('No Changes', 'No changes were made to update.');
+        setIsUpdating(false);
+        return;
+      }
+
+      console.log('Updating profile with data:', updateData);
+      
+      const response = await axios.patch(
+        `https://carebear-backend.onrender.com/api/users/${userID}/update`,
+        updateData,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        setOriginalValues({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          dob: dob,
+          gender: gender,
+          weight: weight,
+          height: height
+        });
+
+        setUserFullName(`${firstName.trim()} ${lastName.trim()}`);
+
+        setFirstName('');
+        setLastName('');
+        setDob('');
+        setGender('');
+        setWeight('');
+        setHeight('');
+
+        Alert.alert('Success', 'Profile updated successfully!');
+        
+        // If first name or last name changed, also update Clerk user
+        if (updateData.firstName || updateData.lastName) {
+          try {
+            await user?.update({
+              firstName: firstName.trim() || user.firstName,
+              lastName: lastName.trim() || user.lastName,
+            });
+          } catch (clerkError) {
+            console.error('Error updating Clerk user:', clerkError);
+          }
+        }
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
-      Alert.alert('Error', 'Failed to update profile. Please try again.');
+      
+      let errorMessage = 'Failed to update profile. Please try again.';
+      
+      if (error.response) {
+        errorMessage = error.response.data?.message || errorMessage;
+      } else if (error.request) {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+      
+      Alert.alert('Error', errorMessage);
     } finally {
       setIsUpdating(false);
     }
@@ -438,13 +539,18 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                 </View>
 
                 <TouchableOpacity
-                  className={`bg-[#2A1800] py-2 px-7 rounded-lg ${isUpdating ? 'opacity-70' : ''}`}
+                  className={`bg-[#2A1800] py-2 px-7 rounded-lg flex-row items-center justify-center ${isUpdating ? 'opacity-70' : ''}`}
                   onPress={handleUpdateProfile}
                   disabled={isUpdating}
                 >
-                  <Text className="text-white text-center font-extrabold text-base">
-                    {isUpdating ? 'Updating...' : 'Update Profile'}
-                  </Text>
+                  {isUpdating ? (
+                    <>
+                      <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                      <Text className="text-white text-center font-extrabold text-base">Updating...</Text>
+                    </>
+                  ) : (
+                    <Text className="text-white text-center font-extrabold text-base">Update Profile</Text>
+                  )}
                 </TouchableOpacity>
               </DropdownSettingItem>
 
