@@ -6,8 +6,8 @@ import { sendInvitationEmail } from '../services/emailService';
 // Role mapping helper
 const mapFrontendRoleToBackend = (frontendRole: string): string => {
   const roleMap: { [key: string]: string } = {
-    'CareBear': 'carereceiver',
-    'BabyBear': 'caregiver', 
+    'CareBear': 'caregiver',
+    'BabyBear': 'carereceiver', 
     'BearBoss': 'admin'
   };
   return roleMap[frontendRole] || 'caregiver';
