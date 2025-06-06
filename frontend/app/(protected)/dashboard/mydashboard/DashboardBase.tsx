@@ -1,11 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, View, Text, Pressable, Image } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { ScrollView, View, Text, Pressable, Platform, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Calendar from 'expo-calendar';
+import * as Notifications from 'expo-notifications';
 import { groupTasksByTimeAndType, TaskGroup, Task } from './task';
 import { HealthMetric } from './healthmetric';
 import TaskCard from './taskcard';
 import {Link} from 'expo-router'
+
+// Configure how notifications are handled when app is in foreground
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 type DashboardBaseProps = {
   tasks: Task[];
@@ -23,6 +33,113 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
   // Add state for TaskCard
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [showTaskCard, setShowTaskCard] = useState(false);
+
+  const notificationListener = useRef<any>();
+  const responseListener = useRef<any>();
+
+  // Request notification permissions & setup listeners
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+
+    // Handle notification received while app is in foreground
+    notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
+      console.log('Notification received:', notification);
+    });
+
+    // Handle user tapping on notification
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Notification tapped:', response);
+      // Find the related task and open its details
+      const taskId = response.notification.request.content.data?.taskId;
+      const matchedTask = tasks.find(t => t.id === taskId);
+      
+      if (matchedTask) {
+        handleTaskPress(matchedTask);
+      }
+    });
+
+    return () => {
+      Notifications.removeNotificationSubscription(notificationListener.current);
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+
+
+  // Schedule notifications for all tasks
+  useEffect(() => {
+    scheduleAllTaskNotifications();
+  }, [tasks]);
+  
+  // Helper: Request permissions
+  const registerForPushNotificationsAsync = async () => {
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+    
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    
+    if (finalStatus !== 'granted') {
+      console.log('Failed to get push token for push notification!');
+      return;
+    }
+  };
+  
+  // Helper: Schedule notifications for all tasks 
+  const scheduleAllTaskNotifications = async () => {
+    // Cancel all existing notifications first
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    
+    // Schedule new notifications for all tasks
+    for (const task of tasks) {
+      await scheduleTaskNotification(task);
+    }
+    
+    console.log(`Scheduled notifications for ${tasks.length} tasks`);
+  };
+
+  // Helper: Schedule a notification for a single task
+  const scheduleTaskNotification = async (task: Task) => {
+    try {
+      const taskDate = new Date(task.datetime);
+      
+      // Create a reminder time
+      // Adjust the time ahead as needed
+      const reminderTime = new Date(taskDate);
+      const timeAhead = 0
+      reminderTime.setMinutes(reminderTime.getMinutes() - timeAhead);
+      
+      // Only schedule if in the future
+      if (reminderTime > new Date()) {
+        const identifier = await Notifications.scheduleNotificationAsync({
+          content: {
+            title: `Time for: ${task.title}`,
+            body: `${task.detail || ''} ${task.subDetail || ''}`,
+            data: { taskId: task.id || task.datetime },
+          },
+          trigger: { 
+            type: 'date' as any,
+            date: reminderTime
+          },
+        });
+        
+        console.log(`Scheduled notification ${identifier} for ${task.title} at ${reminderTime.toLocaleString()}`);
+        return identifier;
+      }
+    } catch (error) {
+      console.error("Error scheduling notification:", error);
+    }
+  };
 
 
   // Function to handle task press

@@ -82,25 +82,6 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
     }
   }, [generatedTasksJSON, groupID, numGeneratedTasks]);
 
-  const navigateToEditScreen = (task: FrontendTaskType) => {
-    if (task._id) {
-      console.log("Navigating to edit AI task:", task.title);
-      router.push({
-        pathname: `./createtask`, 
-        params: { taskData: JSON.stringify(task) }
-      });
-    } else {
-      Alert.alert("Error", "Task ID is missing, cannot edit.");
-    }
-  };
-
-  const handleDone = () => {
-    if (onDone) {
-      onDone();
-    } else {
-      router.replace('../dashboardBase'); 
-    }
-  };
 
   const paddedTasks = [
     ...aiTasks,
