@@ -18,9 +18,9 @@ const tabs = [
     icon: require('../../../assets/icons/dashboard.png')
   },
   { 
-    name: 'Safezone', 
-    route: '/dashboard/safezone/safezone', 
-    icon: require('../../../assets/icons/safezone.png')
+    name: 'Feed', 
+    route: '/dashboard/feed/feed', 
+    icon: require('../../../assets/icons/feed.png')
   },
   { 
     name: 'Profile', 
