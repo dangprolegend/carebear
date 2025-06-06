@@ -145,27 +145,10 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboar
 
   // Function to handle task press
   const handleTaskPress = (task: Task) => {
-    console.log('Task pressed:', task);
-    const enhancedTask = {
-      title: task.title,
-      purpose: 'For pain relief and inflammation reduction',
-      dosageStrength: task.detail,
-      howToTake: 'Oral, by mouth',
-      instructions: [
-        task.subDetail,
-      ],
-      startDate: 'Monday, May 9, 2025',
-      endDate: 'Saturday, May 17, 2025',
-      importantNotes: [
-        'Side effects: May cause drowsiness',
-        'Do not take with alcohol',
-        'Store in a cool, dry place',
-        'Follow-up appointment: Sunday, May 19'
-      ],
-      contactNumber: '123-456-7890'
-    };
-    setSelectedTask(enhancedTask);
-    setShowTaskCard(true);
+    router.push({
+      pathname: './task/taskInfo',
+      params: { taskId: task._id, groupID: task.groupID?._id || task.groupID }
+    });
   };
 
   const isTaskForSelectedDate = (task: Task) => {
