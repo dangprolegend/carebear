@@ -113,7 +113,17 @@ export default function DashboardLayout() {
         {/* Header */}
         <View className="flex-row items-center justify-between px-4">
           {/* Home Button */}
-          <Pressable onPress={() => router.replace('/dashboard/family/family')}>
+          <Pressable
+            onPress={() => {
+              if (segments.includes('family')) {
+                // Navigate to logout page if on family group page
+                router.replace('/home');
+              } else {
+                // Navigate to dashboard for other pages
+                router.replace('/dashboard/mydashboard/dashboard');
+              }
+            }}
+          >
             <MaterialIcons name="keyboard-arrow-left" size={24} color="#362209" />
           </Pressable>
 
@@ -126,7 +136,10 @@ export default function DashboardLayout() {
 
           {/* Notification Button */}
           <Pressable
-            onPress={() => console.log('Notification pressed')}
+            onPress={() => {
+              console.log('Notification pressed');
+              router.replace('/dashboard/notifications/notifications' as any);
+            }}
             style={{
               position: 'relative',
               padding: 5,

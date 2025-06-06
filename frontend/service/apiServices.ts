@@ -1,6 +1,6 @@
 import { Task as FrontendTaskType } from '../app/(protected)/dashboard/mydashboard/task';
 
-const API_BASE_URL = "https://ee8c-2402-800-6f5f-1fc4-d4b2-675f-8ae9-f261.ngrok-free.app";
+const API_BASE_URL = "https://0220-2402-800-61ae-d326-cde9-35e6-fa13-feba.ngrok-free.app";
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
 
@@ -25,7 +25,7 @@ interface BackendTask {
   description?: string;
   groupID: string | { _id: string; name?: string };
   assignedBy: { _id: string; name?: string; email?: string };
-  assignedTo?: { _id: string; name?: string; email?: string } | null;
+  assignedTo?: { _id: string; name?: string; email?: string } | string | null;
   status: 'pending' | 'in-progress' | 'done';
   reminder?: {
     start_date?: string;
