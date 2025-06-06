@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, SafeAreaView, Modal, Image } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, SafeAreaView, Modal, Image, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-expo';
@@ -13,6 +13,7 @@ import Privacy from '../../../../assets/icons/pocket.png';
 import Profile from '../../../../assets/icons/circle-user-round.png';
 import Account from '../../../../assets/icons/user-cog.png';
 import Help from '../../../../assets/icons/circle-help.png';
+import Google from '../../../../assets/images/google.png';
 import axios from 'axios';
 
 interface SettingsPageProps {
@@ -65,7 +66,7 @@ const SettingItem = ({
       <MaterialIcons 
         name={isExpanded ? "keyboard-arrow-up" : "chevron-right"} 
         size={24} 
-        color="#d1d5db" 
+        color="#2A1800" 
       />
     )}
   </TouchableOpacity>
@@ -89,9 +90,9 @@ const DropdownSettingItem = ({
           <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">{title}</Text>
         </View>
       <MaterialIcons 
-        name={isExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
+        name={isExpanded ? "keyboard-arrow-down" : "chevron-right"} 
         size={24} 
-        color="#d1d5db" 
+        color="#2A1800" 
       />
     </TouchableOpacity>
     {isExpanded && (
@@ -113,17 +114,14 @@ const ToggleSetting = ({
   value: boolean; 
   onValueChange: (value: boolean) => void; 
 }) => (
-  <View className="flex-row items-center justify-between py-3">
+  <View className="flex-row items-center justify-between">
     <View className="flex-1 mr-4">
-      <Text className="text-gray-900 font-medium text-base">{title}</Text>
-      {description && (
-        <Text className="text-gray-500 text-sm mt-0.5">{description}</Text>
-      )}
+      <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">{title}</Text>
     </View>    
     <Switch
       value={value}
       onValueChange={onValueChange}
-      trackColor={{ false: '#f59e0b', true: '#92400e' }}
+      trackColor={{ false: '#FAE5CA', true: '#2A1800' }}
       thumbColor="#ffffff"
       ios_backgroundColor="#f59e0b"
     />
@@ -459,51 +457,44 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                 isExpanded={isAccountExpanded}
                 onToggleExpanded={() => setIsAccountExpanded(!isAccountExpanded)}
               >
-                <View className="mb-6">
-                  <Label nativeID="emailLabel" className="mb-2 text-lg font-medium">
-                    <Text>Email Address</Text>
-                  </Label>
-                  <Input
-                    nativeID="emailLabel"
-                    placeholder="Enter email address"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    className="p-2 text-amber-700" 
-                  />
-                  <TouchableOpacity
-                    className={`bg-amber-900 py-2 px-4 rounded-lg mt-2 ${isUpdating ? 'opacity-70' : ''}`}
-                    onPress={handleUpdateEmail}
-                    disabled={isUpdating}
-                  >
-                    <Text className="text-white text-center font-semibold text-sm">
-                      {isUpdating ? 'Updating...' : 'Update Email'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>                  
-                <View>
-                  <View className="items-center">
-                    <Text className="text-lg font-medium text-gray-900 mb-4">Connect Accounts</Text>
+                <View className="flex flex-col items-start gap-6 px-6 py-0 self-stretch">
+                  {/* Email Section */}
+                  <View className="flex flex-col items-start gap-2 p-0 self-stretch">
+                    <Text className="text-[#2A1800] font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Email</Text>
+                    <TextInput
+                      className="w-full px-4 py-3 rounded-lg border border-[#2A1800] bg-white text-[#623405] font-lato text-[16px]"
+                      placeholder={email}
+                      placeholderTextColor="#623405"
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
                   </View>
-                  <View className="flex-row justify-center gap-5">                      
-                    <TouchableOpacity
-                      className="w-12 h-12 rounded-full items-center justify-center border border-amber-600"
-                      onPress={() => handleConnectSocial('facebook')}
-                    >
-                      <MaterialIcons name="facebook" size={28} color="#1877f2" />
-                    </TouchableOpacity>                      
-                    <TouchableOpacity
-                      className="w-12 h-12 rounded-full items-center justify-center border border-amber-600"
-                      onPress={() => handleConnectSocial('google')}
-                    >
-                      <MaterialIcons name="email" size={28} color="#db4437" />
-                    </TouchableOpacity>                      
-                    <TouchableOpacity
-                      className="w-12 h-12 rounded-full items-center justify-center border border-amber-600"
-                      onPress={() => handleConnectSocial('apple')}
-                    >
-                      <MaterialIcons name="apple" size={28} color="#000000" />
-                    </TouchableOpacity>
+
+                  {/* Connect Accounts Section */}
+                  <View className="w-full rounded-xl p-4">
+                    <View className="items-center mb-4">
+                      <Text className="text-[#2A1800] font-lato text-[16px] font-light leading-[24px] tracking-[-0.1px]">Connect with your other accounts</Text>
+                    </View>
+                    <View className="flex-row justify-center gap-6">
+                      <TouchableOpacity
+                        className="w-8 h-8 rounded-full items-center justify-center border border-[#2A1800] bg-white"
+                        onPress={() => handleConnectSocial('google')}
+                      >
+                        <Image source={Google} className="w-4 h-4" />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        className="w-8 h-8 rounded-full items-center justify-center border border-[#2A1800] bg-white"
+                        onPress={() => handleConnectSocial('apple')}
+                      >
+                        <MaterialIcons name="apple" size={16} color="#000000" />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        className="w-8 h-8 rounded-full items-center justify-center border border-[#2A1800] bg-white"
+                        onPress={() => handleConnectSocial('facebook')}
+                      >
+                        <MaterialIcons name="facebook" size={16} color="#1877f2" />
+                      </TouchableOpacity>
+                    </View>
                   </View>
                 </View>
               </DropdownSettingItem>
@@ -521,30 +512,28 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                 isExpanded={isNotificationsExpanded}
                 onToggleExpanded={() => setIsNotificationsExpanded(!isNotificationsExpanded)}
               >
+                <View className="flex flex-col items-start gap-4 px-6 py-0 self-stretch">
                 <ToggleSetting
                   title="Do Not Disturb"
-                  description="Pause all notifications"
                   value={doNotDisturb}
                   onValueChange={setDoNotDisturb}
                 />
                 <ToggleSetting
                   title="New Feed"
-                  description="Notifications for new feed posts"
                   value={newFeed}
                   onValueChange={setNewFeed}
                 />
                 <ToggleSetting
                   title="New Activity"
-                  description="Notifications for new activities"
                   value={newActivity}
                   onValueChange={setNewActivity}
                 />
                 <ToggleSetting
                   title="Invites"
-                  description="Notifications for group invites"
                   value={invites}
                   onValueChange={setInvites}
                 />
+                 </View>
               </DropdownSettingItem>
 
               <View className="bg-[#FAE5CA] mx-2 h-px" />    
@@ -556,11 +545,13 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                 isExpanded={isPrivacyExpanded}
                 onToggleExpanded={() => setIsPrivacyExpanded(!isPrivacyExpanded)}
               >
-                <ToggleSetting
-                  title="Show Online Status"
-                  value={showOnlineStatus}
-                  onValueChange={setShowOnlineStatus}
-                />
+                <View className="flex flex-col items-start gap-4 px-6 py-0 self-stretch">
+                  <ToggleSetting
+                    title="Show Online Status"
+                    value={showOnlineStatus}
+                    onValueChange={setShowOnlineStatus}
+                  />
+                </View>
               </DropdownSettingItem>
 
               <View className="bg-[#FAE5CA] mx-2 h-px" />
