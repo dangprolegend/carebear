@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, Pressable, Image, ScrollView, ActivityIndicator } from 'react-native';
-import { useAuth } from '@clerk/clerk-expo';
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import axios from 'axios';
 import PillIcon from '../../../../assets/icons/pill.png';
 import PillBotte from '../../../../assets/icons/pill-bottle.png';
@@ -15,6 +15,7 @@ import CalendarStrip from '~/components/CalendarStrip';
 
 export default function Profile() {
   const router = useRouter();
+  const { user } = useUser();
   const { isSignedIn, userId } = useAuth();
   const [userID, setUserID] = useState(null);
   const [userImageURL, setUserImageURL] = useState<string | null>(null);
@@ -184,7 +185,9 @@ export default function Profile() {
           <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">
             {userFullName}
           </Text>
-          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">myuy@gmail.com</Text>
+          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">
+            {user?.emailAddresses[0]?.emailAddress}
+          </Text>
         </View>
         <View className="flex-1">
           <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">1</Text>
@@ -209,6 +212,11 @@ export default function Profile() {
           <CalendarStrip selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
         </View>
       </View>
+
+       <View className="flex flex-col items-start gap-[5px] flex-1 p-4 rounded-lg bg-[#FAE5CA] mt-10">
+          <Text>39</Text>
+          <Text>Days</Text>
+        </View>
     </ScrollView>
   );
 }

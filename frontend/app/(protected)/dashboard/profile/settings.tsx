@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ScrollView, Switch, SafeAreaView, Modal } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-expo';
@@ -6,6 +6,7 @@ import { Input } from '~/components/ui/input';
 import { Label } from '~/components/ui/label';
 import { Toggle } from '~/components/ui/toggle';
 import DropDownPicker from 'react-native-dropdown-picker';
+import { router } from 'expo-router';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -170,24 +171,17 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
   const [newActivity, setNewActivity] = useState(true);
   const [invites, setInvites] = useState(true);
 
+  const [signOutModalVisible, setSignOutModalVisible] = useState(false);
   const handleSignOut = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: () => {
-            signOut();
-          },
-        },
-      ]
-    );
+    setSignOutModalVisible(true);
+  };
+  const handleSignOutConfirm = () => {
+    setSignOutModalVisible(false);
+    router.push('/');
+    signOut();
+  };
+  const handleSignOutCancel = () => {
+    setSignOutModalVisible(false);
   };
 
   const handleUnitChange = (newUnit: 'metric' | 'imperial') => {
@@ -605,6 +599,36 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                   </View>
                 </View>
               </TouchableOpacity>
+              {/* Sign Out Modal */}
+              <Modal
+                visible={signOutModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={handleSignOutCancel}
+              >
+                <View className="flex-1 bg-black/40 justify-center items-center">
+                  <View className="bg-white rounded-xl p-6 w-80 items-center">
+                    <Text className="text-xl font-bold text-red-600 mb-2">Sign Out</Text>
+                    <Text className="text-gray-700 text-base mb-6 text-center">
+                      Are you sure you want to sign out?
+                    </Text>
+                    <View className="flex-row justify-between w-full">
+                      <TouchableOpacity
+                        onPress={handleSignOutCancel}
+                        className="flex-1 mr-2 py-2 rounded-lg bg-gray-100 items-center"
+                      >
+                        <Text className="text-gray-700 font-semibold text-base">Cancel</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={handleSignOutConfirm}
+                        className="flex-1 ml-2 py-2 rounded-lg bg-red-600 items-center"
+                      >
+                        <Text className="text-white font-semibold text-base">Sign Out</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
             </View>
           </View>
         </View>
