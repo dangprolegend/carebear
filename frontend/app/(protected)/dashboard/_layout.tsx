@@ -32,21 +32,21 @@ const tabs = [
 export default function DashboardLayout() {
   const router = useRouter();
   const segments = useSegments() as string[];
-  const searchParams = useGlobalSearchParams(); // Use this to access query parameters
-  const [userName, setUserName] = useState<string | null>(null); // State to store the user's name
+  const searchParams = useGlobalSearchParams(); 
+  const [userName, setUserName] = useState<string | null>(null); 
 
   // Fetch the user's name based on userID
   useEffect(() => {
     const fetchUserName = async () => {
       if (segments.includes('member-dashboard')) {
-        const userID = searchParams.userID as string | undefined; // Get userID from query params
+        const userID = searchParams.userID as string | undefined; 
         if (userID) {
           try {
-            const name = await fetchUserNameByID(userID); // Fetch the user's name using the API
+            const name = await fetchUserNameByID(userID); 
             setUserName(name);
           } catch (error) {
             console.error('Failed to fetch user name:', error);
-            setUserName(null); // Fallback to null if fetching fails
+            setUserName(null); 
           }
         }
       }
@@ -55,20 +55,16 @@ export default function DashboardLayout() {
     fetchUserName();
   }, [segments, searchParams]);
 
-  // Get the dynamic title based on current route and params
   const getActiveTitle = () => {
-    // Check if we're on member dashboard
     if (segments.includes('member-dashboard')) {
-      return userName ? `${userName}'s Dashboard` : 'Member Dashboard'; // Use fetched name or fallback
+      return userName ? `${userName}'s Dashboard` : 'Member Dashboard'; 
     }
 
-    // Return regular tab name for other routes
     return tabs.find((tab) => segments.join('/').includes(tab.route))?.name || 'My Dashboard';
   };
 
   const activeTitle = getActiveTitle();
 
-  // TODO: Replace this with real notification logic
   const hasUnreadNotifications = false;
 
   const handleTabPress = (route: string) => {
@@ -86,7 +82,7 @@ export default function DashboardLayout() {
               width: 64,
               height: 32,
               borderRadius: 16,
-              backgroundColor: '#FAE5CA', // Light peach background
+              backgroundColor: '#FAE5CA', 
               zIndex: 0,
             }}
           />
@@ -125,13 +121,13 @@ export default function DashboardLayout() {
           </Text>
 
           {/* Notification Button */}
-          <Pressable
-            onPress={() => console.log('Notification pressed')}
+            <Pressable
+            onPress={() => router.replace('../notification/notification')}
             style={{
               position: 'relative',
               padding: 5,
             }}
-          >
+            >
             <Image
               source={require('../../../assets/icons/bell.png')}
               style={{ width: 22, height: 22, borderRadius: 20 }}
