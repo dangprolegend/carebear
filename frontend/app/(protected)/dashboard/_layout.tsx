@@ -117,7 +117,7 @@ export default function DashboardLayout() {
             onPress={() => {
               if (segments.includes('family')) {
                 // Navigate to logout page if on family group page
-                router.replace('/home');
+                router.replace('/home/abc' as any);
               } else {
                 // Navigate to dashboard for other pages
                 router.replace('/dashboard/mydashboard/dashboard');
