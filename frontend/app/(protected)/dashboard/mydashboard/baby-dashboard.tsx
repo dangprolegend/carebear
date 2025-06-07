@@ -15,7 +15,7 @@ const MemberDashboard = () => {
   useEffect(() => {
     const loadTasks = async () => {
       if (!userID) {
-        setError('User ID is missing.');
+        // setError('User ID is missing.');
         setLoading(false);
         return;
       }
@@ -64,7 +64,7 @@ const MemberDashboard = () => {
     );
   }
 
-  return <DashboardBase tasks={tasks} title="Member Dashboard" />;
+  return <DashboardBase tasks={tasks} title="Member Dashboard" showHighPrioritySection={false} />;
 };
 
 export default MemberDashboard;
