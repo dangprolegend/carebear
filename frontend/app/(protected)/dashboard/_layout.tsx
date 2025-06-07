@@ -109,7 +109,17 @@ export default function DashboardLayout() {
         {/* Header */}
         <View className="flex-row items-center justify-between px-4">
           {/* Home Button */}
-          <Pressable onPress={() => router.replace('/dashboard/family/family')}>
+          <Pressable
+            onPress={() => {
+              if (segments.includes('family')) {
+                // Navigate to logout page if on family group page
+                router.replace('/home/abc' as any);
+              } else {
+                // Navigate to dashboard for other pages
+                router.replace('/dashboard/mydashboard/dashboard');
+              }
+            }}
+          >
             <MaterialIcons name="keyboard-arrow-left" size={24} color="#362209" />
           </Pressable>
 

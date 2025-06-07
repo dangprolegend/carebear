@@ -25,7 +25,7 @@ interface BackendTask {
   description?: string;
   groupID: string | { _id: string; name?: string };
   assignedBy: { _id: string; name?: string; email?: string };
-  assignedTo?: { _id: string; name?: string; email?: string } | null;
+  assignedTo?: { _id: string; name?: string; email?: string } | string | null;
   status: 'pending' | 'in-progress' | 'done';
   reminder?: {
     start_date?: string;
