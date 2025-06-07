@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { getUser, provideAdditionalUserInfo, getUserIdByClerkId, getUserGroup, getUserInfo, getFamilyMembers } from '../controllers/userController';
+import { getUser, provideAdditionalUserInfo, getUserIdByClerkId, getUserGroup, getUserInfo, getFamilyMembers, updateUser } from '../controllers/userController';
 import { createGroup, joinGroup } from '../controllers/groupController';
 import { sendInvitation } from '../controllers/invitationController';
 
@@ -13,5 +13,6 @@ router.patch('/:userID/joinGroup', joinGroup);
 router.get('/:userID/info', getUserInfo);
 router.get('/:userID/familyMembers', getFamilyMembers);
 router.post('/:userID/invite', sendInvitation);
+router.patch('/:userID/update', updateUser);
 
 export default router;
