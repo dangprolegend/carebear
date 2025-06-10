@@ -45,21 +45,6 @@ function formatTimeAgo(date: Date): string {
   return date.toLocaleDateString();
 }
 
-
-function getTaskDescription(task: { title: string; status: string; priority: string }): string {
-  const statusText = 
-    task.status === 'done' ? 'This task has been successfully completed.' :
-    task.status === 'in-progress' ? 'Currently working on this task.' :
-    'This task is scheduled but not yet started.';
-    
-  const priorityText =
-    task.priority === 'high' ? 'This is a high priority item that requires immediate attention.' :
-    task.priority === 'medium' ? 'This is a medium priority task to be completed soon.' :
-    'This is a low priority task with flexible timing.';
-    
-  return `${statusText} ${priorityText}`;
-}
-
 export function FeedItemCard({ item, onPress, isLast = false, isFirst = false }: FeedItemCardProps) {
   const timeAgo = formatTimeAgo(item.timestamp);
   
@@ -72,7 +57,7 @@ export function FeedItemCard({ item, onPress, isLast = false, isFirst = false }:
         onPress && 'active:opacity-80'
       )}
     >
-      <View className="flex-row items-start">        
+      <View className="flex-row items-start">
         <View className="pr-3 w-16 flex-shrink-0">
           <TimelineMarker 
             type={item.type}
@@ -82,44 +67,37 @@ export function FeedItemCard({ item, onPress, isLast = false, isFirst = false }:
             userName={item.user.name}
           />
         </View>
-        <View className="flex-1 pb-4">          
-          <View className="flex-row items-center justify-between mb-1">            
+        <View className="flex-1 pb-4">
+          <View className="flex-row items-center justify-between mb-1">
             <View className="flex-row items-center">
               <Text className="font-medium text-gray-900">{item.user.name}</Text>
-              <Text className="text-sm text-black ml-2">{item.type === 'mood' ? 'updated mood and health' : 
-                 item.task?.status === 'done' ? 'completed a task' :
-                 item.task?.status === 'in-progress' ? 'started working on a task' :
-                 'added a task'}</Text>
+              <Text className="text-sm text-black ml-2">
+                {item.type === 'mood' 
+                  ? 'updated mood and health' 
+                  : item.task?.status === 'done' 
+                    ? `completed ${item.task?.priority || 'unknown'} priority task`
+                    : item.task?.status === 'in-progress' 
+                      ? `started working on ${item.task?.priority || 'unknown'} priority task`
+                      : `added ${item.task?.priority || 'unknown'} priority task`
+                }
+              </Text>
             </View>
-            
-            {item.task && (
-              <View className={cn(
-                'px-2 py-1 rounded-full',
-                item.task.priority === 'high' ? 'bg-red-100' :
-                item.task.priority === 'medium' ? 'bg-yellow-100' : 'bg-green-100'
-              )}>
-                <Text className={cn(
-                  'text-xs font-medium',
-                  item.task.priority === 'high' ? 'text-red-700' :
-                  item.task.priority === 'medium' ? 'text-yellow-700' : 'text-green-700'
-                )}>{item.task.priority}</Text>
-              </View>
-            )}
           </View>
           
           {/* Time */}
           <View className="mb-2">
             <Text className="text-sm text-gray-500">{timeAgo}</Text>
-          </View>          
+          </View>
+          
           {/* Mood Content */}
           {item.type === 'mood' && item.moods && item.moods.length > 0 && (
             <View className="mt-1 py-1">
-              <View>                
+              <View>
                 <View className="flex-row items-center flex-wrap mb-1">
                   <Text className="text-gray-700 font-medium">I feel </Text>
                   {item.moods.map((mood, index) => (
                     <View key={mood + '-' + index} className="flex-row items-center">
-                      <MoodIcon mood={mood} size="sm" />                      
+                      <MoodIcon mood={mood} size="sm" />
                       <Text className="text-gray-700 font-medium capitalize ml-1">{mood}</Text>
                       {index < item.moods!.length - 1 && (
                         <Text className="text-gray-700 font-medium">
@@ -130,15 +108,19 @@ export function FeedItemCard({ item, onPress, isLast = false, isFirst = false }:
                   ))}
                   <Text className="text-gray-700 font-medium ml-1">today</Text>
                 </View>
-                  {/* Body feelings */}
-                {item.body && item.body.length > 0 && (<View className="flex-row items-center flex-wrap mt-1">
+                
+                {/* Body feelings */}
+                {item.body && item.body.length > 0 && (
+                  <View className="flex-row items-center flex-wrap mt-1">
                     <Text className="text-gray-700 font-medium">My body feels </Text>
                     {item.body.map((bodyFeeling, index) => (
                       <View key={bodyFeeling + '-' + index} className="flex-row items-center">
-                        <BodyIcon body={bodyFeeling} size="sm" />                        
+                        <BodyIcon body={bodyFeeling} size="sm" />
                         <Text className="text-gray-700 font-medium capitalize ml-1">{bodyFeeling}</Text>
                         {index < item.body!.length - 1 && (
-                          <Text className="text-gray-700 font-medium">{index === item.body!.length - 2 ? ' and ' : ', '}</Text>
+                          <Text className="text-gray-700 font-medium">
+                            {index === item.body!.length - 2 ? ' and ' : ', '}
+                          </Text>
                         )}
                       </View>
                     ))}
@@ -147,24 +129,10 @@ export function FeedItemCard({ item, onPress, isLast = false, isFirst = false }:
               </View>
             </View>
           )}
+          
           {item.type === 'task' && item.task && (
             <View className="mt-1 py-1">
-              <View className="flex-row items-center space-x-2 mb-1">
-                <MaterialIcons 
-                  name={
-                    item.task.status === 'done' ? 'check-circle' :
-                    item.task.status === 'in-progress' ? 'pending' : 'radio-button-unchecked'
-                  }
-                  size={16}
-                  color={
-                    item.task.status === 'done' ? '#22c55e' :
-                    item.task.status === 'in-progress' ? '#AC6924' : '#6b7280'
-                  }
-                />
-                <Text className="text-gray-700 font-medium">{item.task.status === 'done' ? 'completed' : 'started working on'}</Text>
-              </View>
               <Text className="font-medium text-gray-900 mb-1">{item.task.title}</Text>
-              <Text className="text-gray-600 text-sm">{getTaskDescription(item.task)}</Text>
             </View>
           )}
         </View>
