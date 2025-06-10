@@ -133,18 +133,15 @@ export const getFeedData = async (filters: FeedFilters = {}): Promise<FeedItem[]
           });
         }
       }
-    }
-
-    if (activityFilter === 'all' || activityFilter === 'task') {
+    }    
+    if (activityFilter === 'all' || activityFilter === 'task') {      
       const taskQuery: any = {};
       if (allowedGroupIDs.length > 0) {
-        taskQuery.group = { $in: allowedGroupIDs };
+        taskQuery.groupID = { $in: allowedGroupIDs };
       } else if (groupID) {
-        taskQuery.group = groupID;
+        taskQuery.groupID = groupID;
       }
-      if (allowedUserIDs.length > 0 && !userID) {
-        taskQuery.assignedTo = { $in: allowedUserIDs };
-      } else if (userID) {
+      if (userID) {
         taskQuery.assignedTo = userID;
       }
       if (startDate) {
@@ -152,8 +149,8 @@ export const getFeedData = async (filters: FeedFilters = {}): Promise<FeedItem[]
           { completedAt: { $gte: startDate } },
           { updatedAt: { $gte: startDate } },
           { createdAt: { $gte: startDate } }
-        ];
-      }
+        ];      }
+      
       const tasks = await Task.find(taskQuery)
         .populate('assignedTo', 'firstName lastName')
         .lean();
@@ -218,7 +215,6 @@ export const getActivityCount = async (groupID?: string, timeFilter: 'today' | '
     let allowedUserIDs: string[] = [];
     
     if (groupID) {
-      // Validate that user belongs to the (by Group.members)
       if (requestingUserID) {
         const group = await Group.findById(groupID).select('members');
         if (!group || !group.members.some((m: any) => m.user.toString() === requestingUserID)) {
