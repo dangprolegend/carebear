@@ -20,12 +20,11 @@ Notifications.setNotificationHandler({
 type DashboardBaseProps = {
   tasks: Task[];
   showHealthSection?: boolean; 
-  showHighPrioritySection?: boolean;
   title?: string; 
 };
 
 
-const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPrioritySection = true, title = 'Dashboard' }: DashboardBaseProps) => {
+const DashboardBase = ({ tasks = [], showHealthSection = true, title = 'Dashboard' }: DashboardBaseProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showTodaySchedule, setShowTodaySchedule] = useState(true);
   const [showYourHealth, setShowYourHealth] = useState(true);
@@ -296,37 +295,19 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
 </View>
 
       
-        {/* High Priority Section */}
-        {(() => {
-          // Filter high priority tasks for the selected date
-          const highPriorityTasks = filteredTasks.filter(task => task.priority === 'high');
-
-          return showHighPrioritySection && (
-            <View className="mb-0 pt-7">
-              <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
-                <Text className="text-lg font-semibold">High Priority Today</Text>
-                <Link href="/dashboard/mydashboard/task/createTask" asChild>
-                  <Pressable
-                    className="absolute right-6 w-10 h-10 items-center justify-center bg-black rounded-full"
-                  >
-                    <MaterialIcons name="add" size={18} color="white" />
-                  </Pressable>
-                </Link>
-              </View>
-              <View className="px-4">
-                {highPriorityTasks.map((task, index) => (
-                  <View
-                    key={index}
-                    className="border border-[#FAE5CA] rounded-lg p-4 mb-4 bg-white"
-                  >
-                    <Text className="text-sm font-semibold text-[#2A1800]">{task.title}</Text>
-                    <Text className="text-xs text-[#666]">{task.description}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          );
-        })()}
+          {/* High Priority Section */}
+        <View className="mb-0 pt-7">
+          <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
+            <Text className="text-lg font-semibold">High Priority Today</Text>
+            <Link href="/dashboard/mydashboard/task/createTask" asChild>
+              <Pressable
+                className="absolute right-6 w-10 h-10 items-center justify-center bg-black rounded-full"
+              >
+                <MaterialIcons name="add" size={18} color="white" />
+              </Pressable>
+            </Link>
+          </View>
+        </View>
 
 
         {/* Today Schedule Section */}
@@ -342,12 +323,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
 
             {showTodaySchedule && (
               <View className="bg-white rounded-xl p-4">
-                {filteredTasks.length === 0 ? (
-                  <View className="items-center justify-center py-12">
-                    <Text className="text-gray-500">There is no task for today</Text>
-                  </View>
-                ) : (
-                groupTasksByTimeAndType(filteredTasks).map((group, index) => (
+                {groupTasksByTimeAndType(filteredTasks).map((group, index) => (
                   <View key={index} className="mb-6 flex-row">
                     {/* Vertical Timeline */}
                     {/* <View className="w-[24px] flex items-center">
@@ -362,13 +338,6 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                         <View
                           key={taskIndex}
                           className="border border-[#FAE5CA] rounded-lg p-4 mb-4"
-                          style={{
-                            borderWidth: 1.5, // Ensures the border is visible
-                            borderColor: '#2A1800', // Matches the design
-                            borderRadius: 8, // Adds rounded corners
-                            backgroundColor: '#FFFFFF', // Keeps the background white
-                            marginBottom: 16, // Adds spacing between tasks
-                          }}
                         >
                           <Pressable onPress={() => router.push({
                               pathname: './task/taskInfo',
@@ -376,7 +345,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                             })} className="flex-1">
                             {/* First Line */}
                             <View className="flex-row items-center justify-between mb-2">
-                              <View className="flex-row items-center gap-4 flex-1">
+                              <View className="flex-row items-center gap-4">
                                 {/* Medication or Home Icon */}
                                 <MaterialIcons
                                   name={task.type === 'medicine' ? 'medication' : 'home'}
@@ -398,7 +367,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                                 {/* Task Name */}
                                 <Text
                                   style={{ fontFamily: 'Lato', fontSize: 16 }}
-                                  className="text-sm font-semibold text-[#2A1800] flex-shrink"
+                                  className="text-sm font-semibold text-[#2A1800]"
                                 >
                                   {task.title}
                                 </Text>
@@ -467,139 +436,51 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                       ))}
                     </View>
                   </View>
-                )))}
+                ))}
               </View>
             )}
           </View>
           
           {/* Your Health Section */}
-        {showHealthSection && (
-          <View className="pb-6">
-            <Pressable
-              onPress={() => setShowYourHealth(!showYourHealth)}
-              className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] bg-[#FAE5CA] px-6 py-4"
-            >
-              <Text className="text-lg font-semibold text-[#2A1800]">Your Health</Text>
-              <MaterialIcons name="arrow-right" size={24} color="#666" />
-            </Pressable>
-
-            {showYourHealth && (
-              <View
-                style={{
-                  display: 'flex',
-                  paddingHorizontal: 24,
-                  paddingVertical: 16,
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  gap: 16, // Adjusted gap between rows
-                  flexShrink: 0,
-                  alignSelf: 'stretch',
-                  width: '100%',
-                  backgroundColor: '#FAE5CA',
-                }}
+          {showHealthSection && (
+            <View className="pb-6">
+              <Pressable
+                onPress={() => setShowYourHealth(!showYourHealth)}
+                className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] bg-[#FAE5CA] px-6 py-4"
               >
-                <View className="flex-row flex-wrap justify-between w-full gap-4">
+                <Text className="text-lg font-semibold">Your Health</Text>
+                <MaterialIcons
+                  name='arrow-right'
+                  size={24}
+                  color="#666"
+                />
+              </Pressable>
 
-                  
-                  {/* Sleep Metric */}
-                  <View className="w-[45%] bg-white rounded-lg p-4 flex flex-col justify-between aspect-square">
-                    {/* Top Section */}
-                    <View className="flex-row justify-between w-full">
-                      <Text className="text-base font-semibold text-[#666]">Sleep</Text>
-                      <Text className="text-base font-bold text-[#2A1800]">85%</Text>
-                    </View>
-                    {/* Icon Section */}
-                    <View className="flex items-center justify-center mt-2">
-                      <View className="w-16 h-16 rounded-full bg-[#198AE9] flex items-center justify-center">
-                        <Image
-                          source={require('../../../../assets/icons/moon.png')}
-                          style={{ width: 30, height: 30 }}
-                          resizeMode="contain"
-                        />
-                      </View>
-                    </View>
-                    {/* Bed Time */}
-                    <Text className="text-base text-[#666] mt-2 text-center">6 hr 15 min</Text>
-                    {/* Goal */}
-                    <Text className="text-base text-[#666] text-center">Goal: 8 hr</Text>
-                  </View>
-                  
-
-                  {/* Steps Metric */}
-                  <View className="w-[45%] bg-white rounded-lg p-4 flex flex-col justify-between aspect-square">
-                    {/* Top Section */}
-                    <View className="flex-row justify-between w-full">
-                      <Text className="text-base font-semibold text-[#666]">Steps</Text>
-                      <Text className="text-base font-bold text-[#2A1800]">95%</Text>
-                    </View>
-                    {/* Icon Section */}
-                    <View className="flex items-center justify-center mt-2">
-                      <View className="w-16 h-16 rounded-full bg-[#198AE9] flex items-center justify-center">
-                        <Image
-                          source={require('../../../../assets/icons/footprints.png')}
-                          style={{ width: 30, height: 30 }}
-                          resizeMode="contain"
-                        />
-                      </View>
-                    </View>
-                    {/* Steps Count */}
-                    <Text className="text-base text-[#666] mt-2 text-center">9500</Text>
-                    {/* Goal */}
-                    <Text className="text-base text-[#666] text-center">Goal: 10000</Text>
-                  </View>
-
-
-                  {/* Weight Metric */}
-                  <View className="w-[45%] bg-white rounded-lg p-4 flex flex-col justify-between aspect-square">
-                    {/* Top Section */}
-                    <View className="flex-row justify-between w-full">
-                      <Text className="text-base font-semibold text-[#666]">Weight</Text>
-                      <Text className="text-base font-bold text-[#2A1800]">100%</Text>
-                    </View>
-                    {/* Icon Section */}
-                    <View className="flex items-center justify-center mt-2">
-                      <View className="w-16 h-16 rounded-full bg-[#198AE9] flex items-center justify-center">
-                        <Image
-                          source={require('../../../../assets/icons/scale.png')}
-                          style={{ width: 30, height: 30 }}
-                          resizeMode="contain"
-                        />
-                      </View>
-                    </View>
-                    {/* Current Weight */}
-                    <Text className="text-base text-[#666] mt-2 text-center">53 kg</Text>
-                    {/* Goal */}
-                    <Text className="text-base text-[#666] text-center">Goal: Set Goal</Text>
-                  </View>
-
-
-                  {/* Add More Metric */}
-                  <View className="w-[45%] bg-white rounded-lg p-4 flex flex-col justify-between aspect-square">
-                    {/* Top Section */}
-                    <View className="flex-row justify-between w-full">
-                      <Text className="text-base font-semibold text-[#FFD700]">Add More</Text>
-                    </View>
-                    {/* Icon Section */}
-                    <View className="flex items-center justify-center mt-2">
-                      <View className="w-16 h-16 rounded-full bg-[#FFD700] flex items-center justify-center">
-                        <Image
-                          source={require('../../../../assets/icons/plus.png')}
-                          style={{ width: 30, height: 30 }}
-                          resizeMode="contain"
-                        />
-                      </View>
-                    </View>
-                    {/* Additional Options */}
-                    <View className="flex-row justify-center mt-2">
-                      <MaterialIcons name="local-drink" size={20} color="#666" />
-                      <MaterialIcons name="favorite" size={20} color="#666" />
-                      <MaterialIcons name="fitness-center" size={20} color="#666" />
-                    </View>
+              {showYourHealth && (
+                <View 
+                  style={{
+                    display: 'flex',
+                    height: 494,
+                    paddingHorizontal: 24,
+                    paddingVertical: 16,
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    gap: 24,
+                    flexShrink: 0,
+                    alignSelf: 'stretch',
+                    width: '100%',
+                    backgroundColor: '#FAE5CA',
+                  }}
+                >
+                  <View className="flex-row flex-wrap justify-between w-full">
+                    <HealthMetric label="Sleep" value="81%" detail="6 hr 15 min / 8 hr" />
+                    <HealthMetric label="Steps" value="81%" detail="9,500 / 10,000" />
+                    <HealthMetric label="Weight" value="81%" detail="55 kg / 50 kg" />
+                    <HealthMetric label="Workout" value="81%" detail="650 cal / 1 hr" />
                   </View>
                 </View>
-              </View>
-            )}
-          </View>
+              )}
+            </View>
           )}
         </View>
       </ScrollView>

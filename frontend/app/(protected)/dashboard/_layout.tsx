@@ -18,9 +18,9 @@ const tabs = [
     icon: require('../../../assets/icons/dashboard.png')
   },
   { 
-    name: 'Safezone', 
-    route: '/dashboard/safezone/safezone', 
-    icon: require('../../../assets/icons/safezone.png')
+    name: 'Feed', 
+    route: '/dashboard/feed/feed', 
+    icon: require('../../../assets/icons/feed.png')
   },
   { 
     name: 'Profile', 
@@ -32,21 +32,21 @@ const tabs = [
 export default function DashboardLayout() {
   const router = useRouter();
   const segments = useSegments() as string[];
-  const searchParams = useGlobalSearchParams(); 
-  const [userName, setUserName] = useState<string | null>(null); 
+  const searchParams = useGlobalSearchParams(); // Use this to access query parameters
+  const [userName, setUserName] = useState<string | null>(null); // State to store the user's name
 
   // Fetch the user's name based on userID
   useEffect(() => {
     const fetchUserName = async () => {
       if (segments.includes('member-dashboard')) {
-        const userID = searchParams.userID as string | undefined; 
+        const userID = searchParams.userID as string | undefined; // Get userID from query params
         if (userID) {
           try {
-            const name = await fetchUserNameByID(userID); 
+            const name = await fetchUserNameByID(userID); // Fetch the user's name using the API
             setUserName(name);
           } catch (error) {
             console.error('Failed to fetch user name:', error);
-            setUserName(null); 
+            setUserName(null); // Fallback to null if fetching fails
           }
         }
       }
@@ -55,16 +55,20 @@ export default function DashboardLayout() {
     fetchUserName();
   }, [segments, searchParams]);
 
+  // Get the dynamic title based on current route and params
   const getActiveTitle = () => {
+    // Check if we're on member dashboard
     if (segments.includes('member-dashboard')) {
-      return userName ? `${userName}'s Dashboard` : 'Member Dashboard'; 
+      return userName ? `${userName}'s Dashboard` : 'Member Dashboard'; // Use fetched name or fallback
     }
 
+    // Return regular tab name for other routes
     return tabs.find((tab) => segments.join('/').includes(tab.route))?.name || 'My Dashboard';
   };
 
   const activeTitle = getActiveTitle();
 
+  // TODO: Replace this with real notification logic
   const hasUnreadNotifications = false;
 
   const handleTabPress = (route: string) => {
@@ -82,7 +86,7 @@ export default function DashboardLayout() {
               width: 64,
               height: 32,
               borderRadius: 16,
-              backgroundColor: '#FAE5CA', 
+              backgroundColor: '#FAE5CA', // Light peach background
               zIndex: 0,
             }}
           />
@@ -109,17 +113,7 @@ export default function DashboardLayout() {
         {/* Header */}
         <View className="flex-row items-center justify-between px-4">
           {/* Home Button */}
-          <Pressable
-            onPress={() => {
-              if (segments.includes('family')) {
-                // Navigate to logout page if on family group page
-                router.replace('/home/abc' as any);
-              } else {
-                // Navigate to dashboard for other pages
-                router.replace('/dashboard/mydashboard/dashboard');
-              }
-            }}
-          >
+          <Pressable onPress={() => router.replace('/dashboard/family/family')}>
             <MaterialIcons name="keyboard-arrow-left" size={24} color="#362209" />
           </Pressable>
 
@@ -131,13 +125,13 @@ export default function DashboardLayout() {
           </Text>
 
           {/* Notification Button */}
-            <Pressable
-            onPress={() => router.replace('../notification/notification')}
+          <Pressable
+            onPress={() => console.log('Notification pressed')}
             style={{
               position: 'relative',
               padding: 5,
             }}
-            >
+          >
             <Image
               source={require('../../../assets/icons/bell.png')}
               style={{ width: 22, height: 22, borderRadius: 20 }}

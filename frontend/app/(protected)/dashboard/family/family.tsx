@@ -2,7 +2,7 @@
 import { View, Text, Pressable, ScrollView, Alert, ActivityIndicator, TouchableOpacity, Modal, Image, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import AddFamily from './add_family';
 import { useAuth } from '@clerk/clerk-expo';
 import axios from 'axios';
@@ -19,12 +19,6 @@ import CareBear from '../../../../assets/icons/carebear.png';
 import BabyBear from '../../../../assets/icons/babybear.png';
 import BearBoss from '../../../../assets/icons/bearboss.png';
 import Invitation from '../../../../assets/icons/bear-letter.png';
-import bear1 from '../../../../assets/images/Bear-1.png';
-import bear2 from '../../../../assets/images/Bear-2.png';
-import bear3 from '../../../../assets/images/Bear-3.png';
-import bear4 from '../../../../assets/images/Bear-4.png';
-import bear5 from '../../../../assets/images/Bear-5.png';
-import bear6 from '../../../../assets/images/Bear-6.png';
 
 // Define the FamilyMember type
 interface FamilyMember {
@@ -41,9 +35,6 @@ interface Family {
 }
 
 export default function Family() {
-  const bearInvitation = [bear1, bear2, bear3, bear4, bear5, bear6];
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const animationInterval = useRef(null);
   const { isSignedIn, userId } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('Family 1');
@@ -79,25 +70,6 @@ export default function Family() {
   // Invitation states
   const [isSendingInvitation, setIsSendingInvitation] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
-  // Open/close modal with animation logic (no useEffect)
-  const openSuccessModal = () => {
-    setShowSuccessModal(true);
-    if (!animationInterval.current) {
-      animationInterval.current = setInterval(() => {
-        setCurrentImageIndex(prev => (prev + 1) % bearInvitation.length);
-      }, 500);
-    }
-  };
-
-  const closeSuccessModal = () => {
-    setShowSuccessModal(false);
-    if (animationInterval.current) {
-      clearInterval(animationInterval.current);
-      animationInterval.current = null;
-      setCurrentImageIndex(0);
-    }
-  };
 
   // save member data state
   const [isDataSaved, setIsDataSaved] = useState(false);
@@ -266,7 +238,7 @@ export default function Family() {
      setShowAddMemberDropdown(false);
 
      // Show success modal
-     openSuccessModal();
+     setShowSuccessModal(true);
 
    } catch (error) {
      console.error('Error sending invitation:', error);
@@ -756,21 +728,18 @@ const FamilyMemberCard = ({
          >
            <View className="flex-1 justify-center items-center bg-black/50">
              <View className="bg-white rounded-lg p-6 mx-4 w-80">
-               <View className="items-center">
+               <View className="items-center mb-4">
+                 <Image source={Invitation} className="w-10 h-10 mb-2" />
                  <Text className="text-[#222] font-lato text-xl font-semibold text-center">
                    Invitation Sent Successfully!
                  </Text>
-                 <Text className="text-[#666] font-lato text-base text-center mt-4">
-                   The invitation has been sent to the provided email address.
-                 </Text>
-                  <Image source={bearInvitation[currentImageIndex]} 
-                    style={{ width: 160, height: 120 }}
-                    resizeMode="contain"
-                    className="mb-4" />
                </View>
+               <Text className="text-[#666] font-lato text-base text-center mb-6">
+                 The invitation has been sent to the provided email address.
+               </Text>
                <Pressable
                  className="bg-[#2A1800] py-3 px-6 rounded-full flex items-center justify-center"
-                 onPress={closeSuccessModal}
+                 onPress={() => setShowSuccessModal(false)}
                >
                  <Text className="text-white font-lato text-base font-medium">OK</Text>
                </Pressable>
