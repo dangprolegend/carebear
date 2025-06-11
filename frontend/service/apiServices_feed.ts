@@ -1,7 +1,7 @@
 // --- Feed API Functions ---
 import { getCurrentUserID } from './apiServices';
 
-const API_BASE_URL = "https://16d1-2402-800-6f5f-1c4b-5dc3-6afc-3bb0-afbc.ngrok-free.app"; 
+const API_BASE_URL = "https://carebear-backend-e1z6.onrender.com/api"; 
 
 
 
