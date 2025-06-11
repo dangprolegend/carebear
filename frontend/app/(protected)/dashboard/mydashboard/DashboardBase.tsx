@@ -349,7 +349,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                   </View>
                 ) : (
                 groupTasksByTimeAndType(filteredTasks).map((group, index) => (
-                  <View key={index} className="mb-6 flex-row">
+                  <View key={index} className="flex-row">
                     {/* Timeline Marker */}
                     <View className="flex-row items-stretch">                 
                       <DashboardTimelineMarker
