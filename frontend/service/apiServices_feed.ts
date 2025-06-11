@@ -1,4 +1,3 @@
-// --- Feed API Functions ---
 import { getCurrentUserID } from './apiServices';
 
 const API_BASE_URL = "https://carebear-backend-e1z6.onrender.com/api"; 
