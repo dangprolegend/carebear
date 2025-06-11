@@ -10,7 +10,6 @@ router.get('/user/:userID', getUserGroups);  // Migrated
 router.get('/:groupID', getGroup);            // Migrated
 router.put('/:groupID', updateGroup);         // Migrated
 router.delete('/:groupID', deleteGroup);      // Migrated
-router.get('/:groupID/members', getGroupMembers); // Add the missing members route
 router.get('/:groupID/tasks', getGroupTasks); // Added new route to get tasks of a group
 router.get('/:groupID/users', (req, res, next) => {
 	// @ts-ignore
