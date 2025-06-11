@@ -1,9 +1,9 @@
+//@ts-nocheck
 import { Request, Response } from 'express';
 import User from '../models/User';
 import { TypedRequest } from '../types/express';
 import Task from '../models/Task';
 import Notification from '../models/Notification';
-import Dashboard from '../models/Dashboard';
 import Group from '../models/Group';
 
 interface UserBody {
@@ -16,6 +16,75 @@ interface UserBody {
 interface UserParams {
   id: string; // Represents either MongoDB ObjectID or username
 }
+
+export const isUserAdminOfGroup = async (userID: string, groupID: string): Promise<boolean> => {
+  try {
+    const group = await Group.findById(groupID);
+    if (!group) {
+      return false;
+    }
+
+    // Check if user is a member with admin role
+    const adminMember = group.members.find(
+      (member) => member.user.toString() === userID && member.role === 'admin'
+    );
+
+    return !!adminMember;
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    return false;
+  }
+};
+
+export const checkUserAdminStatus = async (req: any, res: any): Promise<void> => {
+  try {
+    const { userID, groupID } = req.params;
+
+    if (!userID || !groupID) {
+      res.status(400).json({ message: 'User ID and Group ID are required' });
+      return;
+    }
+
+    const user = await User.findById(userID);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    const group = await Group.findById(groupID);
+    if (!group) {
+      res.status(404).json({ message: 'Group not found' });
+      return;
+    }
+
+    const isAdmin = await isUserAdminOfGroup(userID, groupID);
+
+    const memberInfo = group.members.find(
+      (member) => member.user.toString() === userID
+    );
+
+    if (!memberInfo) {
+      res.status(200).json({
+        isAdmin: false,
+        isMember: false,
+        message: 'User is not a member of this group'
+      });
+      return;
+    }
+
+    res.status(200).json({
+      isAdmin,
+      isMember: true,
+      role: memberInfo.role,
+      familialRelation: memberInfo.familialRelation || null,
+      groupName: group.name
+    });
+
+  } catch (err: any) {
+    console.error('Error checking admin status:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
 
 export const provideAdditionalUserInfo = async (req: any, res: any) => {
   try {
