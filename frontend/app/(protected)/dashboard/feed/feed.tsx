@@ -368,38 +368,41 @@ const loadFeedData = async () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 16 }}
-      >        {!filteredData.length ? (
+      >
+        {!filteredData.length ? (
           <EmptyState
             icon="feed"
             title="No activities to show"
             message="Try adjusting your filters or check back later"
           />
         ) : (
-        <View className="px-4">
+          <View className="px-4">
             {groupItemsByDate(filteredData).map((group, groupIndex) => (
-              <View key={group.dateLabel} className="mb-6">                
+              <View key={group.dateLabel} className="mb-6">
                 {groupIndex ? (
                   <View className="mb-4 pl-2">
                     <Text className="text-lg font-semibold text-black font-['Lato']">
-                      {group.dateLabel}
+                      {typeof group.dateLabel === 'string' ? group.dateLabel : ''}
                     </Text>
                   </View>
-                ): null}
-                
-                <View className="pl-3 relative">                  
-                  <View 
-                    className="absolute left-9 top-2 bottom-0 w-0.5 bg-black" 
+                ) : null}
+
+                <View className="pl-3 relative">
+                  <View
+                    className="absolute left-9 top-2 bottom-0 w-0.5 bg-black"
                     style={{ marginLeft: -0.5, zIndex: 0 }}
                   />
-                  
+
                   {group.items.map((item, index) => (
-                    <FeedItemCard 
-                      key={item.id} 
+                    <FeedItemCard
+                      key={item.id}
                       item={item}
-                      isLast={index === group.items.length - 1 && groupIndex === groupItemsByDate(filteredData).length - 1}
+                      isLast={
+                        index === group.items.length - 1 &&
+                        groupIndex === groupItemsByDate(filteredData).length - 1
+                      }
                       isFirst={index === 0 && groupIndex === 0}
-                      onPress={() => {
-                      }}
+                      onPress={() => {}}
                     />
                   ))}
                 </View>

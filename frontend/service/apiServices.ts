@@ -1,6 +1,6 @@
 import { Task as FrontendTaskType } from '../app/(protected)/dashboard/mydashboard/task';
 
-const API_BASE_URL = "https://ee8c-2402-800-6f5f-1fc4-d4b2-675f-8ae9-f261.ngrok-free.app";
+const API_BASE_URL = "https://23e1-2402-800-61ae-d326-180b-9fcd-c699-fdb9.ngrok-free.app";
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
 
