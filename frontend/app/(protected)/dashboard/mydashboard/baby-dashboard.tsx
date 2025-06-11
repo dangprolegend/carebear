@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import DashboardBase from './DashboardBase';
-import { getBackendUserID, getGroupID, fetchTasksForDashboard } from '../../../../service/apiServices';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { fetchTasksForDashboard, getGroupID } from '../../../../service/apiServices';
 import { Task } from './task';
 import { ActivityIndicator, Text, View } from 'react-native';
-import { useAuth } from '@clerk/clerk-expo';
 
-const Dashboard = () => {
-  const { isSignedIn, userId: clerkID } = useAuth(); // Retrieve Clerk ID
+const MemberDashboard = () => {
+  const router = useRouter();
+  const { userID } = useLocalSearchParams(); // Retrieve userID from query parameters
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadTasks = async () => {
-      if (!isSignedIn || !clerkID) {
-        setError('User is not signed in.');
+      if (!userID) {
+        // setError('User ID is missing.');
         setLoading(false);
         return;
       }
@@ -22,13 +23,11 @@ const Dashboard = () => {
       try {
         setLoading(true);
 
-        console.log('Fetching tasks for Clerk ID:', clerkID);
-        // Fetch backend user ID using Clerk ID
-        const backendUserID = await getBackendUserID(clerkID);
-
-        console.log('Backend User ID:', backendUserID);
-        // Fetch group ID for the backend user
-        const groupID = await getGroupID(backendUserID);
+        console.log('Fetching tasks for User ID:', userID);
+        // Ensure userID is a string
+        const validUserID = Array.isArray(userID) ? userID[0] : userID;
+        // Fetch group ID for the user
+        const groupID = await getGroupID(validUserID);
 
         console.log('Group ID:', groupID);
         // Fetch tasks for the group
@@ -44,13 +43,13 @@ const Dashboard = () => {
     };
 
     loadTasks();
-  }, [isSignedIn, clerkID]);
+  }, [userID]);
 
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color="#FAE5CA" />
-        <Text className="mt-4 text-gray-600">Loading your tasks...</Text>
+        <Text className="mt-4 text-gray-600">Loading tasks for the member...</Text>
       </View>
     );
   }
@@ -60,12 +59,12 @@ const Dashboard = () => {
       <View className="flex-1 items-center justify-center p-4">
         <Text className="text-red-500 mb-4">{error}</Text>
         <Text className="text-gray-500">Using fallback data instead</Text>
-        <DashboardBase tasks={[]} />
+        <DashboardBase tasks={[]} title="Member Dashboard" />
       </View>
     );
   }
 
-  return <DashboardBase tasks={tasks} />;
+  return <DashboardBase tasks={tasks} title="Member Dashboard" showHighPrioritySection={false} />;
 };
 
-export default Dashboard;
+export default MemberDashboard;

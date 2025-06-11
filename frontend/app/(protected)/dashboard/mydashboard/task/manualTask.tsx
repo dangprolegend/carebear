@@ -119,11 +119,17 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
       if (manualForm.assignedToId && manualForm.assignedToId !== '') {
         assignedToPayload = { _id: manualForm.assignedToId };
       }
+      // Add assignedBy for backend
+      let assignedByPayload: any = undefined;
+      if (currentUserID) {
+        assignedByPayload = { _id: currentUserID };
+      }
       const taskToCreateForBackend = {
         title: manualForm.title,
         description: manualForm.description ?? undefined,
         groupID: currentGroupID,
         assignedTo: assignedToPayload,
+        assignedBy: assignedByPayload,
         priority: manualForm.priority || 'medium',
         reminder: Object.keys(reminderPayload).length > 0 ? reminderPayload : undefined,
       };

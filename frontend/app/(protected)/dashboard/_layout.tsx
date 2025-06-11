@@ -1,22 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Slot, useRouter, useSegments, useGlobalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons, Ionicons, FontAwesome5 } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-
+import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'react-native';
+import { fetchUserNameByID } from '../../../service/apiServices'; // Import the function to fetch user name
 
 const tabs = [
-  { 
-    name: 'My Dashboard', 
-    route: '/dashboard/mydashboard/dashboard',
-    icon: require('../../../assets/icons/dashboard.png')
-  },
   { 
     name: 'Family Group', 
     route: '/dashboard/family/family', 
     icon: require('../../../assets/icons/family.png')
+  },
+  { 
+    name: 'My Dashboard', 
+    route: '/dashboard/mydashboard/dashboard',
+    icon: require('../../../assets/icons/dashboard.png')
   },
   { 
     name: 'Safezone', 
@@ -33,51 +32,95 @@ const tabs = [
 export default function DashboardLayout() {
   const router = useRouter();
   const segments = useSegments() as string[];
-  const searchParams = useGlobalSearchParams(); // Use this to access query parameters
+  const searchParams = useGlobalSearchParams(); 
+  const [userName, setUserName] = useState<string | null>(null); 
 
-  // Get the dynamic title based on current route and params
+  // Fetch the user's name based on userID
+  useEffect(() => {
+    const fetchUserName = async () => {
+      if (segments.includes('member-dashboard')) {
+        const userID = searchParams.userID as string | undefined; 
+        if (userID) {
+          try {
+            const name = await fetchUserNameByID(userID); 
+            setUserName(name);
+          } catch (error) {
+            console.error('Failed to fetch user name:', error);
+            setUserName(null); 
+          }
+        }
+      }
+    };
+
+    fetchUserName();
+  }, [segments, searchParams]);
+
   const getActiveTitle = () => {
-    // Check if we're on member dashboard
     if (segments.includes('member-dashboard')) {
-      const name = searchParams.name as string | undefined; // Access the 'name' parameter
-      return name ? `${name}'s Dashboard` : 'Member Dashboard';
+      return userName ? `${userName}'s Dashboard` : 'Member Dashboard'; 
     }
 
-    // Return regular tab name for other routes
     return tabs.find((tab) => segments.join('/').includes(tab.route))?.name || 'My Dashboard';
   };
 
   const activeTitle = getActiveTitle();
 
+  const hasUnreadNotifications = false;
+
   const handleTabPress = (route: string) => {
     router.replace(route as any);
   };
 
-  // Update the renderIcon function
   const renderIcon = (icon: any, isActive: boolean) => {
     return (
-      <Image 
-        source={icon}
-        style={{ 
-          width: 24, 
-          height: 24,
-          tintColor: isActive ? '#1A0933' : '#777'
-        }} 
-        resizeMode="contain"
-      />
+      <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
+        {/* Background shade for active tab */}
+        {isActive && (
+          <View
+            style={{
+              position: 'absolute',
+              width: 64,
+              height: 32,
+              borderRadius: 16,
+              backgroundColor: '#FAE5CA', 
+              zIndex: 0,
+            }}
+          />
+        )}
+
+        {/* Icon */}
+        <Image
+          source={icon}
+          style={{
+            width: 24,
+            height: 24,
+            tintColor: isActive ? '#1A0933' : '#777',
+            zIndex: 1,
+          }}
+          resizeMode="contain"
+        />
+      </View>
     );
-};
+  };
 
   return (
     <View className="flex-1 relative">
       <SafeAreaView className="flex-1" edges={['left', 'right']}>
         {/* Header */}
-        <View 
-          className="flex-row items-center justify-between px-4"
-        >
+        <View className="flex-row items-center justify-between px-4">
           {/* Home Button */}
-          <Pressable onPress={() => router.replace('/home')}>
-            <MaterialIcons name="home" size={24} color="#362209" />
+          <Pressable
+            onPress={() => {
+              if (segments.includes('family')) {
+                // Navigate to logout page if on family group page
+                router.replace('/home/abc' as any);
+              } else {
+                // Navigate to dashboard for other pages
+                router.replace('/dashboard/mydashboard/dashboard');
+              }
+            }}
+          >
+            <MaterialIcons name="keyboard-arrow-left" size={24} color="#362209" />
           </Pressable>
 
           {/* Dynamic Dashboard Title */}
@@ -88,8 +131,35 @@ export default function DashboardLayout() {
           </Text>
 
           {/* Notification Button */}
-          <Pressable onPress={() => console.log('Notification pressed')}>
-            <MaterialIcons name="notifications" size={24} color="#362209" />
+            <Pressable
+            onPress={() => router.replace('../notification/notification')}
+            style={{
+              position: 'relative',
+              padding: 5,
+            }}
+            >
+            <Image
+              source={require('../../../assets/icons/bell.png')}
+              style={{ width: 22, height: 22, borderRadius: 20 }}
+              resizeMode="contain"
+            />
+
+            {/* Only show badge if there are unread notifications */}
+            {hasUnreadNotifications && (
+              <View
+                style={{
+                  position: 'absolute',
+                  right: 1,
+                  top: 1,
+                  backgroundColor: '#FF3B30',
+                  width: 10,
+                  height: 10,
+                  borderRadius: 5,
+                  borderWidth: 1.5,
+                  borderColor: '#FFFFFF',
+                }}
+              />
+            )}
           </Pressable>
         </View>
 
@@ -112,7 +182,7 @@ export default function DashboardLayout() {
                   >
                     {/* Icon */}
                     {renderIcon(tab.icon, isActive)}
-                    
+
                     {/* Tab Name */}
                     <Text
                       className={`text-xs mt-1 font-['Lato'] tracking-[0.3px] z-10 ${
@@ -131,15 +201,3 @@ export default function DashboardLayout() {
     </View>
   );
 }
-
-// We keep this minimal StyleSheet only for the gradient background
-// which requires native positioning to work correctly
-const gradientStyles = StyleSheet.create({
-  background: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-  }
-});
