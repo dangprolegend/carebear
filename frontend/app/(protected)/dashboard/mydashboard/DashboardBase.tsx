@@ -200,7 +200,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
 
   return (
     <>
-      <ScrollView className="flex-1 bg-gray-50">
+      <ScrollView className="flex-1 bg-white">
         {/* Header */}
         <View className="px-4">
           {/* Calendar Strip */}
@@ -315,15 +315,23 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                 </Link>
               </View>
               <View className="px-4">
-                {highPriorityTasks.map((task, index) => (
-                  <View
-                    key={index}
-                    className="border border-[#FAE5CA] rounded-lg p-4 mb-4 bg-white"
-                  >
-                    <Text className="text-sm font-semibold text-[#2A1800]">{task.title}</Text>
-                    <Text className="text-xs text-[#666]">{task.description}</Text>
+                {highPriorityTasks.length === 0 ? (
+                  <View className="items-center justify-center py-8">
+                    <Text className="text-gray-500 text-center">
+                      You have no assigned task.{'\n'}Add task and set priority
+                    </Text>
                   </View>
-                ))}
+                ) : (
+                  highPriorityTasks.map((task, index) => (
+                    <View
+                      key={index}
+                      className="border border-[#FAE5CA] rounded-lg p-4 mb-4 bg-white"
+                    >
+                      <Text className="text-sm font-semibold text-[#2A1800]">{task.title}</Text>
+                      <Text className="text-xs text-[#666]">{task.description}</Text>
+                    </View>
+                  ))
+                )}
               </View>
             </View>
           );
@@ -402,7 +410,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                                 {/* Task Name */}
                                 <Text
                                   style={{ fontFamily: 'Lato', fontSize: 16 }}
-                                  className="text-sm font-semibold text-[#2A1800] flex-shrink"
+                                  className="text-sm font-bold text-[#2A1800] flex-shrink"
                                 >
                                   {task.title}
                                 </Text>
@@ -426,14 +434,14 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                               {/* Brief Instruction */}
                               <Text
                                 style={{ fontFamily: 'Lato', fontSize: 14 }}
-                                className="text-xs text-[#666] flex-1"
+                                className="text-xs font-lato text-[#666] flex-1"
                               >
                                 {task.description}
                               </Text>
                               {/* Checkbox */}
                               <Pressable
                                 onPress={() => console.log('Task completed:', task.title)}
-                                className="w-6 h-6 border border-[#FAE5CA] rounded-lg flex items-center justify-center"
+                                className="w-6 h-6 border border-[#2A1800] rounded-lg flex items-center justify-center"
                               >
                                 {task.checked && (
                                   <MaterialIcons name="check" size={16} color="#2A1800" />
@@ -463,7 +471,11 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                                 onPress={() => console.log('Notification for:', task.title)}
                                 className="w-6 h-6 flex items-center justify-center"
                               >
-                                <MaterialIcons name="notifications" size={20} color="#FFD700" />
+                                <Image
+                                  source={require('../../../../assets/icons/bell-icon.png')}
+                                  style={{ width: 20, height: 20 }}
+                                  resizeMode="contain"
+                                />
                               </Pressable>
                             </View>
                           </Pressable>
