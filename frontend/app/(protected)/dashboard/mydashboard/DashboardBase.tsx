@@ -7,6 +7,7 @@ import { groupTasksByTimeAndType, TaskGroup, Task } from './task';
 import { HealthMetric } from './healthmetric';
 import TaskCard from './taskcard';
 import {Link, useRouter} from 'expo-router'
+import DashboardTimelineMarker from '../../../../components/DashboardTimelineMarker';
 
 // Configure how notifications are handled when app is in foreground
 Notifications.setNotificationHandler({
@@ -349,14 +350,17 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                 ) : (
                 groupTasksByTimeAndType(filteredTasks).map((group, index) => (
                   <View key={index} className="mb-6 flex-row">
-                    {/* Vertical Timeline */}
-                    {/* <View className="w-[24px] flex items-center">
-                      <View className="h-full w-[2px] bg-[#FAE5CA]" />
-                      <View className="w-[8px] h-[8px] bg-[#FAE5CA] rounded-full mt-[-4px]" />
-                    </View> */}
+                    {/* Timeline Marker */}
+                    <View className="flex-row items-stretch">                 
+                      <DashboardTimelineMarker
+                        time={group.time}
+                        isFirst={index === 0}
+                        isLast={index === filteredTasks.length - 1}
+                      />
+                    </View>
 
                     {/* Task Group */}
-                    <View className="flex-1">
+                    <View className="flex-1 ml-4">
                       <Text className="text-sm font-semibold text-[#2A1800] mb-2">{group.time}</Text>
                       {group.tasks.map((task, taskIndex) => (
                         <View
