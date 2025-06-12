@@ -13,7 +13,6 @@ import {
   FeedItem, 
   FeedFilters,
   setClerkAuthTokenForFeedService,
-  updateUserMood,
   fetchUserGroups
 } from '~/service/apiServices_feed';
 import { 
@@ -261,49 +260,17 @@ const loadFeedData = async () => {
     setRefreshing(true);
     await loadFeedData();
     setRefreshing(false);
-  };  const handleMoodSubmit = async (submission: { moods: ('happy' | 'excited' | 'sad' | 'angry' | 'nervous' | 'peaceful')[]; body: ('energized' | 'sore' | 'tired' | 'sick' | 'relaxed' | 'tense')[] }) => {
-    try {
-      const userID = getCurrentUserID();
-      if (!userID) {
-        console.error('No user ID found');
-        return;
-      }
-
-      const selectedMood = submission.moods[0];
-      const selectedBody = submission.body[0];
-
-      if (!selectedMood || !selectedBody) {
-        console.error('Both mood and body must be selected');
-        return;
-      }
-
-      await updateUserMood(userID, selectedMood, selectedBody);
-      
-      await loadFeedData();
-      
-      setShowMoodSelector(false);
-      console.log('Mood and body updated successfully');    } catch (error) {
-      console.error('Error updating mood and body:', error);
-      const newMoodEntry: FeedItem = {
-        id: Date.now().toString(),
-        type: 'mood' as const,
-        timestamp: new Date(),
-        user: { 
-          id: 'current-user',
-          name: 'You' 
-        },
-        moods: submission.moods,
-        body: submission.body,
-      };
-      setFeedData([newMoodEntry, ...feedData]);
-      setShowMoodSelector(false);
-    }
-  };
+  };  
   return (
     <View className="flex-1 bg-white">    
-    <View className="bg-white border-b border-gray-200 px-4 py-3 flex-row items-center justify-between">
-        <View className="flex-shrink min-w-[120px] max-w-[60%] mr-3">
-          <Dropdown
+      <View className="px-3 py-3">        
+        
+        <View className="flex-row justify-between items-center">
+          <Text className="font-semibold left-4 text-lg text-gray-900 font-['Lato']">
+            {!!isToday(new Date()) ? "Today" : new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          </Text>
+          <View className="w-32">            
+            <Dropdown
             options={availableGroups.map(group => ({
               label: group.name || 'Unnamed Group',
               value: group._id
@@ -312,52 +279,6 @@ const loadFeedData = async () => {
             onValueChange={handleGroupSwitch}
             placeholder="Select Group"
           />
-        </View>
-        
-        <Pressable
-          onPress={() => setShowMoodSelector(true)}
-          className="flex-row items-center bg-blue-50 border border-blue-200 rounded-full px-3 py-1"
-          accessibilityRole="button"
-          accessibilityLabel="Share your mood"
-          accessibilityHint="Opens mood selection options"
-        >
-          <MaterialIcons name="add" size={16} color="#3b82f6" />
-          <Text className="ml-1 text-blue-600 font-medium text-sm font-['Lato']">Update Mood</Text>
-        </Pressable>      
-      </View>
-        <MoodSelector
-        visible={showMoodSelector}
-        onClose={() => setShowMoodSelector(false)}
-        onSubmit={handleMoodSubmit}
-      />
-      <View className="px-3 py-3">        
-        
-        <View className="flex-row justify-between items-center">
-          <Text className="font-semibold left-4 text-lg text-gray-900 font-['Lato']">
-            {!!isToday(new Date()) ? "Today" : new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-          </Text>
-          <View className="w-40">            
-            <Dropdown
-              options={[
-                { label: 'All Activities', value: 'all-activities' },
-                { label: 'Moods Only', value: 'mood' },
-                { label: 'Tasks Only', value: 'task' },
-                { label: 'Divider', value: 'divider', divider: true },
-                { label: 'Me Only', value: 'me' },
-              ]}              
-              value={activityFilter === 'all' ? 'all-activities' : (peopleFilter === 'me' ? 'me' : activityFilter)}
-              onValueChange={(value) => {
-                if (value === 'all-activities' || value === 'mood' || value === 'task') {
-                  setActivityFilter(value === 'all-activities' ? 'all' : value);
-                  setPeopleFilter('all');
-                } else if (value === 'me') {
-                  setPeopleFilter(value);
-                  setActivityFilter('all'); 
-                }
-              }}
-              placeholder="Filter"
-              icon="filter-list"
-            />
           </View>
         </View>
       </View>
@@ -389,7 +310,7 @@ const loadFeedData = async () => {
 
                 <View className="pl-3 relative">
                   <View
-                    className="absolute left-9 top-2 bottom-0 w-0.5 bg-black"
+                    className="absolute left-9 top-2 bottom-0 w-0.5 bg-[#2A1800]"
                     style={{ marginLeft: -0.5, zIndex: 0 }}
                   />
 

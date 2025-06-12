@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { View, Text, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { cn } from '~/lib/utils';
@@ -22,15 +22,12 @@ export function TimelineMarker({ isLast = false, isFirst = false, type = 'mood',
         .join('')
         .toUpperCase()
         .substring(0, 2)
-    : '';
-
+    : '';  
   return (
     <View className="flex-col items-center relative">
       <View className={cn(
         "relative w-10 h-10 rounded-full overflow-hidden border-2 z-10 my-2",
-        type === 'mood' ? 'border-amber-400' :
-        type === 'task' ? 'border-green-400' : 
-        'border-purple-400'
+        'border-[#2A1800]'
       )}>
         {avatar ? (
           <Image 
@@ -59,20 +56,6 @@ export function TimelineMarker({ isLast = false, isFirst = false, type = 'mood',
             )}
           </View>
         )}
-        
-        {/* Small indicator icon on the avatar */}
-        <View className={cn(
-          "absolute bottom-0 right-0 w-4 h-4 rounded-full items-center justify-center",
-          type === 'mood' ? 'bg-blue-400' :
-          type === 'task' ? 'bg-green-400' : 
-          'bg-purple-400'
-        )}>
-          <MaterialIcons 
-            name={iconName} 
-            size={10} 
-            color="#ffffff" 
-          />
-        </View>
       </View>
     </View>
   );

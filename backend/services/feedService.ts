@@ -10,6 +10,7 @@ export interface FeedItem {
   user: {
     id: string;
     name: string;
+    avatar?: string;
   };
   moods?: ('happy' | 'excited' | 'sad' | 'angry' | 'nervous' | 'peaceful')[];
   body?: ('energized' | 'sore' | 'tired' | 'sick' | 'relaxed' | 'tense')[];
@@ -108,17 +109,13 @@ export const getFeedData = async (filters: FeedFilters = {}): Promise<FeedItem[]
       
       if (startDate) {
         moodQuery['statusHistory.timestamp'] = { $gte: startDate };
-      }
-
-      const dailyStatuses = await Daily.find(moodQuery).lean();
-      
-      for (const dailyStatus of dailyStatuses) {
-        const user = await User.findById(dailyStatus.userID).select('firstName lastName').lean();
+      }      const dailyStatuses = await Daily.find(moodQuery).lean();
+        for (const dailyStatus of dailyStatuses) {
+        const user = await User.findById(dailyStatus.userID).select('firstName lastName imageURL').lean() as { firstName: string; lastName: string; imageURL?: string } | null;
         if (!user) continue;
-        
-        const filteredHistory = startDate 
-          ? dailyStatus.statusHistory.filter(status => status.timestamp >= startDate)
-          : dailyStatus.statusHistory;         
+          const filteredHistory = startDate 
+          ? dailyStatus.statusHistory.filter((status: any) => status.timestamp >= startDate)
+          : dailyStatus.statusHistory;
         for (const status of filteredHistory) {
           feedItems.push({
             id: status._id?.toString() || `${dailyStatus._id}-${status.date}`,
@@ -126,7 +123,8 @@ export const getFeedData = async (filters: FeedFilters = {}): Promise<FeedItem[]
             timestamp: status.timestamp,
             user: {
               id: dailyStatus.userID.toString(),
-              name: `${user.firstName} ${user.lastName}`
+              name: `${user.firstName} ${user.lastName}`,
+              avatar: user.imageURL
             },
             moods: [status.mood],
             body: [status.body] 
@@ -149,14 +147,15 @@ export const getFeedData = async (filters: FeedFilters = {}): Promise<FeedItem[]
           { completedAt: { $gte: startDate } },
           { updatedAt: { $gte: startDate } },
           { createdAt: { $gte: startDate } }
-        ];      }
-      
-      const tasks = await Task.find(taskQuery)
-        .populate('assignedTo', 'firstName lastName')
+        ];      }      const tasks = await Task.find(taskQuery)
+        .populate('assignedTo', 'firstName lastName imageURL')
         .lean();
       for (const task of tasks) {
-        const assignedUser = task.assignedTo as any;
-        if (!assignedUser) continue;
+        // Check if assignedTo is populated (object) or just an ObjectId
+        if (!task.assignedTo || typeof task.assignedTo === 'string' || 'toHexString' in task.assignedTo) continue;
+        
+        const assignedUser = task.assignedTo as { _id: string; firstName: string; lastName: string; imageURL?: string };
+        if (!assignedUser.firstName || !assignedUser.lastName) continue;
         const timestamp = task.completedAt || task.updatedAt || task.createdAt;
         if (startDate && timestamp < startDate) continue;
         feedItems.push({
@@ -165,7 +164,8 @@ export const getFeedData = async (filters: FeedFilters = {}): Promise<FeedItem[]
           timestamp: timestamp,
           user: {
             id: assignedUser._id.toString(),
-            name: `${assignedUser.firstName} ${assignedUser.lastName}`
+            name: `${assignedUser.firstName} ${assignedUser.lastName}`,
+            avatar: assignedUser.imageURL
           },
           task: {
             title: task.title,
