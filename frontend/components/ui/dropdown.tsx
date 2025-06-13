@@ -66,7 +66,7 @@ export function Dropdown({ options, value, onValueChange, placeholder = "Select 
         <Pressable 
           className="flex-1 bg-black/50 justify-center items-center"
           onPress={() => setIsOpen(false)}        >
-          <View className="bg-white rounded-xl shadow-lg max-h-64 w-4/5 max-w-sm border border-amber-700/20 overflow-hidden py-2">
+          <View className="bg-white rounded-xl shadow-lg max-h-64 w-2/3 max-w-sm border overflow-hidden py-2">
             <FlatList
               data={options}
               keyExtractor={(item) => item.value}
@@ -76,7 +76,7 @@ export function Dropdown({ options, value, onValueChange, placeholder = "Select 
                 return (
                   <Pressable
                     onPress={() => handleSelect(item.value)}
-                    className={cn("px-4 py-2 border border-amber-700 mx-2 my-1 rounded-md",
+                    className={cn("px-4 py-2 mx-2 my-1 rounded-md",
                       item.disabled && "opacity-50",
                       value === item.value && "bg-amber-50"
                     )}
