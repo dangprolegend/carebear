@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, ScrollView, Alert, ActivityIndicator, Platform, Modal } from 'react-native';
+import { View, Text, TextInput, Pressable, ScrollView, Alert, ActivityIndicator, Platform, Modal, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import { createManualTaskAPI, fetchUsersInGroup } from '../../../../../service/apiServices'; // ADJUST PATH
+import { Avatar } from '../../../../../components/ui/avatar';
 
 type ManualTaskFormProps = {
   currentUserID: string | null; 
@@ -21,6 +22,14 @@ interface ManualTaskData {
   recurrenceRule?: string;
   priority?: 'low' | 'medium' | 'high' | null;
   assignedToId?: string | null;
+}
+
+interface UserOption {
+  label: string;
+  value: string;
+  imageURL?: string;
+  firstName?: string;
+  lastName?: string;
 }
 
 const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: ManualTaskFormProps) => {
@@ -44,7 +53,7 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [tempStartDate, setTempStartDate] = useState(manualForm.startDateString ? new Date(manualForm.startDateString) : new Date());
   const [tempEndDate, setTempEndDate] = useState(manualForm.endDateString ? new Date(manualForm.endDateString) : new Date());
-  const [assigneeOptions, setAssigneeOptions] = useState<{ label: string; value: string }[]>([]);
+  const [assigneeOptions, setAssigneeOptions] = useState<UserOption[]>([]);
 
   useEffect(() => {
     const fetchAssignees = async () => {
@@ -54,7 +63,10 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
         setAssigneeOptions(
           users.map((user: any) => ({
             label: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email,
-            value: user._id
+            value: user._id,
+            imageURL: user.imageURL || user.profilePicture || null,
+            firstName: user.firstName,
+            lastName: user.lastName
           }))
         );
       } catch (e) {
@@ -168,9 +180,33 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
           className="flex-row items-center justify-between"
           onPress={() => setShowAssigneeDropdown(prev => !prev)}
         >
-          <Text className="text-base">
-            {assigneeOptions.find(opt => opt.value === manualForm.assignedToId)?.label || 'Select Assignee'}
-          </Text>
+          {manualForm.assignedToId ? (
+            <View className="flex-row items-center">
+              {(() => {
+                const selectedUser = assigneeOptions.find(opt => opt.value === manualForm.assignedToId);
+                return (
+                  <>
+                    {selectedUser?.imageURL ? (
+                      <Image source={{ uri: selectedUser.imageURL }} className="w-8 h-8 rounded-full mr-2" />
+                    ) : (
+                      <Avatar 
+                        name={selectedUser?.firstName && selectedUser?.lastName 
+                          ? `${selectedUser.firstName} ${selectedUser.lastName}`
+                          : selectedUser?.label || 'User'} 
+                        size="sm"
+                        className="mr-2"
+                      />
+                    )}
+                    <Text className="text-base">
+                      {selectedUser?.label || 'Select Assignee'}
+                    </Text>
+                  </>
+                );
+              })()}
+            </View>
+          ) : (
+            <Text className="text-base">Select Assignee</Text>
+          )}
           <MaterialIcons name={showAssigneeDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
         </Pressable>
         {showAssigneeDropdown && (
@@ -188,7 +224,18 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
                       setShowAssigneeDropdown(false);
                     }}
                   >
-                    <Text className={`text-base ${manualForm.assignedToId === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>{user.label}</Text>
+                    <View className="flex-row items-center">
+                      {user.imageURL ? (
+                        <Image source={{ uri: user.imageURL }} className="w-8 h-8 rounded-full mr-2" />
+                      ) : (
+                        <Avatar 
+                          name={user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.label} 
+                          size="sm"
+                          className="mr-2"
+                        />
+                      )}
+                      <Text className={`text-base ${manualForm.assignedToId === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>{user.label}</Text>
+                    </View>
                   </Pressable>
                 ))
               )}
