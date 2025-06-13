@@ -1,10 +1,75 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { fetchTasksForDashboard, getCurrentGroupID, fetchUserInfoById } from '../../../../service/apiServices';
+import { fetchTasksForDashboard, getCurrentGroupID, fetchUserInfoById, getBackendUserID } from '../../../../service/apiServices';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
 import axios from 'axios';
+
+// Helper function to check if a date is today
+function isToday(date: Date): boolean {
+  const today = new Date();
+  return date.getDate() === today.getDate() && 
+         date.getMonth() === today.getMonth() &&
+         date.getFullYear() === today.getFullYear();
+}
+
+// Helper function to check if a date is yesterday
+function isYesterday(date: Date): boolean {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return date.getDate() === yesterday.getDate() && 
+         date.getMonth() === yesterday.getMonth() &&
+         date.getFullYear() === yesterday.getFullYear();
+}
+
+interface DateGroup {
+  dateLabel: string;
+  items: any[];
+}
+
+// Group notifications by date (Today, Yesterday, or specific date)
+function groupItemsByDate(items: any[]): DateGroup[] {
+  const groups: Record<string, any[]> = {};
+
+  items.forEach(item => {
+    const itemDate = new Date(item.timestamp || item.time);
+    let dateLabel = '';
+    
+    if (isToday(itemDate)) {
+      dateLabel = 'Today';
+    } else if (isYesterday(itemDate)) {
+      dateLabel = 'Yesterday';
+    } else {
+      dateLabel = itemDate.toLocaleDateString('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+    
+    if (!groups[dateLabel]) {
+      groups[dateLabel] = [];
+    }
+    
+    groups[dateLabel].push(item);
+  });
+
+  return Object.keys(groups).map(dateLabel => ({
+    dateLabel,
+    items: groups[dateLabel]
+  })).sort((a, b) => {
+    if (a.dateLabel === 'Today') return -1;
+    if (b.dateLabel === 'Today') return 1;
+    if (a.dateLabel === 'Yesterday') return -1;
+    if (b.dateLabel === 'Yesterday') return 1;
+    
+    // For other dates, compare the first item's timestamp
+    const aDate = new Date(a.items[0].timestamp || a.items[0].time);
+    const bDate = new Date(b.items[0].timestamp || b.items[0].time);
+    return bDate.getTime() - aDate.getTime();
+  });
+}
 
 const NotificationScreen = () => {
   const { groupId } = useLocalSearchParams();
@@ -14,26 +79,34 @@ const NotificationScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentGroupID, setCurrentGroupID] = useState<string | null>(null);
+  const [currentUserID, setCurrentUserID] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchGroupIdIfNeeded = async () => {
-      if (!groupId && userId) {
+    const fetchUserData = async () => {
+      if (userId) {
         try {
           const token = await getToken();
           // Get backend userID from Clerk ID
           const userResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/clerk/${userId}`);
           const backendUserID = userResponse.data.userID;
-          // Get groupID from backend userID
-          const groupResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/${backendUserID}/group`);
-          setCurrentGroupID(groupResponse.data.groupID);
+          setCurrentUserID(backendUserID);
+          
+          if (!groupId) {
+            // Get groupID from backend userID
+            const groupResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/${backendUserID}/group`);
+            setCurrentGroupID(groupResponse.data.groupID);
+          }
         } catch (err) {
-          setError('Failed to fetch group ID from Clerk.');
+          setError('Failed to fetch user data from Clerk.');
         }
-      } else if (groupId) {
-        setCurrentGroupID(groupId as string);
       }
     };
-    fetchGroupIdIfNeeded();
+    
+    fetchUserData();
+    
+    if (groupId) {
+      setCurrentGroupID(groupId as string);
+    }
   }, [groupId, userId, getToken]);
 
   useEffect(() => {
@@ -47,12 +120,42 @@ const NotificationScreen = () => {
           setLoading(false);
           return;
         }
+        
+        if (!currentUserID) {
+          setError('No user ID available.');
+          setLoading(false);
+          return;
+        }
+        
         const tasks = await fetchTasksForDashboard(groupID);
-        tasks.sort((a: any, b: any) => {
+        
+        // Filter tasks where the current user is either assignedTo or assignedBy
+        const filteredTasks = tasks.filter((task: any) => {
+          // If assignedTo or assignedBy is missing or doesn't have a valid ID, don't display
+          if (!task.assignedTo && !task.assignedBy) return false;
+          
+          const assignedToId = task.assignedTo?._id || 
+            (typeof task.assignedTo === 'string' ? task.assignedTo : null);
+            
+          const assignedById = task.assignedBy?._id || 
+            (typeof task.assignedBy === 'string' ? task.assignedBy : null);
+          
+          // Don't display if both IDs are null or undefined
+          if (!assignedToId && !assignedById) return false;
+          
+          return (
+            (assignedToId && assignedToId === currentUserID) || 
+            (assignedById && assignedById === currentUserID)
+          );
+        });
+        
+        // Sort tasks by creation date in descending order (newest first)
+        filteredTasks.sort((a: any, b: any) => {
           const aTime = new Date(a.createdAt).getTime();
           const bTime = new Date(b.createdAt).getTime();
           return bTime - aTime;
         });
+        
         // Fetch user info for assignedBy and assignedTo in parallel
         const userInfoCache: Record<string, any> = {};
         const getUserInfo = async (user: any) => {
@@ -64,13 +167,24 @@ const NotificationScreen = () => {
           userInfoCache[userId] = info;
           return info;
         };
-        const mapped = await Promise.all(tasks.map(async (task: any) => {
-          const assignedByInfo = await getUserInfo(task.assignedBy);
+        const mapped = await Promise.all(filteredTasks.map(async (task: any) => {
+          // Skip tasks without valid assignedBy or assignedTo
+          if (!task.assignedBy && !task.assignedTo) return null;
+          
+          const assignedByInfo = task.assignedBy ? await getUserInfo(task.assignedBy) : null;
           const assignedToInfo = task.assignedTo ? await getUserInfo(task.assignedTo) : null;
+          
+          // Skip if we couldn't get user info
+          if (!assignedByInfo && !assignedToInfo) return null;
+          
           const assignedByName = assignedByInfo?.fullName || assignedByInfo?.name || 'Someone';
           const assignedToName = assignedToInfo?.fullName || assignedToInfo?.name || null;
           const assignedByAvatar = assignedByInfo?.imageURL || 'https://via.placeholder.com/32';
-          const time = new Date(task.createdAt || task.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          
+          // Format time for display
+          const timestamp = new Date(task.createdAt || task.datetime);
+          const timeFormatted = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          
           let message = '';
           if (assignedToName) {
             message = `assigned ${assignedToName} a new task`;
@@ -81,63 +195,33 @@ const NotificationScreen = () => {
             avatar: assignedByAvatar,
             senderName: assignedByName,
             message,
-            time,
+            time: timeFormatted,
+            timestamp: timestamp, // Store the actual date object for grouping
             priorityColor: task.priority === 'high' ? '#FF0000' : task.priority === 'medium' ? '#FFD700' : '#3498db',
             taskTitle: task.title,
           };
         }));
-        setNotifications(mapped);
+        
+        // Filter out any null entries that might have resulted from invalid tasks
+        setNotifications(mapped.filter(Boolean));
       } catch (err: any) {
         setError('Failed to load notifications');
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
-  }, [currentGroupID]);
-
-  // Helper to format date headers
-  const getDateLabel = (dateString: string) => {
-    const notifDate = new Date(dateString);
-    const today = new Date();
-    const yesterday = new Date();
-    yesterday.setDate(today.getDate() - 1);
-    const isToday = notifDate.toDateString() === today.toDateString();
-    const isYesterday = notifDate.toDateString() === yesterday.toDateString();
-    if (isToday) return 'Today';
-    if (isYesterday) return 'Yesterday';
-    return notifDate.toLocaleDateString();
-  };
-
-  // Group notifications by date
-  const groupedNotifications = notifications.reduce((acc: any, notif: any) => {
-    const dateKey = new Date(notif.createdAt).toDateString();
-    if (!acc[dateKey]) acc[dateKey] = [];
-    acc[dateKey].push(notif);
-    return acc;
-  }, {});
-  // Sort date groups and notifications by time descending (nearest time at top)
-  const sortedDateKeys = Object.keys(groupedNotifications).sort((a, b) => {
-    // Compare the most recent notification time in each group
-    const aMax = Math.max(...groupedNotifications[a].map((n: any) => new Date(n.createdAt).getTime()));
-    const bMax = Math.max(...groupedNotifications[b].map((n: any) => new Date(n.createdAt).getTime()));
-    return bMax - aMax;
-  });
-
-  // Sort notifications within each group by createdAt descending (nearest at top)
-  sortedDateKeys.forEach(dateKey => {
-    groupedNotifications[dateKey].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  });
+    
+    if (currentGroupID && currentUserID) {
+      fetchData();
+    }
+  }, [currentGroupID, currentUserID]);
 
   const renderNotification = (n: any, idx: number) => (
     <View
       key={idx}
       className="flex-row items-start py-3 px-2 border-b border-gray-100"
       style={{
-        backgroundColor:
-          new Date(n.time).toDateString() === new Date().toDateString()
-            ? '#FFF8EF'
-            : 'white',
+        backgroundColor: isToday(n.timestamp) ? '#FFF8EF' : 'white',
       }}
     >
       <Image source={{ uri: n.avatar }} className="w-8 h-8 rounded-full mt-1 mr-2" />
@@ -149,7 +233,7 @@ const NotificationScreen = () => {
         <Text className="text-xs text-gray-500 mt-0.5">{n.time}</Text>
         {n.taskTitle ? (
           <View className="flex-row items-center mt-1">
-            <MaterialIcons name="flag" size={16} color={n.priorityColor || '#3498db'} />
+            <MaterialIcons name="flag" size={18} color={n.priorityColor || '#3498db'} />
             <Text className="ml-1 font-bold text-[15px]">{n.taskTitle}</Text>
           </View>
         ) : null}
@@ -173,6 +257,9 @@ const NotificationScreen = () => {
     );
   }
 
+  // Group notifications by date
+  const groupedNotifications: DateGroup[] = groupItemsByDate(notifications);
+
   return (
     <View className="flex-1 bg-white">
     <View className="flex-row items-center justify-between px-4 pt-4 pb-2 bg-white">
@@ -180,10 +267,12 @@ const NotificationScreen = () => {
     </View>
       <ScrollView className="flex-1 ml-5 mr-5" contentContainerStyle={{ paddingBottom: 32 }}>
         {notifications.length === 0 && <Text className="px-4 text-gray-400 mt-4">No notifications</Text>}
-        {sortedDateKeys.map(dateKey => (
-          <View key={dateKey}>
-            {/* Removed date header display */}
-            {groupedNotifications[dateKey].map(renderNotification)}
+        {groupedNotifications.map((group: DateGroup, idx: number) => (
+          <View key={idx} className="mb-4">
+            <Text className="font-semibold text-gray-800 text-lg px-4 py-2">
+              {group.dateLabel}
+            </Text>
+            {group.items.map((item, index) => renderNotification(item, index))}
           </View>
         ))}
       </ScrollView>

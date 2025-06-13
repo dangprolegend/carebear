@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -31,6 +32,7 @@ const AiTaskInputScreen = () => {
   const navigation = useNavigation();
   const { userId, getToken } = useAuth();
 
+  const [activeTab, setActiveTab] = useState<'generate' | 'scan'>('generate');
   const [promptText, setPromptText] = useState('');
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
@@ -38,6 +40,13 @@ const AiTaskInputScreen = () => {
   const [currentUserID, setCurrentUserID] = useState<string | null>(null);
   const [currentGroupID, setCurrentGroupID] = useState<string | null>(null);
   const [clerkToken, setClerkToken] = useState<string | null>(null);
+  
+  // Ensure loading state is reset if the component unmounts or there's an error
+  useEffect(() => {
+    return () => {
+      setIsLoading(false); // Reset loading state when component unmounts
+    };
+  }, []);
 
   useEffect(() => {
     const fetchIds = async () => {
@@ -62,32 +71,52 @@ const AiTaskInputScreen = () => {
     fetchIds();
   }, [userId, getToken]);
 
-  const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (permissionResult.granted === false) {
-      Alert.alert("Permission Required", "Access to your photo library is needed to select an image.");
+  const pickImage = async (shouldScan = false) => {
+    const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+    const libraryPermission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (cameraPermission.granted === false || libraryPermission.granted === false) {
+      Alert.alert("Permission Required", "Access to your camera and photo library is needed to select or take images.");
       return;
     }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images']   ,   
+    const options = {
+      mediaTypes: 'images' as any,
       allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.6, 
-      base64: true, 
-    });
+      aspect: [4, 3] as [number, number],
+      quality: 0.6,
+      base64: true,
+    };
+
+    let result;
+    if (shouldScan) {
+      // For scanning, we prefer using the camera
+      result = await ImagePicker.launchCameraAsync(options);
+    } else {
+      // For general task images, launch the photo library
+      result = await ImagePicker.launchImageLibraryAsync(options);
+    }
 
     if (!result.canceled && result.assets && result.assets.length > 0 && result.assets[0].base64) {
       setSelectedImageUri(result.assets[0].uri);
       setImageBase64(result.assets[0].base64);
+      
+      if (shouldScan) {
+        // If scanning, immediately submit to AI for processing
+        handleSubmitToAI(true);
+      }
     }
   };
   const [generatedAiTasks, setGeneratedAiTasks] = useState<FrontendTaskType[]>([]);
   const [loadingStep, setLoadingStep] = useState<number>(1);
 
-  const handleSubmitToAI = async () => {
-      if (!promptText && !imageBase64) {
+  const handleSubmitToAI = async (isScan = false) => {
+      if (!isScan && !promptText && !imageBase64) {
         Alert.alert("Input Required", "Please provide a text prompt or select an image.");
+        return;
+      }
+      if (isScan && !imageBase64) {
+        Alert.alert("Image Required", "Please scan or select an image of your medication.");
         return;
       }
       if (!currentUserID || !currentGroupID) { 
@@ -173,23 +202,91 @@ const AiTaskInputScreen = () => {
         keyboardShouldPersistTaps="handled"
       >
         <View className="flex-1">
-          <Text className="text-sm text-black-600 mb-3 text-center px-4">
-            Describe the task you'd like AI to help with
+          {/* Tab selector */}
+          <View className="flex-row mb-5 border-b border-gray-200">
+            <Pressable 
+              style={[
+                styles.tabButton, 
+                { borderBottomWidth: activeTab === 'generate' ? 3 : 0 }
+              ]}
+              onPress={() => setActiveTab('generate')}
+            >
+              <Text style={[
+                styles.tabText, 
+                { fontWeight: activeTab === 'generate' ? 'bold' : 'normal' }
+              ]}>
+                Generate Task with AI
+              </Text>
+            </Pressable>
+            <Pressable
+              style={[
+                styles.tabButton, 
+                { borderBottomWidth: activeTab === 'scan' ? 3 : 0 }
+              ]}
+              onPress={() => setActiveTab('scan')}
+            >
+              <Text style={[
+                styles.tabText, 
+                { fontWeight: activeTab === 'scan' ? 'bold' : 'normal' }
+              ]}>
+                Scan with AI
+              </Text>
+            </Pressable>
+          </View>
+
+          {activeTab === 'generate' ? (
+            <>
+              <Text className="text-sm text-black-600 mb-3 text-center px-4">
+                Describe the task you'd like AI to help with
+              </Text>
+              <TextInput
+                className="bg-white-50 border border-orange-100 rounded-xl p-4 text-base min-h-[100px] text-gray-900 mb-7"
+                placeholder="My grandmother needs to take Osteoarthritis around 11:30 am and 6pm everyday."
+                placeholderTextColor="#9ca3af"
+                value={promptText}
+                onChangeText={setPromptText}
+                multiline
+                textAlignVertical="top"
+              />
+            </>
+          ) : (
+            <View className="mb-7">
+                    <Text className="text-center text-sm text-black-500 my-3 pb-3">
+            Or click the button below to scan your medications and let AI auto-fill the details
           </Text>
-          <TextInput
-            className="bg-white-50 border border-orange-100 rounded-xl p-4 text-base min-h-[100px] text-gray-900 mb-5"
-            placeholder="My grandmother needs to take Osteoarthritis around 11:30 am and 6pm everyday."
-            placeholderTextColor="#9ca3af"
-            value={promptText}
-            onChangeText={setPromptText}
-            multiline
-            textAlignVertical="top"
-          />
+
+          <View className="flex-row justify-center">
+            <Pressable
+              className={`flex-row justify-center items-center py-2 px-4 rounded-full border-2 ${isLoading ? 'bg-gray-400' : 'bg-black active:bg-gray-700'}`}
+              style={{ width: 'auto', alignSelf: 'center', minWidth: 200 }}
+              onPress={() => {
+                console.log("Scan button pressed, isLoading:", isLoading);
+                if (!isLoading) {
+                  pickImage(true);
+                }
+              }}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="white" className="mr-2"/>
+              ) : (
+                <MaterialIcons name="camera-alt" size={22} color="white" className="mr-2" />
+              )}
+              <Text className="text-white text-base font-semibold">
+                {isLoading ? "Processing..." : "Scan and Autofill with AI"}
+              </Text>
+            </Pressable>
+          </View>
+            </View>
+          )}
+          
 
           {/* Preview selected image for AI */}
-          {selectedImageUri && (
+          {selectedImageUri && (activeTab === 'generate' || (activeTab === 'scan' && !isLoading)) && (
             <View className="mb-5 items-center relative bg-slate-200 p-2 rounded-lg">
-              <Text className="text-xs text-slate-500 mb-1">Image for AI processing:</Text>
+              <Text className="text-xs text-slate-500 mb-1">
+                {activeTab === 'scan' ? 'Scanned medication:' : 'Image for AI processing:'}
+              </Text>
               <Image
                 source={{ uri: selectedImageUri }}
                 className="w-full h-32 rounded-md"
@@ -204,35 +301,27 @@ const AiTaskInputScreen = () => {
             </View>
           )}
 
-          <Pressable
-            className={`flex-row justify-center items-center py-4 rounded-full mt-1 mb-3 ${isLoading ? 'bg-grey' : 'bg-black active:bg-grey'}`}
-            onPress={handleSubmitToAI} 
-            disabled={isLoading}
-          >
-            {isLoading && !selectedImageUri ? ( 
-              <ActivityIndicator size="small" color="white" className="mr-2"/>
-            ) : (
-              <FontAwesome5 name="magic" size={18} color="white" className="mr-2" />
-            )}
-            <Text className="text-white text-base font-semibold">
-              Generate Task with AI
-            </Text>
-          </Pressable>
+          {activeTab === 'generate' ? (
+            <View className="flex-row justify-center">
+              <Pressable
+                className={`mb-7 flex-row justify-center items-center py-3 px-4 rounded-full mt-1 mb-3 ${isLoading ? 'bg-grey' : 'bg-black active:bg-grey'}`}
+                style={{ width: 'auto', alignSelf: 'center', minWidth: 200 }}
+                onPress={() => handleSubmitToAI()} 
+                disabled={isLoading}
+              >
+                {isLoading ? ( 
+                  <ActivityIndicator size="small" color="white" className="mr-2"/>
+                ) : (
+                  <FontAwesome5 name="magic" size={18} color="white" className="mr-2" />
+                )}
+                <Text className="text-white text-base font-semibold">
+                  Generate Task with AI
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
 
-          <Text className="text-center text-sm text-black-500 my-3">
-            Or click the button below to scan your medications and let AI auto-fill the details.
-          </Text>
-
-          <Pressable
-            className="flex-row justify-center items-center py-3 rounded-full border-2 mb-5 bg-black"
-            onPress={pickImage} 
-            disabled={isLoading}
-          >
-            <MaterialIcons name="qr-code-scanner" size={22} color="white" className="mr-2" />
-            <Text className="text-white text-base font-semibold">
-              Scan Medication / Upload Image
-            </Text>
-          </Pressable>
+    
 
           {/* Placeholder for Manual Input Section */}
           {isLoading ? ( 
@@ -248,7 +337,7 @@ const AiTaskInputScreen = () => {
                     require('../../../../../assets/images/Property 1=Variant4.png'),
                     require('../../../../../assets/images/Property 1=Variant5.png'),
                     require('../../../../../assets/images/Property 1=Variant6.png'),
-                  ][(loadingStep - 1) % 5] // loop steps 1-5, 6 is finish
+                  ][(loadingStep - 1) % 5] 
                   }
                   style={{
                   width: 250,
@@ -297,13 +386,13 @@ const AiTaskInputScreen = () => {
                   router.back();
                 }}
               />
-            </View>
-          ) : (
-          
-            <View className="mt-2 border-slate-200 pt-1">
-              <Text className="text-center text-sm text-black">
-                Or fill manually below
-              </Text>
+            </View>          ) : (
+            <View className=" border-slate-200">
+              {activeTab === 'generate' || (activeTab === 'scan' && !selectedImageUri) ? (
+                <Text className="text-center text-sm text-black">
+                  Or fill manually below
+                </Text>
+              ) : null}
               <ManualTaskForm
                 currentUserID={currentUserID} 
                 currentGroupID={currentGroupID}
@@ -319,5 +408,18 @@ const AiTaskInputScreen = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  tabButton: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderBottomColor: '#362209',
+  },
+  tabText: {
+    fontSize: 14,
+    color: '#362209',
+  }
+});
 
 export default AiTaskInputScreen;
