@@ -101,7 +101,6 @@ const MemberDashboard = () => {
           title="Member Dashboard" 
           userRole={userRole}
           showHighPrioritySection={false}
-          showHealthSection={true}
         />
       </View>
     );
@@ -114,28 +113,24 @@ const MemberDashboard = () => {
         console.log('MemberDashboard - Rendering Care Receiver Dashboard');
         return {
           title: 'Care Receiver Dashboard',
-          showHighPrioritySection: false,
-          showHealthSection: true,
+          showHighPrioritySection: false
         };
       case 'caregiver':
         console.log('MemberDashboard - Rendering Caregiver Dashboard');
         return {
           title: 'Caregiver Dashboard',
-          showHighPrioritySection: true,
-          showHealthSection: false,
+          showHighPrioritySection: true
         };
       case 'admin':
         console.log('MemberDashboard - Rendering Admin Dashboard');
         return {
           title: 'Admin Dashboard',
-          showHighPrioritySection: true,
-          showHealthSection: true,
+          showHighPrioritySection: true
         };
       default:
         return {
           title: 'Member Dashboard',
-          showHighPrioritySection: false,
-          showHealthSection: true,
+          showHighPrioritySection: false
         };
     }
   };
@@ -148,7 +143,6 @@ const MemberDashboard = () => {
       title={dashboardConfig.title}
       userRole={userRole}
       showHighPrioritySection={dashboardConfig.showHighPrioritySection}
-      showHealthSection={dashboardConfig.showHealthSection}
     />
   );
 };

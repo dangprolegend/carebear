@@ -12,8 +12,7 @@ const MemberDashboard = ({ tasks = [], userRole = 'carereceiver' }: MemberDashbo
     <DashboardBase 
       tasks={tasks} 
       title="Care Receiver Dashboard" 
-      showHighPrioritySection={false} 
-      showHealthSection={true}
+      showHighPrioritySection={false}
       userRole={userRole}
     />
   );
