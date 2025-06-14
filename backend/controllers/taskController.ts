@@ -292,14 +292,15 @@ export const getUserTasks = async (req: TypedRequest<any, { userID: string }>, r
   }
 };
 
-// Get all tasks for a specific group
+// Update getGroupTasks function to populate user data properly
 export const getGroupTasks = async (req: TypedRequest<any, { groupID: string }>, res: Response): Promise<void> => {
   try {
     const { groupID } = req.params;
     const tasks = await Task.find({ groupID })
-      .sort({ createdAt: -1 })
-      .populate('assignedBy', 'name email')
-      .populate('assignedTo', 'name email');
+      .populate('assignedBy', 'name email imageURL') // Add imageURL to populate
+      .populate('assignedTo', 'name email imageURL') // Add imageURL to populate
+      .sort({ createdAt: -1 });
+      
     res.json(tasks);
   } catch (err: any) {
     handleError(res, err);

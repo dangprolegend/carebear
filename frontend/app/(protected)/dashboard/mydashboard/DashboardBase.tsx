@@ -4,9 +4,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as Calendar from 'expo-calendar';
 import * as Notifications from 'expo-notifications';
 import { groupTasksByTimeAndType, TaskGroup, Task } from './task';
-import { HealthMetric } from './healthmetric';
 import TaskCard from './taskcard';
 import {Link, useRouter} from 'expo-router'
+import DashboardTimelineMarker from '../../../../components/DashboardTimelineMarker';
 
 // Configure how notifications are handled when app is in foreground
 Notifications.setNotificationHandler({
@@ -19,16 +19,14 @@ Notifications.setNotificationHandler({
 
 type DashboardBaseProps = {
   tasks: Task[];
-  showHealthSection?: boolean; 
   showHighPrioritySection?: boolean;
-  title?: string; 
+  title?: string;
+  userRole?: string; // Add userRole prop
 };
 
 
-const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPrioritySection = true, title = 'Dashboard' }: DashboardBaseProps) => {
+const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Dashboard', userRole = 'member' }: DashboardBaseProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showTodaySchedule, setShowTodaySchedule] = useState(true);
-  const [showYourHealth, setShowYourHealth] = useState(true);
   const [calendarEvents, setCalendarEvents] = useState<Calendar.Event[]>([]);
 
   // Add state for TaskCard
@@ -199,7 +197,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
 
   return (
     <>
-      <ScrollView className="flex-1 bg-gray-50">
+      <ScrollView className="flex-1 bg-white">
         {/* Header */}
         <View className="px-4">
           {/* Calendar Strip */}
@@ -301,7 +299,10 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
           // Filter high priority tasks for the selected date
           const highPriorityTasks = filteredTasks.filter(task => task.priority === 'high');
 
-          return showHighPrioritySection && (
+          // Role-based feature visibility
+          const shouldShowHighPrioritySection = showHighPrioritySection && (userRole === 'caregiver' || userRole === 'admin');
+
+          return shouldShowHighPrioritySection && (
             <View className="mb-0 pt-7">
               <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
                 <Text className="text-lg font-semibold">High Priority Today</Text>
@@ -314,15 +315,23 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                 </Link>
               </View>
               <View className="px-4">
-                {highPriorityTasks.map((task, index) => (
-                  <View
-                    key={index}
-                    className="border border-[#FAE5CA] rounded-lg p-4 mb-4 bg-white"
-                  >
-                    <Text className="text-sm font-semibold text-[#2A1800]">{task.title}</Text>
-                    <Text className="text-xs text-[#666]">{task.description}</Text>
+                {highPriorityTasks.length === 0 ? (
+                  <View className="items-center justify-center py-8">
+                    <Text className="text-gray-500 text-center">
+                      You have no assigned task.{'\n'}Add task and set priority
+                    </Text>
                   </View>
-                ))}
+                ) : (
+                  highPriorityTasks.map((task, index) => (
+                    <View
+                      key={index}
+                      className="border border-[#FAE5CA] rounded-lg p-4 mb-4 bg-white"
+                    >
+                      <Text className="text-sm font-semibold text-[#2A1800]">{task.title}</Text>
+                      <Text className="text-xs text-[#666]">{task.description}</Text>
+                    </View>
+                  ))
+                )}
               </View>
             </View>
           );
@@ -332,15 +341,11 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
         {/* Today Schedule Section */}
         <View className="flex-1 mt-6">
           <View className="mb-0">
-            <Pressable
-              onPress={() => setShowTodaySchedule(!showTodaySchedule)}
-              className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] px-6 py-4"
+            <View
+              className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4"
             >
               <Text className="text-lg font-semibold text-[#2A1800]">Today Schedule</Text>
-              <MaterialIcons name="arrow-right" size={24} color="#666" />
-            </Pressable>
-
-            {showTodaySchedule && (
+            </View>
               <View className="bg-white rounded-xl p-4">
                 {filteredTasks.length === 0 ? (
                   <View className="items-center justify-center py-12">
@@ -348,15 +353,18 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                   </View>
                 ) : (
                 groupTasksByTimeAndType(filteredTasks).map((group, index) => (
-                  <View key={index} className="mb-6 flex-row">
-                    {/* Vertical Timeline */}
-                    {/* <View className="w-[24px] flex items-center">
-                      <View className="h-full w-[2px] bg-[#FAE5CA]" />
-                      <View className="w-[8px] h-[8px] bg-[#FAE5CA] rounded-full mt-[-4px]" />
-                    </View> */}
+                  <View key={index} className="flex-row">
+                    {/* Timeline Marker */}
+                    <View className="flex-row items-stretch">                 
+                      <DashboardTimelineMarker
+                        time={group.time}
+                        isFirst={index === 0}
+                        isLast={index === filteredTasks.length - 1}
+                      />
+                    </View>
 
                     {/* Task Group */}
-                    <View className="flex-1">
+                    <View className="flex-1 ml-4">
                       <Text className="text-sm font-semibold text-[#2A1800] mb-2">{group.time}</Text>
                       {group.tasks.map((task, taskIndex) => (
                         <View
@@ -398,7 +406,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                                 {/* Task Name */}
                                 <Text
                                   style={{ fontFamily: 'Lato', fontSize: 16 }}
-                                  className="text-sm font-semibold text-[#2A1800] flex-shrink"
+                                  className="text-sm font-bold text-[#2A1800] flex-shrink"
                                 >
                                   {task.title}
                                 </Text>
@@ -422,14 +430,14 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                               {/* Brief Instruction */}
                               <Text
                                 style={{ fontFamily: 'Lato', fontSize: 14 }}
-                                className="text-xs text-[#666] flex-1"
+                                className="text-xs font-lato text-[#666] flex-1"
                               >
                                 {task.description}
                               </Text>
                               {/* Checkbox */}
                               <Pressable
                                 onPress={() => console.log('Task completed:', task.title)}
-                                className="w-6 h-6 border border-[#FAE5CA] rounded-lg flex items-center justify-center"
+                                className="w-6 h-6 border border-[#2A1800] rounded-lg flex items-center justify-center"
                               >
                                 {task.checked && (
                                   <MaterialIcons name="check" size={16} color="#2A1800" />
@@ -459,7 +467,11 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                                 onPress={() => console.log('Notification for:', task.title)}
                                 className="w-6 h-6 flex items-center justify-center"
                               >
-                                <MaterialIcons name="notifications" size={20} color="#FFD700" />
+                                <Image
+                                  source={require('../../../../assets/icons/bell-icon.png')}
+                                  style={{ width: 20, height: 20 }}
+                                  resizeMode="contain"
+                                />
                               </Pressable>
                             </View>
                           </Pressable>
@@ -469,138 +481,7 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
                   </View>
                 )))}
               </View>
-            )}
           </View>
-          
-          {/* Your Health Section */}
-        {showHealthSection && (
-          <View className="pb-6">
-            <Pressable
-              onPress={() => setShowYourHealth(!showYourHealth)}
-              className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] bg-[#FAE5CA] px-6 py-4"
-            >
-              <Text className="text-lg font-semibold text-[#2A1800]">Your Health</Text>
-              <MaterialIcons name="arrow-right" size={24} color="#666" />
-            </Pressable>
-
-            {showYourHealth && (
-              <View
-                style={{
-                  display: 'flex',
-                  paddingHorizontal: 24,
-                  paddingVertical: 16,
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                  gap: 16, // Adjusted gap between rows
-                  flexShrink: 0,
-                  alignSelf: 'stretch',
-                  width: '100%',
-                  backgroundColor: '#FAE5CA',
-                }}
-              >
-                <View className="flex-row flex-wrap justify-between w-full gap-4">
-
-                  
-                  {/* Sleep Metric */}
-                  <View className="w-[45%] bg-white rounded-lg p-4 flex flex-col justify-between aspect-square">
-                    {/* Top Section */}
-                    <View className="flex-row justify-between w-full">
-                      <Text className="text-base font-semibold text-[#666]">Sleep</Text>
-                      <Text className="text-base font-bold text-[#2A1800]">85%</Text>
-                    </View>
-                    {/* Icon Section */}
-                    <View className="flex items-center justify-center mt-2">
-                      <View className="w-16 h-16 rounded-full bg-[#198AE9] flex items-center justify-center">
-                        <Image
-                          source={require('../../../../assets/icons/moon.png')}
-                          style={{ width: 30, height: 30 }}
-                          resizeMode="contain"
-                        />
-                      </View>
-                    </View>
-                    {/* Bed Time */}
-                    <Text className="text-base text-[#666] mt-2 text-center">6 hr 15 min</Text>
-                    {/* Goal */}
-                    <Text className="text-base text-[#666] text-center">Goal: 8 hr</Text>
-                  </View>
-                  
-
-                  {/* Steps Metric */}
-                  <View className="w-[45%] bg-white rounded-lg p-4 flex flex-col justify-between aspect-square">
-                    {/* Top Section */}
-                    <View className="flex-row justify-between w-full">
-                      <Text className="text-base font-semibold text-[#666]">Steps</Text>
-                      <Text className="text-base font-bold text-[#2A1800]">95%</Text>
-                    </View>
-                    {/* Icon Section */}
-                    <View className="flex items-center justify-center mt-2">
-                      <View className="w-16 h-16 rounded-full bg-[#198AE9] flex items-center justify-center">
-                        <Image
-                          source={require('../../../../assets/icons/footprints.png')}
-                          style={{ width: 30, height: 30 }}
-                          resizeMode="contain"
-                        />
-                      </View>
-                    </View>
-                    {/* Steps Count */}
-                    <Text className="text-base text-[#666] mt-2 text-center">9500</Text>
-                    {/* Goal */}
-                    <Text className="text-base text-[#666] text-center">Goal: 10000</Text>
-                  </View>
-
-
-                  {/* Weight Metric */}
-                  <View className="w-[45%] bg-white rounded-lg p-4 flex flex-col justify-between aspect-square">
-                    {/* Top Section */}
-                    <View className="flex-row justify-between w-full">
-                      <Text className="text-base font-semibold text-[#666]">Weight</Text>
-                      <Text className="text-base font-bold text-[#2A1800]">100%</Text>
-                    </View>
-                    {/* Icon Section */}
-                    <View className="flex items-center justify-center mt-2">
-                      <View className="w-16 h-16 rounded-full bg-[#198AE9] flex items-center justify-center">
-                        <Image
-                          source={require('../../../../assets/icons/scale.png')}
-                          style={{ width: 30, height: 30 }}
-                          resizeMode="contain"
-                        />
-                      </View>
-                    </View>
-                    {/* Current Weight */}
-                    <Text className="text-base text-[#666] mt-2 text-center">53 kg</Text>
-                    {/* Goal */}
-                    <Text className="text-base text-[#666] text-center">Goal: Set Goal</Text>
-                  </View>
-
-
-                  {/* Add More Metric */}
-                  <View className="w-[45%] bg-white rounded-lg p-4 flex flex-col justify-between aspect-square">
-                    {/* Top Section */}
-                    <View className="flex-row justify-between w-full">
-                      <Text className="text-base font-semibold text-[#FFD700]">Add More</Text>
-                    </View>
-                    {/* Icon Section */}
-                    <View className="flex items-center justify-center mt-2">
-                      <View className="w-16 h-16 rounded-full bg-[#FFD700] flex items-center justify-center">
-                        <Image
-                          source={require('../../../../assets/icons/plus.png')}
-                          style={{ width: 30, height: 30 }}
-                          resizeMode="contain"
-                        />
-                      </View>
-                    </View>
-                    {/* Additional Options */}
-                    <View className="flex-row justify-center mt-2">
-                      <MaterialIcons name="local-drink" size={20} color="#666" />
-                      <MaterialIcons name="favorite" size={20} color="#666" />
-                      <MaterialIcons name="fitness-center" size={20} color="#666" />
-                    </View>
-                  </View>
-                </View>
-              </View>
-            )}
-          </View>
-          )}
         </View>
       </ScrollView>
       <TaskCard
