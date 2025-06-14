@@ -22,11 +22,12 @@ type DashboardBaseProps = {
   tasks: Task[];
   showHealthSection?: boolean; 
   showHighPrioritySection?: boolean;
-  title?: string; 
+  title?: string;
+  userRole?: string; // Add userRole prop
 };
 
 
-const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPrioritySection = true, title = 'Dashboard' }: DashboardBaseProps) => {
+const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPrioritySection = true, title = 'Dashboard', userRole = 'member' }: DashboardBaseProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showTodaySchedule, setShowTodaySchedule] = useState(true);
   const [showYourHealth, setShowYourHealth] = useState(true);
@@ -302,7 +303,10 @@ const DashboardBase = ({ tasks = [], showHealthSection = true, showHighPriorityS
           // Filter high priority tasks for the selected date
           const highPriorityTasks = filteredTasks.filter(task => task.priority === 'high');
 
-          return showHighPrioritySection && (
+          // Role-based feature visibility
+          const shouldShowHighPrioritySection = showHighPrioritySection && (userRole === 'caregiver' || userRole === 'admin');
+
+          return shouldShowHighPrioritySection && (
             <View className="mb-0 pt-7">
               <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
                 <Text className="text-lg font-semibold">High Priority Today</Text>

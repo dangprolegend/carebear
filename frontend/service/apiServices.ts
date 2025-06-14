@@ -159,8 +159,16 @@ export const getBackendUserID = async (clerkID: string): Promise<string> => {
   }
 };
 
+// Replace the existing getGroupID function with this improved version:
+
 export const getGroupID = async (userID: string): Promise<string> => {
   try {
+    console.log('getGroupID - Starting with userID:', userID);
+    
+    if (!userID || userID === 'undefined') {
+      throw new Error('Invalid userID provided to getGroupID');
+    }
+
     const response = await fetch(`${API_BASE_URL}/api/users/${userID}/group`, {
       method: 'GET',
       headers: {
@@ -169,13 +177,24 @@ export const getGroupID = async (userID: string): Promise<string> => {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('getGroupID - API Error:', response.status, errorText);
       throw new Error(`Failed to fetch group for user: ${response.statusText}`);
     }
 
     const group = await response.json();
-    return group._id || group.id;
+    console.log('getGroupID - Group response:', group);
+    
+    const groupId = group.groupID || group._id || group.id;
+    
+    if (!groupId || groupId === 'undefined') {
+      throw new Error('No valid group ID found in response');
+    }
+    
+    console.log('getGroupID - Final groupID:', groupId);
+    return groupId;
   } catch (error) {
-    console.error("Error fetching group ID:", error);
+    console.error("getGroupID - Error fetching group ID:", error);
     throw new Error("Unable to retrieve group ID");
   }
 };
@@ -346,5 +365,83 @@ export const fetchUserNameByID = async (userID: string): Promise<string> => {
   } catch (error) {
     console.error('Error fetching user name:', error);
     throw new Error('Unable to retrieve user name');
+  }
+};
+
+
+// Add these interfaces and function at the end of the file
+
+interface GroupMember {
+  user: string; // ObjectId as string
+  role: 'admin' | 'caregiver' | 'carereceiver' | string;
+  _id: string;
+}
+
+interface GroupData {
+  _id: string;
+  name: string;
+  numberOfMembers: number;
+  members: GroupMember[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+
+// Replace the existing getUserRoleInGroup function with this improved version:
+
+export const getUserRoleInGroup = async (userID: string): Promise<string> => {
+  try {
+    console.log('getUserRoleInGroup - Starting with userID:', userID);
+    
+    if (!userID || userID === 'undefined') {
+      console.error('getUserRoleInGroup - Invalid userID:', userID);
+      return 'member';
+    }
+
+    const token = await getClerkToken();
+    
+    // First get the user's group
+    console.log('getUserRoleInGroup - Fetching group for userID:', userID);
+    const groupID = await getGroupID(userID);
+    console.log('getUserRoleInGroup - Received groupID:', groupID);
+    
+    if (!groupID || groupID === 'undefined' || groupID === undefined) {
+      console.error('getUserRoleInGroup - Invalid groupID received:', groupID);
+      return 'member';
+    }
+    
+    // Then fetch the group details to get the role
+    const url = `${API_BASE_URL}/api/groups/${groupID}`;
+    console.log(`getUserRoleInGroup - Fetching group data from: ${url}`);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+    });
+    
+    if (!response.ok) {
+      console.error('getUserRoleInGroup - API response not ok:', response.status, response.statusText);
+      return 'member';
+    }
+    
+    const groupData: GroupData = await handleApiResponse(response);
+    console.log('getUserRoleInGroup - Group data received:', groupData);
+    
+    // Find the user's role in the members array
+    const userMember = groupData.members.find(member => {
+      console.log('Comparing member.user:', member.user, 'with userID:', userID);
+      return member.user === userID;
+    });
+    
+    const role = userMember?.role || 'member';
+    console.log('getUserRoleInGroup - Final role:', role);
+    
+    return role;
+  } catch (error) {
+    console.error("getUserRoleInGroup - Error fetching user role:", error);
+    return 'member'; // Default fallback
   }
 };
