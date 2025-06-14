@@ -27,7 +27,6 @@ type DashboardBaseProps = {
 
 const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Dashboard', userRole = 'member' }: DashboardBaseProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [showTodaySchedule, setShowTodaySchedule] = useState(true);
   const [calendarEvents, setCalendarEvents] = useState<Calendar.Event[]>([]);
 
   // Add state for TaskCard
@@ -342,15 +341,11 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
         {/* Today Schedule Section */}
         <View className="flex-1 mt-6">
           <View className="mb-0">
-            <Pressable
-              onPress={() => setShowTodaySchedule(!showTodaySchedule)}
-              className="w-full h-[56px] flex-row items-center justify-between border-t border-b border-[#FAE5CA] px-6 py-4"
+            <View
+              className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4"
             >
               <Text className="text-lg font-semibold text-[#2A1800]">Today Schedule</Text>
-              <MaterialIcons name="arrow-right" size={24} color="#666" />
-            </Pressable>
-
-            {showTodaySchedule && (
+            </View>
               <View className="bg-white rounded-xl p-4">
                 {filteredTasks.length === 0 ? (
                   <View className="items-center justify-center py-12">
@@ -486,7 +481,6 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
                   </View>
                 )))}
               </View>
-            )}
           </View>
         </View>
       </ScrollView>
