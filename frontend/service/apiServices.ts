@@ -201,7 +201,7 @@ export const getGroupID = async (userID: string): Promise<string> => {
 
 export const fetchTasksForDashboard = async (groupID: string): Promise<FrontendTaskType[]> => {
   try {
-    const url = `${API_BASE_URL}/api/groups/${groupID}/tasks`;
+    const url = `${API_BASE_URL}/api/tasks/group/${groupID}`;
     console.log(`Fetching tasks from: ${url}`);
     const response = await fetch(url, {
       method: 'GET',
@@ -210,6 +210,7 @@ export const fetchTasksForDashboard = async (groupID: string): Promise<FrontendT
       },
     });
     const backendTasks: BackendTask[] = await handleApiResponse(response);
+    console.log("Fetched tasks:", backendTasks);
     return backendTasks.map(mapBackendTaskToFrontend);
   } catch (error) {
     console.error("Error fetching tasks:", error);
