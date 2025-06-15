@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Pressable, Alert, ActivityIndicator, TextInput, ScrollView, Platform, Modal } from 'react-native';
+import { View, Text, FlatList, Pressable, Alert, ActivityIndicator, TextInput, ScrollView, Platform, Modal, Image } from 'react-native';
 import { router } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Task as OriginalTaskType } from '../task'; 
 import { fetchRecentTasksForGroup, updateTask, fetchUsersInGroup } from '../../../../../service/apiServices';
+import { Avatar } from '../../../../../components/ui/avatar';
 
 type FrontendTaskType = OriginalTaskType & {
   endDate?: string;
@@ -35,6 +36,14 @@ const EMPTY_TASK = {
 
 const NUM_TABS = 5;
 
+interface UserOption {
+  label: string;
+  value: string;
+  imageURL?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> = ({
   generatedTasksJSON,
   groupID,
@@ -45,7 +54,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
   const [aiTasks, setAiTasks] = useState<FrontendTaskType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
-  const [assigneeOptions, setAssigneeOptions] = useState<{ label: string; value: string }[]>([]);
+  const [assigneeOptions, setAssigneeOptions] = useState<UserOption[]>([]);
   const [showRecurrenceDropdown, setShowRecurrenceDropdown] = useState(false);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
@@ -164,7 +173,10 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         setAssigneeOptions(
           users.map((user: any) => ({
             label: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email,
-            value: user._id
+            value: user._id,
+            imageURL: user.imageURL || user.profilePicture || null,
+            firstName: user.firstName,
+            lastName: user.lastName
           }))
         );
       } catch (e) {
@@ -226,9 +238,33 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
             className="flex-row items-center justify-between"
             onPress={() => setShowAssigneeDropdown(prev => !prev)}
           >
-            <Text className="text-base">
-              {assigneeOptions.find(opt => opt.value === formTasks[activeTab]?.assignedTo)?.label || 'Select Assignee'}
-            </Text>
+            {formTasks[activeTab]?.assignedTo ? (
+              <View className="flex-row items-center">
+                {(() => {
+                  const selectedUser = assigneeOptions.find(opt => opt.value === formTasks[activeTab]?.assignedTo);
+                  return (
+                    <>
+                      {selectedUser?.imageURL ? (
+                        <Image source={{ uri: selectedUser.imageURL }} className="w-8 h-8 rounded-full mr-2" />
+                      ) : (
+                        <Avatar 
+                          name={selectedUser?.firstName && selectedUser?.lastName 
+                            ? `${selectedUser.firstName} ${selectedUser.lastName}`
+                            : selectedUser?.label || 'User'} 
+                          size="sm"
+                          className="mr-2"
+                        />
+                      )}
+                      <Text className="text-base">
+                        {selectedUser?.label || 'Select Assignee'}
+                      </Text>
+                    </>
+                  );
+                })()}
+              </View>
+            ) : (
+              <Text className="text-base">Select Assignee</Text>
+            )}
             <MaterialIcons name={showAssigneeDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
           </Pressable>
           {showAssigneeDropdown && (
@@ -246,9 +282,20 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
                         setShowAssigneeDropdown(false);
                       }}
                     >
-                      <Text className={`text-base ${formTasks[activeTab]?.assignedTo === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>
-                        {user.label}
-                      </Text>
+                      <View className="flex-row items-center">
+                        {user.imageURL ? (
+                          <Image source={{ uri: user.imageURL }} className="w-8 h-8 rounded-full mr-2" />
+                        ) : (
+                          <Avatar 
+                            name={user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.label} 
+                            size="sm"
+                            className="mr-2"
+                          />
+                        )}
+                        <Text className={`text-base ${formTasks[activeTab]?.assignedTo === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>
+                          {user.label}
+                        </Text>
+                      </View>
                     </Pressable>
                   ))
                 )}
