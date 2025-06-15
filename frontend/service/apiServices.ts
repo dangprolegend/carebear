@@ -1,6 +1,6 @@
 import { Task as FrontendTaskType } from '../app/(protected)/dashboard/mydashboard/task';
 
-const API_BASE_URL = "https://8269-2402-800-61ae-d326-8cb2-2f2e-688-7f5f.ngrok-free.app";
+const API_BASE_URL = "https://4b42-2402-800-61ae-d326-5c64-a276-ac20-aadc.ngrok-free.app";
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
 
@@ -445,4 +445,44 @@ export const getUserRoleInGroup = async (userID: string): Promise<string> => {
     console.error("getUserRoleInGroup - Error fetching user role:", error);
     return 'member'; // Default fallback
   }
+};
+// Update task status (skip/complete)
+export const updateTaskStatus = async (taskID: string, status: 'pending' | 'in-progress' | 'done' | 'skipped'): Promise<FrontendTaskType> => {
+  const token = await getClerkToken();
+  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
+  
+  const url = `${API_BASE_URL}/api/tasks/${taskID}/status`;
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
+  });
+  
+  const updatedBackendTask: BackendTask = await handleApiResponse(response);
+  return mapBackendTaskToFrontend(updatedBackendTask);
+};
+
+// Complete task with completion method
+export const completeTaskWithMethod = async (taskID: string, method: 'manual' | 'photo' | 'input', notes?: string): Promise<FrontendTaskType> => {
+  const token = await getClerkToken();
+  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
+  
+  const url = `${API_BASE_URL}/api/tasks/${taskID}/complete`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ 
+      completionMethod: method,
+      notes: notes || ''
+    }),
+  });
+  
+  const updatedBackendTask: BackendTask = await handleApiResponse(response);
+  return mapBackendTaskToFrontend(updatedBackendTask);
 };
