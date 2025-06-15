@@ -346,6 +346,55 @@ export const getFamilyMembers = async (req: Request, res: Response): Promise<voi
   }
 };
 
+export const getCurrentUserFamilyRole = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userID } = req.params;
+    const { groupID: requestedGroupID } = req.query; 
+    
+    const user = await User.findById(userID).select('groupID additionalGroups');
+    if (!user || !user.groupID) {
+      res.status(404).json({ message: 'User or group not found' });
+      return;
+    }
+    
+    // Determine which group to use
+    let targetGroupID = user.groupID; 
+    
+    if (requestedGroupID) {
+      const userGroupIDs = [user.groupID.toString(), ...(user.additionalGroups || []).map((id: any) => id.toString())];
+      
+      if (userGroupIDs.includes(requestedGroupID as string)) {
+        targetGroupID = requestedGroupID as string;
+      } else {
+        res.status(403).json({ message: 'User does not have access to the requested group' });
+        return;
+      }
+    }
+
+    const group = await Group.findById(targetGroupID).select('members');
+    if (!group || !group.members) {
+      res.status(404).json({ message: 'Group not found or has no members' });
+      return;
+    }
+
+    // Find the current user's member info
+    const currentUserMember = group.members.find((member: any) => member.user.toString() === userID);
+    
+    if (!currentUserMember) {
+      res.status(404).json({ message: 'User is not a member of this group' });
+      return;
+    }
+
+    const userRole = {
+      role: currentUserMember.role,
+      groupID: targetGroupID,
+    };
+
+    res.status(200).json(userRole);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
 
 // Get dashboard metrics for a user
 // export const getUserMetrics = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {

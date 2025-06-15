@@ -19,6 +19,7 @@ import CareBear from '../../../../assets/icons/carebear.png';
 import BabyBear from '../../../../assets/icons/babybear.png';
 import BearBoss from '../../../../assets/icons/bearboss.png';
 import Invitation from '../../../../assets/icons/bear-letter.png';
+import Heart from '../../../../assets/icons/heart 2.png';
 import bear1 from '../../../../assets/images/Bear-1.png';
 import bear2 from '../../../../assets/images/Bear-2.png';
 import bear3 from '../../../../assets/images/Bear-3.png';
@@ -47,7 +48,6 @@ export default function Family() {
   const { isSignedIn, userId } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('Family 1');
-  const [modalVisible, setModalVisible] = useState(false);
 
   // Daily status modal states
   const [showDailyModal, setShowDailyModal] = useState(false);
@@ -376,31 +376,6 @@ export default function Family() {
     }
   };
 
-  // Function to add a new family
-  const handleAddFamily = (familyName: string) => {
-    // Generate a new id
-    const newId = (availableFamilies.length + 1).toString();
-    
-    // Create the new family
-    const newFamily = {
-      id: newId,
-      name: familyName
-    };
-    
-    // Add to families array
-    const updatedFamilies = [...availableFamilies, newFamily];
-    setAvailableFamilies(updatedFamilies);
-    
-    // Automatically switch to the new family tab
-    setActiveTab(newFamily.name);
-    
-    // Close modal
-    setModalVisible(false);
-    
-    // Show success message
-    Alert.alert('Success', `Family "${newFamily.name}" has been created`);
-  };
-
   const renderOptionButton = (
     option: { id: string; emoji: string; label: string; value: string },
     selectedValue: string,
@@ -467,24 +442,8 @@ const FamilyMemberCard = ({
           <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
             <Text className="text-xs">{getBodyEmoji(member.body || '')}</Text>
           </View>
-          {/* Additional icons */}
           <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Image source={PillIcon} className="w-3.5 h-3.5" />
-          </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Image source={PillBotte} className="w-3.5 h-3.5" />
-          </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Image source={Moon} className="w-3.5 h-3.5" />
-          </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Image source={Scale} className="w-3.5 h-3.5" />
-          </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Image source={Foot} className="w-3.5 h-3.5" />
-          </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Image source={Dumbbell} className="w-3.5 h-3.5" />
+            <Image source={Heart} className="w-3.5 h-3.5" />
           </View>
         </View>
       </View>
@@ -524,7 +483,6 @@ const FamilyMemberCard = ({
         {/* Family Management Header */}
         <View className="px-4 mt-8">
           <View className="flex-row justify-between items-center">
-            <Text className="text-sm font-medium text-gray-800">{availableFamilies.length} {availableFamilies.length === 1 ? 'Family' : 'Families'}</Text>
             <ScrollView 
               horizontal 
               showsHorizontalScrollIndicator={false} 
@@ -548,7 +506,6 @@ const FamilyMemberCard = ({
               ))}
               <Pressable 
                 className="px-3 py-2 active:opacity-70"
-                onPress={() => setModalVisible(true)}
               >
                 <Text className="text-sm text-[#AC6924]">Add Family</Text>
               </Pressable>
@@ -779,13 +736,6 @@ const FamilyMemberCard = ({
          </Modal>
         </View>
       </ScrollView>
- 
-      {/* Add Family Modal Component */}
-      <AddFamily
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        onAddFamily={handleAddFamily}
-      />
 
       {/* Daily Status Modal */}
       <Modal
