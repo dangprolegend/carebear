@@ -290,33 +290,55 @@ export const getUserInfo = async (req: Request, res: Response): Promise<void> =>
 export const getFamilyMembers = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userID } = req.params;
-
-    // Get the user's groupID
-    const user = await User.findById(userID).select('groupID');
+    const { groupID: requestedGroupID } = req.query; // optional query parameter
+    
+    const user = await User.findById(userID).select('groupID additionalGroups');
     if (!user || !user.groupID) {
       res.status(404).json({ message: 'User or group not found' });
       return;
     }
+    
+    // Determine which group to use
+    let targetGroupID = user.groupID; 
+    
+    if (requestedGroupID) {
+      const userGroupIDs = [user.groupID.toString(), ...(user.additionalGroups || []).map((id: any) => id.toString())];
+      
+      if (userGroupIDs.includes(requestedGroupID as string)) {
+        targetGroupID = requestedGroupID as string;
+      } else {
+        res.status(403).json({ message: 'User does not have access to the requested group' });
+        return;
+      }
+    }
 
-    // Get the group and its members array
-    const group = await Group.findById(user.groupID).select('members');
+    const group = await Group.findById(targetGroupID).select('members');
     if (!group || !group.members) {
       res.status(404).json({ message: 'Group not found or has no members' });
       return;
     }
 
-    // Collect userIDs of all members except the user themselves
-    const memberUserIDs = group.members
-      .map((member: any) => member.user.toString())
-      .filter((id: string) => id !== userID);
+    // Filter out the current user and collect member info with role and familial relation
+    const otherMembers = group.members.filter((member: any) => member.user.toString() !== userID);
+    const memberUserIDs = otherMembers.map((member: any) => member.user.toString());
+    const users = await User.find({ _id: { $in: memberUserIDs } }).select('firstName lastName imageURL');
 
-    // Fetch user info for each member
-    const members = await User.find({ _id: { $in: memberUserIDs } }).select('firstName lastName imageURL');
-    const familyMembers = members.map(member => ({
-      userID: member._id,
-      fullName: `${member.firstName || ''} ${member.lastName || ''}`.trim(),
-      imageURL: member.imageURL || null,
-    }));
+    const userMap = new Map();
+    users.forEach(user => {
+      userMap.set(user._id.toString(), user);
+    });
+
+    // Combine user info with role and familial relation from group members
+    const familyMembers = otherMembers.map((member: any) => {
+      const userInfo = userMap.get(member.user.toString());
+      return {
+        userID: member.user,
+        fullName: userInfo ? `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim() : '',
+        imageURL: userInfo?.imageURL || null,
+        role: member.role,
+        familialRelation: member.familialRelation || null,
+      };
+    });
 
     res.status(200).json(familyMembers);
   } catch (error: any) {
