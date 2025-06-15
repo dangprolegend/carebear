@@ -48,6 +48,8 @@ export default function Family() {
   const { isSignedIn, userId } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('Family 1');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [groupName, setGroupName] = useState<string>('Family 1');
 
   // Daily status modal states
   const [showDailyModal, setShowDailyModal] = useState(false);
@@ -58,6 +60,7 @@ export default function Family() {
   const [userID, setUserID] = useState(null);
   const [userImageURL, setUserImageURL] = useState<string | null>(null);
   const [userFullName, setUserFullName] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   // Daily status display states (store both value and emoji for user)
   const [todayMoodValue, setTodayMoodValue] = useState<string>('');
@@ -109,7 +112,7 @@ export default function Family() {
 
   // Available families 
   const [availableFamilies, setAvailableFamilies] = useState<Family[]>([
-    { id: '1', name: 'Family 1' },
+    { id: '1', name: groupName },
   ]);
 
   const moods = [
@@ -143,6 +146,20 @@ export default function Family() {
     return body ? body.emoji : '';
   };
 
+   const getRoleDisplayName = (role: string): string => {
+      switch (role) {
+        case 'caregiver':
+          return 'CareBear';
+        case 'carereceiver':
+          return 'BabyBear';
+        case 'admin':
+          return 'BearBoss';
+        default:
+          return role;
+      }
+    };
+
+
   // Fetch today's daily status
   const fetchTodayStatus = async (userID: string) => {
     try {
@@ -167,6 +184,16 @@ export default function Family() {
     }
   };
 
+  const fetchUserRole = async (userID: string) => {
+   try {
+     const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/role`);
+     setUserRole(response.data.role);
+   } catch (error) {
+     console.error('Error fetching user role:', error);
+     setUserRole(null);
+   }
+ };
+
   // Fetch family member's daily status
   const fetchMemberStatus = async (memberUserID: string) => {
     try {
@@ -188,6 +215,23 @@ export default function Family() {
       return { mood: '', body: '' };
     }
   };
+
+  const fetchAdminStatus = async (userID: string) => {
+   try {
+     const group = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/group`);
+     const groupID = group.data.groupID;
+     const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/groups/${groupID}/admin-status`);
+     setIsAdmin(response.data.isAdmin);
+     setGroupName(response.data.groupName);
+     
+     setAvailableFamilies([{ id: '1', name: response.data.groupName }]);
+     setActiveTab(response.data.groupName);
+   } catch (error) {
+     console.error('Error fetching admin status:', error);
+     setIsAdmin(false);
+   }
+ };
+
 
   // Fetch family members
   const fetchFamilyMembers = async (userID: string) => {
@@ -236,6 +280,11 @@ export default function Family() {
 
  // Handle sending invitation
  const handleSendInvitation = async () => {
+  if (!isAdmin) {
+     Alert.alert('Permission Denied', 'You have to be a BearBoss in order to send the invite.');
+     return;
+   }
+   
    if (!memberRelation.trim() || !memberEmail.trim()) {
      Alert.alert('Missing Information', 'Please fill in both relation and email fields.');
      return;
@@ -325,7 +374,8 @@ export default function Family() {
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
           
-          // Fetch family members after getting user info
+          await fetchUserRole(userID);
+          await fetchAdminStatus(userID);
           await fetchFamilyMembers(userID);
         } catch (err) {
           console.error('Failed to fetch user info:', err);
@@ -428,14 +478,26 @@ const FamilyMemberCard = ({
           <Text className="text-[#222] font-lato text-base font-extrabold leading-6 tracking-[0.3px]">
             {member.fullName}
           </Text>
-          {isCurrentUser && (
-            <Text className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]">
-              Me
-            </Text>
-          )}
+          {isCurrentUser ? (
+           <Text className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]">
+             Me
+           </Text>
+         ) : (
+           member.familialRelation && (
+             <Text className="overflow-hidden text-[#2A1800] truncate font-lato text-base font-normal leading-6 tracking-[-0.1px]">
+               {member.familialRelation}
+             </Text>
+           )
+         )}
         </View>
         
         <View className="flex flex-row items-center gap-2">
+          {((isCurrentUser && userRole) || (!isCurrentUser && member.role)) && (
+           <Text className="overflow-hidden text-[#2A1800] truncate font-lato text-base font-normal leading-6 tracking-[-0.1px] mr-1">
+             {isCurrentUser ? getRoleDisplayName(userRole) : getRoleDisplayName(member.role)}
+           </Text>
+         )}
+
           <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
             <Text className="text-xs">{getMoodEmoji(member.mood || '')}</Text>
           </View>
@@ -473,7 +535,9 @@ const FamilyMemberCard = ({
                 fullName: userFullName || '',
                 imageURL: userImageURL || '',
                 mood: todayMoodValue,
-                body: todayBodyValue
+                body: todayBodyValue,
+                role: userRole || '',
+                familialRelation: null
               }}
               isCurrentUser={true}
             />
