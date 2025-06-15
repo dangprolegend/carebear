@@ -1,6 +1,7 @@
 //@ts-nocheck
 import { View, Text, Pressable, ScrollView, Alert, ActivityIndicator, TouchableOpacity, Modal, Image, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from 'expo-router';
 import { useEffect, useState, useRef } from 'react';
 import AddFamily from './add_family';
@@ -542,263 +543,265 @@ const FamilyMemberCard = ({
               isCurrentUser={true}
             />
           </View>
-        </View>
-
-        {/* Family Management Header */}
-        <View className="px-4 mt-8">
-          <View className="flex-row justify-between items-center">
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false} 
-              contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end' }}
-            >
-              {availableFamilies.map((family) => (
-                <Pressable 
-                  key={family.id}
-                  className="px-4 py-2 active:opacity-80 relative"
-                  onPress={() => setActiveTab(family.name)}
-                >
-                  <Text 
-                    className={`text-sm font-medium ${activeTab === family.name ? 'text-[#1A0933]' : 'text-gray-500'}`}
-                  >
-                    {family.name}
-                  </Text>
-                  {activeTab === family.name && (
-                    <View className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A0933]" />
-                  )}
-                </Pressable>
-              ))}
-              <Pressable 
-                className="px-3 py-2 active:opacity-70"
+            <View className="px-4 mt-8 flex-row justify-between items-center">
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                className="flex-1"
               >
-                <Text className="text-sm text-[#AC6924]">Add Family</Text>
-              </Pressable>
-            </ScrollView>
-          </View>
-          {/* Family Members Cards */}
-        {isLoadingFamily ? (
-          <View className="flex-1 justify-center items-center py-8">
-            <ActivityIndicator size="large" color="#2A1800" />
-            <Text className="mt-4 text-gray-600">Loading family members...</Text>
-          </View>
-        ) : (
-          familyMembers.map((member) => (
-            <FamilyMemberCard 
-              key={member.userID}
-              member={member}
-              isCurrentUser={false}
-            />
-          ))
-        )}
-
-        {/* Add Member Card */}
-          <View className='flex flex-col mx-4 mt-4'>
-            <View className='flex flex-row p-4 items-center gap-4 rounded-lg border border-[#2A1800]'>
-              <View className='flex w-10 h-10 p-[2px] pb-[1px] justify-center items-center gap-2 aspect-square rounded-full border border-[#2A1800] bg-[#623405]'>
-                <Image source={UserIcon} className="w-6 h-6" />
-              </View>
-              
-              {!showAddMemberDropdown ? (
-                <>
-                  <Text className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px] flex-1">
-                    Add new member
-                  </Text>
-                  <Pressable 
-                    className='flex w-8 h-8 p-[6px] justify-center items-center rounded-full bg-[#2A1800] ml-auto'
-                    onPress={() => {
-                      setShowAddMemberDropdown(true);
-                      if (savedMemberData) {
-                        setMemberRelation(savedMemberData.memberRelation);
-                        setSelectedRole(savedMemberData.selectedRole);
-                        setMemberEmail(savedMemberData.memberEmail);
-                      }
-                    }}
+                {availableFamilies.map((family) => (
+                  <Pressable
+                    key={family.id}
+                    className="px-4 py-2 active:opacity-80 relative mr-4"
+                    onPress={() => setActiveTab(family.name)}
                   >
-                    <Image source={Plus} className="w-4 h-4" />
-                  </Pressable>
-                </>
-              ) : (
-                <>
-                  <View className="flex flex-row items-center gap-2">
-                    <Text className="text-[#222] font-lato text-base font-extrabold leading-6 tracking-[0.3px]">
-                      Member's Name
+                    <Text
+                      className={`text-sm font-medium ${activeTab === family.name ? 'text-[#1A0933]' : 'text-gray-500'}`}
+                    >
+                      {family.name}
                     </Text>
-                      <Text className='text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]'>
-                        Relation
-                      </Text>
-                  </View>
-                  <Pressable 
-                    className='flex w-8 h-8 p-[6px] justify-center items-center rounded-full bg-[#2A1800] ml-auto'
-                    onPress={() => {
-                      setShowAddMemberDropdown(false);
-                      setMemberName('');
-                      setMemberRelation('');
-                      setMemberEmail('');
-                      setSelectedRole('CareBear');
-                    }}
-                  >
-                    <Image source={UserPen} className="w-4 h-4" />
+                    {activeTab === family.name && (
+                      <View className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A0933]" />
+                    )}
                   </Pressable>
-                </>
-              )}
+                ))}
+              </ScrollView>
+              
+              <Pressable
+                onPress={() => {router.push('/(protected)/dashboard/family/create-family')}}
+                className="ml-4"
+              >
+                <AntDesign name="pluscircleo" size={24} color="black" />
+              </Pressable>
             </View>
+          {/* Family Management Header */}
+        </View>
+          <View className="px-4">
+            {/* Family Members Cards */}
+          {isLoadingFamily ? (
+            <View className="flex-1 justify-center items-center py-8">
+              <ActivityIndicator size="large" color="#2A1800" />
+              <Text className="mt-4 text-gray-600">Loading family members...</Text>
+            </View>
+          ) : (
+            familyMembers.map((member) => (
+              <FamilyMemberCard 
+                key={member.userID}
+                member={member}
+                isCurrentUser={false}
+              />
+            ))
+          )}
 
-            {/* Dropdown Content */}
-            {showAddMemberDropdown && (
-              <View className="bg-white border-l border-r border-b border-[#2A1800] rounded-b-lg p-6 -mt-1">
-                {/* Default Relationship */}
+          {/* Add Member Card */}
+            <View className='flex flex-col mx-4 mt-4'>
+              <View className='flex flex-row p-4 items-center gap-4 rounded-lg border border-[#2A1800]'>
+                <View className='flex w-10 h-10 p-[2px] pb-[1px] justify-center items-center gap-2 aspect-square rounded-full border border-[#2A1800] bg-[#623405]'>
+                  <Image source={UserIcon} className="w-6 h-6" />
+                </View>
+                
+                {!showAddMemberDropdown ? (
+                  <>
+                    <Text className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px] flex-1">
+                      Add new member
+                    </Text>
+                    <Pressable 
+                      className='flex w-8 h-8 p-[6px] justify-center items-center rounded-full bg-[#2A1800] ml-auto'
+                      onPress={() => {
+                        setShowAddMemberDropdown(true);
+                        if (savedMemberData) {
+                          setMemberRelation(savedMemberData.memberRelation);
+                          setSelectedRole(savedMemberData.selectedRole);
+                          setMemberEmail(savedMemberData.memberEmail);
+                        }
+                      }}
+                    >
+                      <Image source={Plus} className="w-4 h-4" />
+                    </Pressable>
+                  </>
+                ) : (
+                  <>
+                    <View className="flex flex-row items-center gap-2">
+                      <Text className="text-[#222] font-lato text-base font-extrabold leading-6 tracking-[0.3px]">
+                        Member's Name
+                      </Text>
+                        <Text className='text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]'>
+                          Relation
+                        </Text>
+                    </View>
+                    <Pressable 
+                      className='flex w-8 h-8 p-[6px] justify-center items-center rounded-full bg-[#2A1800] ml-auto'
+                      onPress={() => {
+                        setShowAddMemberDropdown(false);
+                        setMemberName('');
+                        setMemberRelation('');
+                        setMemberEmail('');
+                        setSelectedRole('CareBear');
+                      }}
+                    >
+                      <Image source={UserPen} className="w-4 h-4" />
+                    </Pressable>
+                  </>
+                )}
+              </View>
+
+              {/* Dropdown Content */}
+              {showAddMemberDropdown && (
+                <View className="bg-white border-l border-r border-b border-[#2A1800] rounded-b-lg p-6 -mt-1">
+                  {/* Default Relationship */}
+                    <View className="mb-6">
+                      <Text className="text-[#222] font-lato text-lg font-semibold mb-3">Default Relationship</Text>
+                      <TextInput
+                        className="border border-[#FAE5CA] rounded-lg p-3 text-[#222] font-lato text-base"
+                        placeholder="Ex: Mother, Grandfather, Daughter"
+                        placeholderTextColor="#888"
+                        value={memberRelation}
+                        onChangeText={setMemberRelation}
+                        keyboardType="default"
+                        autoCapitalize="words"
+                      />
+                    </View>
+
+                  {/* Bear Role */}
                   <View className="mb-6">
-                    <Text className="text-[#222] font-lato text-lg font-semibold mb-3">Default Relationship</Text>
+                    <Text className="text-[#222] font-lato text-lg font-semibold mb-4">Bear Role</Text>
+                    
+                    {/* CareBear Option */}
+                    <Pressable 
+                      className={`p-4 rounded-lg bg-[#E1F0FF] border-2 mb-3 flex-row items-center gap-3 ${
+                        selectedRole === 'CareBear' ? 'border-[#2A1800]' : 'border-white'
+                      }`}
+                      onPress={() => setSelectedRole('CareBear')}
+                    >
+                      <View className="w-14 h-14 rounded-full flex items-center justify-center">
+                        <Image source={CareBear} className="w-12 h-12 rounded-full" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-[#222] font-lato text-lg font-semibold">CareBear</Text>
+                        <Text className="text-[#666] font-lato text-sm">Care giver & receiver</Text>
+                      </View>
+                    </Pressable>
+
+                    {/* BabyBear Option */}
+                    <Pressable 
+                      className={`p-4 rounded-lg bg-[#FAE5CA] border-2 mb-3 flex-row items-center gap-3 ${
+                        selectedRole === 'BabyBear' ? 'border-[#2A1800]' : 'border-white'
+                      }`}
+                      onPress={() => setSelectedRole('BabyBear')}
+                    >
+                      <View className="w-14 h-14 rounded-full flex items-center justify-center">
+                        <Image source={BabyBear} className="w-12 h-12 rounded-full" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-[#222] font-lato text-lg font-semibold">BabyBear</Text>
+                        <Text className="text-[#666] font-lato text-sm">Care receiver</Text>
+                      </View>
+                    </Pressable>
+
+                    {/* BearBoss Option */}
+                    <Pressable 
+                      className={`p-4 rounded-lg bg-[#E1F0FF] border-2 mb-3 flex-row items-center gap-3 ${
+                        selectedRole === 'BearBoss' ? 'border-[#2A1800]' : 'border-white'
+                      }`}
+                      onPress={() => setSelectedRole('BearBoss')}
+                    >
+                      <View className="w-14 h-14 rounded-full flex items-center justify-center">
+                        <Image source={BearBoss} className="w-12 h-12 rounded-full" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-[#222] font-lato text-lg font-semibold">BearBoss</Text>
+                        <Text className="text-[#666] font-lato text-sm">Admin</Text>
+                      </View>
+                    </Pressable>
+                  </View>
+
+                  {/* Email Input */}
+                  <View className="mb-6">
+                    <Text className="text-[#222] font-lato text-lg font-semibold mb-3">
+                      Email<Text className="text-red-500">*</Text>
+                    </Text>
                     <TextInput
                       className="border border-[#FAE5CA] rounded-lg p-3 text-[#222] font-lato text-base"
-                      placeholder="Ex: Mother, Grandfather, Daughter"
+                      placeholder="abc@gmail.com"
                       placeholderTextColor="#888"
-                      value={memberRelation}
-                      onChangeText={setMemberRelation}
-                      keyboardType="default"
-                      autoCapitalize="words"
+                      value={memberEmail}
+                      onChangeText={setMemberEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
                     />
                   </View>
 
-                {/* Bear Role */}
-                <View className="mb-6">
-                  <Text className="text-[#222] font-lato text-lg font-semibold mb-4">Bear Role</Text>
-                  
-                  {/* CareBear Option */}
-                  <Pressable 
-                    className={`p-4 rounded-lg bg-[#E1F0FF] border-2 mb-3 flex-row items-center gap-3 ${
-                      selectedRole === 'CareBear' ? 'border-[#2A1800]' : 'border-white'
-                    }`}
-                    onPress={() => setSelectedRole('CareBear')}
-                  >
-                    <View className="w-14 h-14 rounded-full flex items-center justify-center">
-                      <Image source={CareBear} className="w-12 h-12 rounded-full" />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-[#222] font-lato text-lg font-semibold">CareBear</Text>
-                      <Text className="text-[#666] font-lato text-sm">Care giver & receiver</Text>
-                    </View>
-                  </Pressable>
+                  {/* Display Save Status */}
+                {isDataSaved && (
+                  <View className="mb-6 p-3 bg-green-50 rounded-lg border border-green-200">
+                    <Text className="text-green-700 font-lato text-sm text-center">
+                      ✓ Information saved! You can now send the invitation.
+                    </Text>
+                  </View>
+                )}
 
-                  {/* BabyBear Option */}
-                  <Pressable 
-                    className={`p-4 rounded-lg bg-[#FAE5CA] border-2 mb-3 flex-row items-center gap-3 ${
-                      selectedRole === 'BabyBear' ? 'border-[#2A1800]' : 'border-white'
+                  {/* Action Buttons */}
+                  <View className="flex-row gap-3 mt-8 mb-6">
+                    <Pressable 
+                      className="flex-1 py-3 px-6 rounded-full border border-[#FAE5CA] bg-white flex items-center justify-center"
+                      onPress={handleSaveMember}
+                    >
+                      <Text className={`font-lato text-base font-medium ${
+                      isDataSaved ? 'text-green-700' : 'text-[#666]'
+                    }`}>
+                      {isDataSaved ? '✓ Saved' : 'Save'}
+                    </Text>
+                    </Pressable>
+                    
+                    <Pressable
+                    className={`flex-1 py-3 px-6 rounded-full flex items-center justify-center ${
+                      isSendingInvitation ? 'bg-gray-400' : 'bg-[#2A1800]'
                     }`}
-                    onPress={() => setSelectedRole('BabyBear')}
+                    onPress={handleSendInvitation}
+                    disabled={isSendingInvitation}
                   >
-                    <View className="w-14 h-14 rounded-full flex items-center justify-center">
-                      <Image source={BabyBear} className="w-12 h-12 rounded-full" />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-[#222] font-lato text-lg font-semibold">BabyBear</Text>
-                      <Text className="text-[#666] font-lato text-sm">Care receiver</Text>
-                    </View>
+                    {isSendingInvitation ? (
+                      <ActivityIndicator size="small" color="white" />
+                    ) : (
+                      <Text className="text-white font-lato text-base font-medium">Send Invitation</Text>
+                    )}
                   </Pressable>
-
-                  {/* BearBoss Option */}
-                  <Pressable 
-                    className={`p-4 rounded-lg bg-[#E1F0FF] border-2 mb-3 flex-row items-center gap-3 ${
-                      selectedRole === 'BearBoss' ? 'border-[#2A1800]' : 'border-white'
-                    }`}
-                    onPress={() => setSelectedRole('BearBoss')}
-                  >
-                    <View className="w-14 h-14 rounded-full flex items-center justify-center">
-                      <Image source={BearBoss} className="w-12 h-12 rounded-full" />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-[#222] font-lato text-lg font-semibold">BearBoss</Text>
-                      <Text className="text-[#666] font-lato text-sm">Admin</Text>
-                    </View>
-                  </Pressable>
+                  </View>
                 </View>
+              )}
+            </View>
 
-                {/* Email Input */}
-                <View className="mb-6">
-                  <Text className="text-[#222] font-lato text-lg font-semibold mb-3">
-                    Email<Text className="text-red-500">*</Text>
+            {/* Success Modal */}
+          <Modal
+            visible={showSuccessModal}
+            transparent={true}
+            animationType="fade"
+          >
+            <View className="flex-1 justify-center items-center bg-black/50">
+              <View className="bg-white rounded-lg p-6 mx-4 w-80">
+                <View className="items-center">
+                  <Text className="text-[#222] font-lato text-xl font-semibold text-center">
+                    Invitation Sent Successfully!
                   </Text>
-                  <TextInput
-                    className="border border-[#FAE5CA] rounded-lg p-3 text-[#222] font-lato text-base"
-                    placeholder="abc@gmail.com"
-                    placeholderTextColor="#888"
-                    value={memberEmail}
-                    onChangeText={setMemberEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
+                  <Text className="text-[#666] font-lato text-base text-center mt-4">
+                    The invitation has been sent to the provided email address.
+                  </Text>
+                    <Image source={bearInvitation[currentImageIndex]} 
+                      style={{ width: 160, height: 120 }}
+                      resizeMode="contain"
+                      className="mb-4" />
                 </View>
-
-                {/* Display Save Status */}
-               {isDataSaved && (
-                 <View className="mb-6 p-3 bg-green-50 rounded-lg border border-green-200">
-                   <Text className="text-green-700 font-lato text-sm text-center">
-                     ✓ Information saved! You can now send the invitation.
-                   </Text>
-                 </View>
-               )}
-
-                {/* Action Buttons */}
-                <View className="flex-row gap-3 mt-8 mb-6">
-                  <Pressable 
-                    className="flex-1 py-3 px-6 rounded-full border border-[#FAE5CA] bg-white flex items-center justify-center"
-                    onPress={handleSaveMember}
-                  >
-                    <Text className={`font-lato text-base font-medium ${
-                     isDataSaved ? 'text-green-700' : 'text-[#666]'
-                   }`}>
-                     {isDataSaved ? '✓ Saved' : 'Save'}
-                   </Text>
-                  </Pressable>
-                  
-                  <Pressable
-                   className={`flex-1 py-3 px-6 rounded-full flex items-center justify-center ${
-                     isSendingInvitation ? 'bg-gray-400' : 'bg-[#2A1800]'
-                   }`}
-                   onPress={handleSendInvitation}
-                   disabled={isSendingInvitation}
-                 >
-                   {isSendingInvitation ? (
-                     <ActivityIndicator size="small" color="white" />
-                   ) : (
-                     <Text className="text-white font-lato text-base font-medium">Send Invitation</Text>
-                   )}
-                 </Pressable>
-                </View>
+                <Pressable
+                  className="bg-[#2A1800] py-3 px-6 rounded-full flex items-center justify-center"
+                  onPress={closeSuccessModal}
+                >
+                  <Text className="text-white font-lato text-base font-medium">OK</Text>
+                </Pressable>
               </View>
-            )}
+            </View>
+          </Modal>
           </View>
 
-          {/* Success Modal */}
-         <Modal
-           visible={showSuccessModal}
-           transparent={true}
-           animationType="fade"
-         >
-           <View className="flex-1 justify-center items-center bg-black/50">
-             <View className="bg-white rounded-lg p-6 mx-4 w-80">
-               <View className="items-center">
-                 <Text className="text-[#222] font-lato text-xl font-semibold text-center">
-                   Invitation Sent Successfully!
-                 </Text>
-                 <Text className="text-[#666] font-lato text-base text-center mt-4">
-                   The invitation has been sent to the provided email address.
-                 </Text>
-                  <Image source={bearInvitation[currentImageIndex]} 
-                    style={{ width: 160, height: 120 }}
-                    resizeMode="contain"
-                    className="mb-4" />
-               </View>
-               <Pressable
-                 className="bg-[#2A1800] py-3 px-6 rounded-full flex items-center justify-center"
-                 onPress={closeSuccessModal}
-               >
-                 <Text className="text-white font-lato text-base font-medium">OK</Text>
-               </Pressable>
-             </View>
-           </View>
-         </Modal>
-        </View>
       </ScrollView>
 
       {/* Daily Status Modal */}
