@@ -1,6 +1,77 @@
 import { Task as FrontendTaskType } from '../app/(protected)/dashboard/mydashboard/task';
 
-const API_BASE_URL = "https://dd41-2402-800-61ae-d326-5c64-a276-ac20-aadc.ngrok-free.app";
+
+// Throttling mechanism to prevent rate limiting
+const requestThrottles: Record<string, { lastRequest: number; pendingPromise: Promise<any> | null }> = {};
+
+/**
+ * Throttles API requests to the same endpoint to prevent rate limiting
+ * @param key A unique key for the endpoint/request type
+ * @param minInterval Minimum time between requests in milliseconds (default: 1000ms)
+ * @param requestFn The function that makes the actual API request
+ */
+const throttleRequest = async <T>(
+  key: string, 
+  requestFn: () => Promise<T>, 
+  minInterval: number = 1000
+): Promise<T> => {
+  const now = Date.now();
+  const throttleData = requestThrottles[key] || { lastRequest: 0, pendingPromise: null };
+  
+  // If there's already a pending request for this key, return its promise
+  if (throttleData.pendingPromise) {
+    return throttleData.pendingPromise;
+  }
+
+  // Calculate time since last request
+  const timeSinceLastRequest = now - throttleData.lastRequest;
+  
+  // If we need to wait, set a delay
+  const timeToWait = Math.max(0, minInterval - timeSinceLastRequest);
+  
+  let resolvePromise: (value: T) => void;
+  let rejectPromise: (reason: any) => void;
+  
+  // Create a new promise that will be resolved after the request completes
+  const promise = new Promise<T>((resolve, reject) => {
+    resolvePromise = resolve;
+    rejectPromise = reject;
+  });
+  
+  // Store the promise in the throttle data
+  requestThrottles[key] = { 
+    lastRequest: now + timeToWait, 
+    pendingPromise: promise 
+  };
+
+  try {
+    // Wait if needed before making the request
+    if (timeToWait > 0) {
+      await new Promise(resolve => setTimeout(resolve, timeToWait));
+    }
+    
+    // Make the actual request
+    const result = await requestFn();
+    resolvePromise!(result);
+    return result;
+  } catch (error) {
+    // Handle rate limiting errors by adding additional delay for subsequent requests
+    if (error instanceof ApiError && error.isRateLimitError && error.retryAfter) {
+      const retryTime = error.retryAfter * 1000; // Convert to milliseconds
+      console.log(`Rate limited. Setting next request to wait at least ${retryTime/1000}s`);
+      requestThrottles[key].lastRequest = now + retryTime;
+    }
+    
+    rejectPromise!(error);
+    throw error;
+  } finally {
+    // Clear the pending promise
+    requestThrottles[key].pendingPromise = null;
+  }
+};
+
+const API_BASE_URL = "https://4b42-2402-800-61ae-d326-5c64-a276-ac20-aadc.ngrok-free.app";
+
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
 
@@ -55,11 +126,29 @@ interface AiGenerateTasksResponse {
 class ApiError extends Error {
   status?: number;
   data?: any;
+  retryAfter?: number;
+  isRateLimitError: boolean;
+  
   constructor(message: string, status?: number, data?: any) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.data = data;
+    this.isRateLimitError = status === 429;
+    
+    // Extract retry-after information if it exists
+    if (status === 429) {
+      if (data && data.retryAfter) {
+        this.retryAfter = data.retryAfter;
+      } else if (data && data.errors && data.errors[0] && data.errors[0].code === "too_many_requests") {
+        // Try to parse retry time from error message
+        const message = data.errors[0].message;
+        const retryMatch = message.match(/try again in (\d+)/i);
+        if (retryMatch && retryMatch[1]) {
+          this.retryAfter = parseInt(retryMatch[1], 10);
+        }
+      }
+    }
   }
 }
 
@@ -74,8 +163,35 @@ const handleApiResponse = async (response: Response) => {
 
   if (!response.ok) {
     const errorMessage = responseData?.error || responseData?.message || responseData || `HTTP error ${response.status}`;
-    console.error(`API Error (${response.status}):`, errorMessage, "Response Data:", responseData);
-    throw new ApiError(errorMessage, response.status, responseData);
+    
+    // Special handling for rate limit errors (429)
+    if (response.status === 429) {
+      console.error(`Rate limit exceeded (429): ${errorMessage}`);
+      
+      // Get retry-after header if available
+      const retryAfter = response.headers.get('retry-after') || responseData?.retryAfter;
+      if (retryAfter) {
+        console.log(`Retry after ${retryAfter} seconds`);
+      }
+      
+      // Format a more user-friendly message
+      let userMessage = "Too many requests. Please try again later.";
+      if (retryAfter) {
+        const seconds = parseInt(retryAfter, 10);
+        if (seconds < 60) {
+          userMessage = `Too many requests. Please try again in ${seconds} seconds.`;
+        } else if (seconds < 3600) {
+          userMessage = `Too many requests. Please try again in ${Math.ceil(seconds / 60)} minutes.`;
+        } else {
+          userMessage = `Too many requests. Please try again in ${Math.ceil(seconds / 3600)} hours.`;
+        }
+      }
+      
+      throw new ApiError(userMessage, response.status, responseData);
+    } else {
+      console.error(`API Error (${response.status}):`, errorMessage, "Response Data:", responseData);
+      throw new ApiError(errorMessage, response.status, responseData);
+    }
   }
   return responseData;
 };
@@ -139,45 +255,71 @@ export const getCurrentUserID = () => currentUserID;
 export const getCurrentGroupID = () => currentGroupID;
 
 export const getBackendUserID = async (clerkID: string): Promise<string> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/users/clerk/${clerkID}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-    });
+  return throttleRequest(`getBackendUserID:${clerkID}`, async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/clerk/${clerkID}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch backend user ID: ${response.statusText}`);
+      if (!response.ok) {
+        if (response.status === 429) {
+          const data = await response.json();
+          throw new ApiError(
+            "Rate limit exceeded when retrieving user ID. Please try again later.",
+            429,
+            data
+          );
+        }
+        throw new Error(`Failed to fetch backend user ID: ${response.statusText}`);
+      }
+
+      const user = await response.json();
+      return user.userID;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      console.error("Error fetching backend user ID:", error);
+      throw new Error("Unable to retrieve backend user ID");
     }
-
-    const user = await response.json();
-    return user.userID;
-  } catch (error) {
-    console.error("Error fetching backend user ID:", error);
-    throw new Error("Unable to retrieve backend user ID");
-  }
+  }, 2000); // Set a 2-second minimum interval between these requests
 };
 
 export const getGroupID = async (userID: string): Promise<string> => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/users/${userID}/group`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+  return throttleRequest(`getGroupID:${userID}`, async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/users/${userID}/group`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch group for user: ${response.statusText}`);
+      if (!response.ok) {
+        if (response.status === 429) {
+          const data = await response.json();
+          throw new ApiError(
+            "Rate limit exceeded when retrieving group ID. Please try again later.",
+            429,
+            data
+          );
+        }
+        throw new Error(`Failed to fetch group for user: ${response.statusText}`);
+      }
+
+      const group = await response.json();
+      return group._id || group.id;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+      console.error("Error fetching group ID:", error);
+      throw new Error("Unable to retrieve group ID");
     }
-
-    const group = await response.json();
-    return group._id || group.id;
-  } catch (error) {
-    console.error("Error fetching group ID:", error);
-    throw new Error("Unable to retrieve group ID");
-  }
+  }, 2000); // Set a 2-second minimum interval between these requests
 };
 
 export const fetchTasksForDashboard = async (groupID: string): Promise<FrontendTaskType[]> => {

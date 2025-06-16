@@ -47,21 +47,35 @@ import {
       resolver: zodResolver(signInSchema),
     });
   
-    console.log('Errors: ', JSON.stringify(errors, null, 2));
+    console.log('Sign-in screen rendering, form errors: ', JSON.stringify(errors, null, 2));
   
     const { signIn, isLoaded, setActive } = useSignIn();
+    console.log('Sign-in hooks - isLoaded:', isLoaded);
   
     const onSignIn = async (data: SignInFields) => {
-      if (!isLoaded) return;
-  
+      console.log('Sign-in attempt starting with email:', data.email);
+      
+      if (!isLoaded) {
+        console.log('Sign-in hooks not loaded yet');
+        return;
+      }
+      
       try {
+        console.log('Creating sign-in attempt...');
         const signInAttempt = await signIn.create({
           identifier: data.email,
           password: data.password,
         });
-  
+
+        console.log('Sign-in attempt result:', JSON.stringify(signInAttempt, null, 2));
+
         if (signInAttempt.status === 'complete') {
-          setActive({ session: signInAttempt.createdSessionId });
+          console.log('Sign-in complete, setting active session with ID:', signInAttempt.createdSessionId);
+          await setActive({ session: signInAttempt.createdSessionId });
+          
+          console.log('Session activated, redirecting to root');
+          // Explicit navigation to the home route after authentication
+          router.replace('/');
         } else {
           console.log('Sign in failed');
           setError('root', { message: 'Sign in could not be completed' });
@@ -149,7 +163,7 @@ import {
                   <Text className='text-black font-lato text-base font-light leading-6 tracking-[-0.1px]'>
                     Don't have an account? 
                   </Text>
-                  <TouchableOpacity onPress={() => router.push('/sign-up')}>
+                  <TouchableOpacity onPress={() => router.replace('/sign-up')}>
                     <Text className='text-[#0F172A] font-lato text-base font-extrabold leading-6 tracking-[-0.1px]'>
                       Sign Up
                     </Text>
