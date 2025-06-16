@@ -310,7 +310,7 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
                       key={index}
                       className="border rounded-lg p-4 mb-4"
                       style={{
-                        borderWidth: 1,
+                        borderWidth: 1.5,
                         borderColor: '#2A1800',
                         borderRadius: 12,
                         backgroundColor: '#FFFFFF'
@@ -325,28 +325,57 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
                             color="#623405"
                           />
                           <Text 
-                            className="text-lg font-bold text-[#2A1800]"
+                            className="text-[#2A1800]"
+                            style={{
+                              fontFamily: 'Lato',
+                              fontSize: 16,
+                              fontWeight: '900',
+                              lineHeight: 24,
+                              letterSpacing: 0.3,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis'
+                            }}
+                            numberOfLines={1}
                           >
                             {task.title}
                           </Text>
                         </View>
                         <MaterialIcons
                           name="flag"
-                          size={16}
+                          size={20}
                           color={getPriorityColor(task.priority as any)}
                         />
                       </View>
 
                       {/* Task Description */}
                       <Text 
-                        className="text-sm text-[#666] mb-3 pl-6"
+                        className="text-[#2A1800] mb-3 pl-2"
+                        style={{
+                          fontFamily: 'Lato',
+                          fontSize: 14,
+                          fontWeight: '300',
+                          lineHeight: 24,
+                          letterSpacing: -0.1,
+                          overflow: 'hidden'
+                        }}
+                        numberOfLines={2}
                       >
-                        {task.detail || task.description || ''}
+                        {task.description}
                       </Text>
 
-                      {/* Assigned By */}
-                      <View className="flex-row items-center mb-4 pl-6">
-                        <Text className="text-xs text-[#666] mr-1">
+                      {/* Assigned By - with updated typography */}
+                      <View className="flex-row items-center mb-4 pl-2">
+                        <Text 
+                          className="mr-1"
+                          style={{
+                            color: '#000',
+                            fontFamily: 'Lato',
+                            fontSize: 14,
+                            fontWeight: '300',
+                            lineHeight: 24,
+                            letterSpacing: -0.1
+                          }}
+                        >
                           Assigned by
                         </Text>
                         <Image
