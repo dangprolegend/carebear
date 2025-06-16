@@ -12,7 +12,7 @@ interface GroupBody {
 }
 
 interface GroupParams {
-  id: string;
+  groupID: string;
 }
 
 interface CreateGroupBody extends GroupBody {
