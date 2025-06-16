@@ -22,34 +22,53 @@ interface CreateGroupBody extends GroupBody {
 // Create a new group
 export const createGroup = async (req: TypedRequest<{ name: string; userID: string }>, res: Response): Promise<void> => {
   try {
-    const { userID } = req.params
+    const { userID } = req.params;
     const { name } = req.body;
-
+    
+    // Find the user first to check if they already have a primary group
+    const user = await User.findById(userID);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    
     // Create the group with the user as the admin
     const newGroup = new Group({
       name,
       numberOfMembers: 1,
       members: [{ user: userID, role: 'admin' }],
     });
-
+    
     const savedGroup = await newGroup.save();
-
-    // Update the user's groupID
-    const updatedUser = await User.findByIdAndUpdate(
-      userID,
-      { $set: { groupID: savedGroup._id } },
-      { new: true, runValidators: true }
-    );
-
+    
+    let updatedUser;
+    
+    // If user doesn't have a primary group, set this as their primary group
+    if (!user.groupID) {
+      updatedUser = await User.findByIdAndUpdate(
+        userID,
+        { $set: { groupID: savedGroup._id } },
+        { new: true, runValidators: true }
+      );
+    } else {
+      // User already has a primary group, add this to additionalGroups
+      updatedUser = await User.findByIdAndUpdate(
+        userID,
+        { $push: { additionalGroups: { groupID: savedGroup._id } } },
+        { new: true, runValidators: true }
+      );
+    }
+    
     if (!updatedUser) {
       res.status(404).json({ message: 'User not found' });
       return;
     }
-
+    
     res.status(201).json({
       message: 'Group created successfully',
       group: savedGroup,
       user: updatedUser,
+      isPrimaryGroup: !user.groupID // true if this was their first group
     });
   } catch (err: any) {
     console.error('Error creating group:', err);
@@ -182,29 +201,40 @@ export const joinGroup = async (req: any, res: any): Promise<void> => {
       res.status(404).json({ message: 'Group not found' });
       return;
     }
-
+    
     // Find the user to get their email
     const user = await User.findById(userID);
     if (!user) {
       res.status(404).json({ message: 'User not found' });
       return;
     }
-
+    
     // Check if the user is already in the group
     const isMember = group.members.some((member) => member.user.toString() === userID);
     if (isMember) {
       res.status(400).json({ message: 'User is already a member of the group' });
       return;
     }
-
+    
+    // Check if user is already in this group via primary or additional groups
+    const isInPrimaryGroup = user.groupID && user.groupID.toString() === groupID;
+    const isInAdditionalGroups = user.additionalGroups.some(
+      (additionalGroup) => additionalGroup.groupID.toString() === groupID
+    );
+    
+    if (isInPrimaryGroup || isInAdditionalGroups) {
+      res.status(400).json({ message: 'User is already a member of this group' });
+      return;
+    }
+    
     let role = 'caregiver'; // default role
     let familialRelation = '';
-
+    
     // Check if there's a pending invitation for this user
     const pendingInvitationIndex = group.pendingInvitations.findIndex(
       (invitation) => invitation.email === user.email
     );
-
+    
     if (pendingInvitationIndex !== -1) {
       // Use the role and familial relation from the invitation
       const invitation = group.pendingInvitations[pendingInvitationIndex];
@@ -214,24 +244,35 @@ export const joinGroup = async (req: any, res: any): Promise<void> => {
       // Remove the pending invitation since it's now being used
       group.pendingInvitations.splice(pendingInvitationIndex, 1);
     }
-
+    
     // Add the user to the group's members array
-    group.members.push({ 
-      user: userID, 
+    group.members.push({
+      user: userID,
       role,
-      familialRelation 
+      familialRelation
     });
     group.numberOfMembers += 1;
-
+    
     const updatedGroup = await group.save();
-
-    // Update the user's groupID
-    const updatedUser = await User.findByIdAndUpdate(
-      userID,
-      { $set: { groupID: groupID } },
-      { new: true, runValidators: true }
-    );
-
+    
+    let updatedUser;
+    
+    // If this is their first group, set it as primary groupID
+    if (!user.groupID) {
+      updatedUser = await User.findByIdAndUpdate(
+        userID,
+        { $set: { groupID: groupID } },
+        { new: true, runValidators: true }
+      );
+    } else {
+      // This is an additional group, add to additionalGroups array
+      updatedUser = await User.findByIdAndUpdate(
+        userID,
+        { $push: { additionalGroups: { groupID: groupID } } },
+        { new: true, runValidators: true }
+      );
+    }
+    
     res.status(200).json({
       message: 'User joined the group successfully',
       group: updatedGroup,
@@ -239,7 +280,8 @@ export const joinGroup = async (req: any, res: any): Promise<void> => {
       memberInfo: {
         role,
         familialRelation
-      }
+      },
+      isPrimaryGroup: !user.groupID // true if this was their first group
     });
   } catch (err: any) {
     console.error('Error joining group:', err);

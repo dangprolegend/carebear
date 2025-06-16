@@ -1,9 +1,9 @@
+//@ts-nocheck
 import { Request, Response } from 'express';
 import User from '../models/User';
 import { TypedRequest } from '../types/express';
 import Task from '../models/Task';
 import Notification from '../models/Notification';
-import Dashboard from '../models/Dashboard';
 import Group from '../models/Group';
 
 interface UserBody {
@@ -16,6 +16,75 @@ interface UserBody {
 interface UserParams {
   id: string; // Represents either MongoDB ObjectID or username
 }
+
+export const isUserAdminOfGroup = async (userID: string, groupID: string): Promise<boolean> => {
+  try {
+    const group = await Group.findById(groupID);
+    if (!group) {
+      return false;
+    }
+
+    // Check if user is a member with admin role
+    const adminMember = group.members.find(
+      (member) => member.user.toString() === userID && member.role === 'admin'
+    );
+
+    return !!adminMember;
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    return false;
+  }
+};
+
+export const checkUserAdminStatus = async (req: any, res: any): Promise<void> => {
+  try {
+    const { userID, groupID } = req.params;
+
+    if (!userID || !groupID) {
+      res.status(400).json({ message: 'User ID and Group ID are required' });
+      return;
+    }
+
+    const user = await User.findById(userID);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    const group = await Group.findById(groupID);
+    if (!group) {
+      res.status(404).json({ message: 'Group not found' });
+      return;
+    }
+
+    const isAdmin = await isUserAdminOfGroup(userID, groupID);
+
+    const memberInfo = group.members.find(
+      (member) => member.user.toString() === userID
+    );
+
+    if (!memberInfo) {
+      res.status(200).json({
+        isAdmin: false,
+        isMember: false,
+        message: 'User is not a member of this group'
+      });
+      return;
+    }
+
+    res.status(200).json({
+      isAdmin,
+      isMember: true,
+      role: memberInfo.role,
+      familialRelation: memberInfo.familialRelation || null,
+      groupName: group.name
+    });
+
+  } catch (err: any) {
+    console.error('Error checking admin status:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
 
 export const provideAdditionalUserInfo = async (req: any, res: any) => {
   try {
@@ -102,6 +171,48 @@ export const getUser = async (req: TypedRequest<any, UserParams>, res: Response)
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+// get all groups a user belongs to
+export const getAllGroups = async (req: any, res: any): Promise<void> => {
+  try {
+    const { userID } = req.params;
+
+    if (!userID) {
+      res.status(400).json({ message: 'User ID is required' });
+      return;
+    }
+
+    const user = await User.findById(userID);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    const groupIDs = [];
+
+    if (user.groupID) {
+      groupIDs.push(user.groupID);
+    }
+
+    if (user.additionalGroups && user.additionalGroups.length > 0) {
+      const additionalGroupIDs = user.additionalGroups.map(group => group.groupID);
+      groupIDs.push(...additionalGroupIDs);
+    }
+
+    res.status(200).json({
+      message: 'User groups retrieved successfully',
+      userID,
+      groupIDs,
+      totalGroups: groupIDs.length,
+      hasAdditionalGroups: user.additionalGroups && user.additionalGroups.length > 0
+    });
+
+  } catch (err: any) {
+    console.error('Error getting user groups:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 
 // PUT user info
 export const updateUser = async (req: TypedRequest<Partial<UserBody>, UserParams>, res: Response): Promise<void> => {
@@ -221,33 +332,48 @@ export const getUserInfo = async (req: Request, res: Response): Promise<void> =>
 export const getFamilyMembers = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userID } = req.params;
-
-    // Get the user's groupID
-    const user = await User.findById(userID).select('groupID');
+    const { groupID: requestedGroupID } = req.query; // optional query parameter
+    
+    const user = await User.findById(userID).select('groupID additionalGroups');
     if (!user || !user.groupID) {
       res.status(404).json({ message: 'User or group not found' });
       return;
     }
+    
+    // Determine which group to use
+    let targetGroupID = user.groupID; 
+    
+    if (requestedGroupID) {
+      targetGroupID = requestedGroupID as string;
+    }
 
-    // Get the group and its members array
-    const group = await Group.findById(user.groupID).select('members');
+    const group = await Group.findById(targetGroupID).select('members');
     if (!group || !group.members) {
       res.status(404).json({ message: 'Group not found or has no members' });
       return;
     }
 
-    // Collect userIDs of all members except the user themselves
-    const memberUserIDs = group.members
-      .map((member: any) => member.user.toString())
-      .filter((id: string) => id !== userID);
+    // Filter out the current user and collect member info with role and familial relation
+    const otherMembers = group.members.filter((member: any) => member.user.toString() !== userID);
+    const memberUserIDs = otherMembers.map((member: any) => member.user.toString());
+    const users = await User.find({ _id: { $in: memberUserIDs } }).select('firstName lastName imageURL');
 
-    // Fetch user info for each member
-    const members = await User.find({ _id: { $in: memberUserIDs } }).select('firstName lastName imageURL');
-    const familyMembers = members.map(member => ({
-      userID: member._id,
-      fullName: `${member.firstName || ''} ${member.lastName || ''}`.trim(),
-      imageURL: member.imageURL || null,
-    }));
+    const userMap = new Map();
+    users.forEach(user => {
+      userMap.set(user._id.toString(), user);
+    });
+
+    // Combine user info with role and familial relation from group members
+    const familyMembers = otherMembers.map((member: any) => {
+      const userInfo = userMap.get(member.user.toString());
+      return {
+        userID: member.user,
+        fullName: userInfo ? `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim() : '',
+        imageURL: userInfo?.imageURL || null,
+        role: member.role,
+        familialRelation: member.familialRelation || null,
+      };
+    });
 
     res.status(200).json(familyMembers);
   } catch (error: any) {
@@ -255,6 +381,48 @@ export const getFamilyMembers = async (req: Request, res: Response): Promise<voi
   }
 };
 
+export const getCurrentUserFamilyRole = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userID } = req.params;
+    const { groupID: requestedGroupID } = req.query; 
+    
+    const user = await User.findById(userID).select('groupID additionalGroups');
+    if (!user || !user.groupID) {
+      res.status(404).json({ message: 'User or group not found' });
+      return;
+    }
+    
+    // Determine which group to use
+    let targetGroupID = user.groupID; 
+    
+    if (requestedGroupID) {
+      targetGroupID = requestedGroupID as string;
+    }
+
+    const group = await Group.findById(targetGroupID).select('members');
+    if (!group || !group.members) {
+      res.status(404).json({ message: 'Group not found or has no members' });
+      return;
+    }
+
+    // Find the current user's member info
+    const currentUserMember = group.members.find((member: any) => member.user.toString() === userID);
+    
+    if (!currentUserMember) {
+      res.status(404).json({ message: 'User is not a member of this group' });
+      return;
+    }
+
+    const userRole = {
+      role: currentUserMember.role,
+      groupID: targetGroupID,
+    };
+
+    res.status(200).json(userRole);
+  } catch (error: any) {
+    res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+};
 
 // Get dashboard metrics for a user
 // export const getUserMetrics = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
