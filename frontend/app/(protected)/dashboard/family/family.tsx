@@ -48,9 +48,8 @@ export default function Family() {
   const animationInterval = useRef(null);
   const { isSignedIn, userId } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('Family 1');
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [groupName, setGroupName] = useState<string>('Family 1');
+  // isAdmin state is now per-group
+  const [isAdminByGroup, setIsAdminByGroup] = useState<{ [groupId: string]: boolean }>({});
 
   // Daily status modal states
   const [showDailyModal, setShowDailyModal] = useState(false);
@@ -61,7 +60,6 @@ export default function Family() {
   const [userID, setUserID] = useState(null);
   const [userImageURL, setUserImageURL] = useState<string | null>(null);
   const [userFullName, setUserFullName] = useState<string | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
 
   // Daily status display states (store both value and emoji for user)
   const [todayMoodValue, setTodayMoodValue] = useState<string>('');
@@ -83,6 +81,16 @@ export default function Family() {
   // Invitation states
   const [isSendingInvitation, setIsSendingInvitation] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const [activeTab, setActiveTab] = useState('');
+  const [groupName, setGroupName] = useState<string>('');
+  const [familyMembersByGroup, setFamilyMembersByGroup] = useState<{[groupId: string]: FamilyMember[]}>({});
+  const [availableFamilies, setAvailableFamilies] = useState<Family[]>([]);
+  const [userGroups, setUserGroups] = useState<{groupIDs: string[], groupNames: {[key: string]: string}}>({
+    groupIDs: [],
+    groupNames: {}
+  });
+  const [userRolesByGroup, setUserRolesByGroup] = useState<{[groupId: string]: string}>({});
 
   // Open/close modal with animation logic (no useEffect)
   const openSuccessModal = () => {
@@ -110,11 +118,6 @@ export default function Family() {
     selectedRole: string;
     memberEmail: string;
   } | null>(null);
-
-  // Available families 
-  const [availableFamilies, setAvailableFamilies] = useState<Family[]>([
-    { id: '1', name: groupName },
-  ]);
 
   const moods = [
     { id: 'happy', emoji: '😊', label: 'Happy', value: 'happy' },
@@ -185,15 +188,23 @@ export default function Family() {
     }
   };
 
-  const fetchUserRole = async (userID: string) => {
-   try {
-     const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/role`);
-     setUserRole(response.data.role);
-   } catch (error) {
-     console.error('Error fetching user role:', error);
-     setUserRole(null);
-   }
- };
+const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
+    try {
+      const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/role`, {
+        params: {
+          groupID: groupID
+        }
+      });
+      setUserRolesByGroup(prev => ({
+        ...prev,
+        [groupID]: response.data.role
+      }));
+      return response.data.role;
+    } catch (error) {
+      console.error(`Error fetching user role for group ${groupID}:`, error);
+      return null;
+    }
+  };
 
   // Fetch family member's daily status
   const fetchMemberStatus = async (memberUserID: string) => {
@@ -217,29 +228,85 @@ export default function Family() {
     }
   };
 
-  const fetchAdminStatus = async (userID: string) => {
-   try {
-     const group = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/group`);
-     const groupID = group.data.groupID;
-     const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/groups/${groupID}/admin-status`);
-     setIsAdmin(response.data.isAdmin);
-     setGroupName(response.data.groupName);
-     
-     setAvailableFamilies([{ id: '1', name: response.data.groupName }]);
-     setActiveTab(response.data.groupName);
-   } catch (error) {
-     console.error('Error fetching admin status:', error);
-     setIsAdmin(false);
-   }
- };
+  // Fetch admin status for a specific group and store in isAdminByGroup
+  const fetchAdminStatus = async (userID: string, groupID: string) => {
+    try {
+      const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/groups/${groupID}/admin-status`);
+      setIsAdminByGroup(prev => ({
+        ...prev,
+        [groupID]: response.data.isAdmin
+      }));
+      setGroupName(response.data.groupName);
+      return response.data.isAdmin;
+    } catch (error) {
+      console.error('Error fetching admin status:', error);
+      setIsAdminByGroup(prev => ({
+        ...prev,
+        [groupID]: false
+      }));
+      return false;
+    }
+  };
 
+  // Fetch all groups user belongs to
+  const fetchUserGroups = async (userID: string) => {
+    try {
+      const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/allGroups`);
+      const { groupIDs } = response.data;
+      
+      const groupNames = {};
+      const familyTabs = [];
+      
+      for (let i = 0; i < groupIDs.length; i++) {
+        const groupID = groupIDs[i];
+        try {
+          const groupResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/groups/${groupID}/admin-status`);
+          const groupName = groupResponse.data.groupName || `Family ${i + 1}`;
+          groupNames[groupID] = groupName;
+          familyTabs.push({
+            id: groupID,
+            name: groupName
+          });
+          // Set isAdminByGroup for this group
+          setIsAdminByGroup(prev => ({
+            ...prev,
+            [groupID]: groupResponse.data.isAdmin
+          }));
+        } catch (error) {
+          console.error(`Error fetching group name for ${groupID}:`, error);
+          groupNames[groupID] = `Family ${i + 1}`;
+          familyTabs.push({
+            id: groupID,
+            name: `Family ${i + 1}`
+          });
+          setIsAdminByGroup(prev => ({
+            ...prev,
+            [groupID]: false
+          }));
+        }
+      }
+      
+      setUserGroups({ groupIDs, groupNames });
+      setAvailableFamilies(familyTabs);
+      
+      // Set the first group as active tab
+      if (groupIDs.length > 0) {
+        setActiveTab(groupIDs[0]);
+      }
+      
+      return { groupIDs, groupNames };
+    } catch (error) {
+      console.error('Error fetching user groups:', error);
+      return { groupIDs: [], groupNames: {} };
+    }
+  };
 
-  // Fetch family members
-  const fetchFamilyMembers = async (userID: string) => {
+  // Fetch family members for a specific group
+  const fetchFamilyMembersForGroup = async (userID: string, groupID: string) => {
     try {
       setIsLoadingFamily(true);
-      const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/familyMembers`);
-      console.log(`Fetched user ID: ${userID}`);
+      const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/familyMembers?groupID=${groupID}`);
+      console.log(`Fetched family members for group ${groupID}:`, response.data);
 
       // Fetch daily status for each family member
       const membersWithStatus = await Promise.all(
@@ -253,12 +320,37 @@ export default function Family() {
         })
       );
       
-      setFamilyMembers(membersWithStatus);
+      setFamilyMembersByGroup(prev => ({
+        ...prev,
+        [groupID]: membersWithStatus
+      }));
+      
+      return membersWithStatus;
     } catch (error) {
-      console.error('Error fetching family members:', error);
-      setFamilyMembers([]);
+      console.error(`Error fetching family members for group ${groupID}:`, error);
+      setFamilyMembersByGroup(prev => ({
+        ...prev,
+        [groupID]: []
+      }));
+      return [];
     } finally {
       setIsLoadingFamily(false);
+    }
+  };
+
+  // Handle tab change
+  const handleTabChange = async (groupID: string) => {
+    setActiveTab(groupID);
+    if (!userRolesByGroup[groupID] && userID) {
+      await fetchUserRoleForGroup(userID, groupID);
+    }
+    // Check if we already have data for this group
+    if (!familyMembersByGroup[groupID] && userID) {
+      await fetchFamilyMembersForGroup(userID, groupID);
+    }
+    // Fetch admin status for this group if not already fetched
+    if (userID && typeof isAdminByGroup[groupID] === 'undefined') {
+      await fetchAdminStatus(userID, groupID);
     }
   };
 
@@ -281,7 +373,7 @@ export default function Family() {
 
  // Handle sending invitation
  const handleSendInvitation = async () => {
-  if (!isAdmin) {
+   if (!isAdminByGroup[activeTab]) {
      Alert.alert('Permission Denied', 'You have to be a BearBoss in order to send the invite.');
      return;
    }
@@ -366,7 +458,7 @@ export default function Family() {
     checkDailyStatus();
   }, [isSignedIn, userId]);
 
-  // Fetch user imageURL and family members after userID is set
+  // Fetch user info and family members after userID is set
   useEffect(() => {
     const fetchUserInfo = async () => {
       if (userID) {
@@ -374,10 +466,11 @@ export default function Family() {
           const res = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/info`);
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
-          
-          await fetchUserRole(userID);
-          await fetchAdminStatus(userID);
-          await fetchFamilyMembers(userID);
+          const { groupIDs } = await fetchUserGroups(userID);
+          if (groupIDs.length > 0) {
+            await fetchFamilyMembersForGroup(userID, groupIDs[0]);
+            await fetchUserRoleForGroup(userID, groupIDs[0]);
+          }
         } catch (err) {
           console.error('Failed to fetch user info:', err);
         }
@@ -493,9 +586,9 @@ const FamilyMemberCard = ({
         </View>
         
         <View className="flex flex-row items-center gap-2">
-          {((isCurrentUser && userRole) || (!isCurrentUser && member.role)) && (
+          {((isCurrentUser && currentUserRole) || (!isCurrentUser && member.role)) && (
            <Text className="overflow-hidden text-[#2A1800] truncate font-lato text-base font-normal leading-6 tracking-[-0.1px] mr-1">
-             {isCurrentUser ? getRoleDisplayName(userRole) : getRoleDisplayName(member.role)}
+             {isCurrentUser ? getRoleDisplayName(currentUserRole) : getRoleDisplayName(member.role)}
            </Text>
          )}
 
@@ -524,6 +617,9 @@ const FamilyMemberCard = ({
     );
   }
 
+  const currentFamilyMembers = familyMembersByGroup[activeTab] || [];
+  const currentUserRole = userRolesByGroup[activeTab];
+
   return (
     <View className="flex-1">
       <ScrollView className="flex-1">
@@ -537,7 +633,7 @@ const FamilyMemberCard = ({
                 imageURL: userImageURL || '',
                 mood: todayMoodValue,
                 body: todayBodyValue,
-                role: userRole || '',
+                role: currentUserRole || '',
                 familialRelation: null
               }}
               isCurrentUser={true}
@@ -550,21 +646,21 @@ const FamilyMemberCard = ({
                 className="flex-1"
               >
                 {availableFamilies.map((family) => (
-                  <Pressable
-                    key={family.id}
-                    className="px-4 py-2 active:opacity-80 relative mr-4"
-                    onPress={() => setActiveTab(family.name)}
+                <Pressable
+                  key={family.id}
+                  className="px-4 py-2 active:opacity-80 relative mr-4"
+                  onPress={() => handleTabChange(family.id)}
+                >
+                  <Text
+                    className={`text-sm font-medium ${activeTab === family.id ? 'text-[#1A0933]' : 'text-gray-500'}`}
                   >
-                    <Text
-                      className={`text-sm font-medium ${activeTab === family.name ? 'text-[#1A0933]' : 'text-gray-500'}`}
-                    >
-                      {family.name}
-                    </Text>
-                    {activeTab === family.name && (
-                      <View className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A0933]" />
-                    )}
-                  </Pressable>
-                ))}
+                    {family.name}
+                  </Text>
+                  {activeTab === family.id && (
+                    <View className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1A0933]" />
+                  )}
+                </Pressable>
+              ))}
               </ScrollView>
               
               <Pressable
@@ -584,7 +680,7 @@ const FamilyMemberCard = ({
               <Text className="mt-4 text-gray-600">Loading family members...</Text>
             </View>
           ) : (
-            familyMembers.map((member) => (
+            currentFamilyMembers.map((member) => (
               <FamilyMemberCard 
                 key={member.userID}
                 member={member}

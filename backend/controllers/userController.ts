@@ -172,6 +172,48 @@ export const getUser = async (req: TypedRequest<any, UserParams>, res: Response)
   }
 };
 
+// get all groups a user belongs to
+export const getAllGroups = async (req: any, res: any): Promise<void> => {
+  try {
+    const { userID } = req.params;
+
+    if (!userID) {
+      res.status(400).json({ message: 'User ID is required' });
+      return;
+    }
+
+    const user = await User.findById(userID);
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    const groupIDs = [];
+
+    if (user.groupID) {
+      groupIDs.push(user.groupID);
+    }
+
+    if (user.additionalGroups && user.additionalGroups.length > 0) {
+      const additionalGroupIDs = user.additionalGroups.map(group => group.groupID);
+      groupIDs.push(...additionalGroupIDs);
+    }
+
+    res.status(200).json({
+      message: 'User groups retrieved successfully',
+      userID,
+      groupIDs,
+      totalGroups: groupIDs.length,
+      hasAdditionalGroups: user.additionalGroups && user.additionalGroups.length > 0
+    });
+
+  } catch (err: any) {
+    console.error('Error getting user groups:', err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 // PUT user info
 export const updateUser = async (req: TypedRequest<Partial<UserBody>, UserParams>, res: Response): Promise<void> => {
   try {
@@ -302,14 +344,7 @@ export const getFamilyMembers = async (req: Request, res: Response): Promise<voi
     let targetGroupID = user.groupID; 
     
     if (requestedGroupID) {
-      const userGroupIDs = [user.groupID.toString(), ...(user.additionalGroups || []).map((id: any) => id.toString())];
-      
-      if (userGroupIDs.includes(requestedGroupID as string)) {
-        targetGroupID = requestedGroupID as string;
-      } else {
-        res.status(403).json({ message: 'User does not have access to the requested group' });
-        return;
-      }
+      targetGroupID = requestedGroupID as string;
     }
 
     const group = await Group.findById(targetGroupID).select('members');
@@ -361,14 +396,7 @@ export const getCurrentUserFamilyRole = async (req: Request, res: Response): Pro
     let targetGroupID = user.groupID; 
     
     if (requestedGroupID) {
-      const userGroupIDs = [user.groupID.toString(), ...(user.additionalGroups || []).map((id: any) => id.toString())];
-      
-      if (userGroupIDs.includes(requestedGroupID as string)) {
-        targetGroupID = requestedGroupID as string;
-      } else {
-        res.status(403).json({ message: 'User does not have access to the requested group' });
-        return;
-      }
+      targetGroupID = requestedGroupID as string;
     }
 
     const group = await Group.findById(targetGroupID).select('members');
