@@ -395,7 +395,8 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
        email: memberEmail.trim(),
        role: selectedRole,
        familialRelation: memberRelation.trim(),
-       inviterName: userFullName || 'A family member'
+       inviterName: userFullName || 'A family member',
+       groupID: activeTab // Send the current tab's groupID
      };
 
      await axios.post(`https://carebear-backend.onrender.com/api/users/${userID}/invite`, invitationData);

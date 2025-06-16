@@ -14,10 +14,8 @@ const mapFrontendRoleToBackend = (frontendRole: string): string => {
 };
 export const sendInvitation = async (req: any, res: any): Promise<void> => {
   try {
-    const { email, role, familialRelation, inviterName } = req.body;
+    const { email, role, familialRelation, inviterName, groupID } = req.body;
     const { userID } = req.params;
-    const user = await User.findById(userID).select('groupID');
-    const groupID = user?.groupID;
 
     if (!groupID) {
       res.status(404).json({ message: 'Inviter does not belong to any group' });
@@ -32,7 +30,13 @@ export const sendInvitation = async (req: any, res: any): Promise<void> => {
 
     // Check if email is already invited or is a member
     const existingInvitation = group.pendingInvitations.find(inv => inv.email === email);
-    const existingMember = await User.findOne({ email, groupID });
+    const existingMember = await User.findOne({ 
+      email: email.toLowerCase(),
+      $or: [
+        { groupID: groupID },
+        { 'additionalGroups.groupID': groupID }
+      ]
+    });
     
     if (existingInvitation) {
       res.status(400).json({ message: 'User already has a pending invitation' });
