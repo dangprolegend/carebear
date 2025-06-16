@@ -3,6 +3,7 @@
     "name": "care",
     "slug": "care",
     "version": "1.0.0",
+    "owner": "vtmp-group-4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -19,6 +20,7 @@
     },
     "android": {
       "package": "carebare.group4.com",
+      "minSdkVersion": 26,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
