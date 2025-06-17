@@ -70,7 +70,7 @@ const throttleRequest = async <T>(
   }
 };
 
-const API_BASE_URL = "https://4b42-2402-800-61ae-d326-5c64-a276-ac20-aadc.ngrok-free.app";
+const API_BASE_URL = "https://dd41-2402-800-61ae-d326-5c64-a276-ac20-aadc.ngrok-free.app";
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
