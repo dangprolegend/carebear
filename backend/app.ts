@@ -16,6 +16,7 @@ import dashboardRoutes from './routes/dashboardRoutes';
 import authRoutes from './routes/authRoutes';
 import aiRoutes from './routes/aiRoutes';
 import dailyRoutes from './routes/dailyRoutes';
+import imageRoutes from './routes/imageRoutes';
 
 
 import job from './config/cron';
@@ -71,6 +72,7 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Define routes
 app.use('/api/webhooks', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/users', imageRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/groups', memberRoutes);
 app.use('/api/tasks', taskRoutes);

@@ -15,6 +15,7 @@ import Account from '../../../../assets/icons/user-cog.png';
 import Help from '../../../../assets/icons/circle-help.png';
 import Google from '../../../../assets/images/google.png';
 import axios from 'axios';
+import * as ImagePicker from 'expo-image-picker';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -139,6 +140,8 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
   const [lastName, setLastName] = useState(user?.lastName || '');
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
   // Store original values to track changes
   const [originalValues, setOriginalValues] = useState({
     firstName: '',
@@ -181,6 +184,117 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
   const [invites, setInvites] = useState(true);
 
   const [signOutModalVisible, setSignOutModalVisible] = useState(false);
+
+  // Image picker and upload functions
+  const requestPermissions = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission required', 'Please grant permission to access your photo library');
+      return false;
+    }
+    return true;
+  };
+
+  const pickImage = async () => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    Alert.alert(
+      'Select Image',
+      'Choose how you want to select your profile image',
+      [
+        { text: 'Camera', onPress: () => openCamera() },
+        { text: 'Photo Library', onPress: () => openImageLibrary() },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+  };
+
+  const openCamera = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission required', 'Please grant permission to access camera');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      uploadImage(result.assets[0].uri);
+    }
+  };
+
+  const openImageLibrary = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      uploadImage(result.assets[0].uri);
+    }
+  };
+
+  const uploadImage = async (imageUri: string) => {
+    if (!userID) {
+      Alert.alert('Error', 'User ID not found. Please try again.');
+      return;
+    }
+
+    setIsUploadingImage(true);
+
+    try {
+      // Create FormData for image upload
+      const formData = new FormData();
+      formData.append('image', {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: 'profile-image.jpg',
+      } as any);
+
+      console.log('Uploading image for user:', userID);
+
+      const response = await axios.post(
+        `https://carebear-backend.onrender.com/api/users/${userID}/upload-image`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        const { imageURL } = response.data;
+        
+        setUserImageURL(imageURL);
+
+        Alert.alert('Success', 'Profile image updated successfully!');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      
+      let errorMessage = 'Failed to upload image. Please try again.';
+      
+      if (error.response) {
+        errorMessage = error.response.data?.message || errorMessage;
+      } else if (error.request) {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+      
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const handleSignOut = () => {
     setSignOutModalVisible(true);
   };
@@ -393,10 +507,22 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                 className='w-20 h-20 flex-shrink-0 aspect-square rounded-full border-2 border-[#2A1800] bg-cover bg-center'
               />
               {/* Camera icon overlay */}
-              <View className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center border-2 border-white">
-                <Image source={CameraIcon} className="w-3.5 h-3.5" />
-              </View>
+              <TouchableOpacity
+                onPress={pickImage}
+                disabled={isUploadingImage}
+                className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center border-2 border-white"
+              >
+                {isUploadingImage ? (
+                  <Text className="text-white text-xs">...</Text>
+                ) : (
+                  <Image source={CameraIcon} className="w-3.5 h-3.5" />
+                )}
+              </TouchableOpacity>
             </View>
+
+            {isUploadingImage && (
+              <Text className="text-sm text-gray-600">Uploading image...</Text>
+            )}
             <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">
             {userFullName}
           </Text>
