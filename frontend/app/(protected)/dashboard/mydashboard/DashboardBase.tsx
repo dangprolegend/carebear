@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, View, Text, Pressable, Platform, Image } from 'react-native';
+import { ScrollView, View, Text, Pressable, Platform, Image, Modal } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Calendar from 'expo-calendar';
 import * as Notifications from 'expo-notifications';
@@ -34,8 +34,27 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
   const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
+  // New state for group filtering
+  const [userGroups, setUserGroups] = useState<{id: string, name: string}[]>([]);
+  const [showGroupSelector, setShowGroupSelector] = useState(false);
+  const [selectedGroupName, setSelectedGroupName] = useState<string>('The Cheese Fam');
+  const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
+
+  // Add this effect to load user groups on component mount
+  useEffect(() => {
+    // In a real implementation, fetch the user's groups from the API
+    // For now, we'll use mock data to match your screenshot
+    const mockGroups = [
+      { id: '1', name: 'The Cheese Fam' },
+      { id: '2', name: 'Johnson Family' },
+      { id: '3', name: 'Smith Household' }
+    ];
+    
+    setUserGroups(mockGroups);
+  }, []);
 
   // Update tasks when props change
   useEffect(() => {
@@ -69,17 +88,165 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
     };
   }, []);
 
-  // Notifications code (unchanged)...
-  const registerForPushNotificationsAsync = async () => {
-    // Existing notification permission logic...
-  };
-  
-  const scheduleAllTaskNotifications = async () => {
-    // Existing notification scheduling logic...
+  // Add a function to handle group selection
+  const handleGroupChange = (groupName: string) => {
+    setSelectedGroupName(groupName);
+    setShowGroupSelector(false);
+    
+    // In a real implementation, you would filter tasks by the selected group ID
+    // For now, we'll just update the displayed name
   };
 
+  // Add a modal component for group selection
+  const GroupSelectorModal = () => (
+    <Modal
+      visible={showGroupSelector}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setShowGroupSelector(false)}
+    >
+      <Pressable 
+        style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'flex-start',
+          paddingTop: 100
+        }}
+        onPress={() => setShowGroupSelector(false)}
+      >
+        <View 
+          className="bg-white rounded-md mx-4"
+          style={{ elevation: 5 }}
+        >
+          {userGroups.map((group, index) => (
+            <Pressable
+              key={index}
+              className={`py-3 px-4 ${index < userGroups.length - 1 ? 'border-b border-gray-200' : ''}`}
+              onPress={() => handleGroupChange(group.name)}
+            >
+              <Text
+                className={`${selectedGroupName === group.name ? 'font-bold' : 'font-normal'}`}
+                style={{ color: '#2A1800' }}
+              >
+                {group.name}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </Pressable>
+    </Modal>
+  );
+
+  // Add a modal for the task assignment filter
+  const FilterModal = () => (
+    <Modal
+      visible={isFilterModalVisible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setIsFilterModalVisible(false)}
+    >
+      <Pressable 
+        style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'flex-start',
+          paddingTop: 100
+        }}
+        onPress={() => setIsFilterModalVisible(false)}
+      >
+        <View 
+          className="bg-white rounded-md mx-4"
+          style={{ elevation: 5 }}
+        >
+          {['My Tasks', 'Brother\'s Tasks', 'Mom\'s Tasks', 'All Tasks'].map((option, index) => (
+            <Pressable
+              key={index}
+              className={`py-3 px-4 ${index < 3 ? 'border-b border-gray-200' : ''}`}
+              onPress={() => setIsFilterModalVisible(false)}
+            >
+              <Text style={{ color: '#2A1800' }}>
+                {option}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </Pressable>
+    </Modal>
+  );
+
+  // Helper: Request permissions
+  const registerForPushNotificationsAsync = async () => {
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+    
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    
+    if (finalStatus !== 'granted') {
+      console.log('Failed to get push token for push notification!');
+      return;
+    }
+  };
+
+  useEffect(() => {
+    scheduleAllTaskNotifications();
+  }, [tasks]);
+  
+  // Helper: Schedule notifications for all tasks 
+  const scheduleAllTaskNotifications = async () => {
+    // Cancel all existing notifications first
+    await Notifications.cancelAllScheduledNotificationsAsync();
+    
+    // Schedule new notifications for all tasks
+    for (const task of tasks) {
+      await scheduleTaskNotification(task);
+    }
+    
+    console.log(`Scheduled notifications for ${tasks.length} tasks`);
+  };
+
+  // Helper: Schedule a notification for a single task
   const scheduleTaskNotification = async (task: Task) => {
-    // Existing notification scheduling logic...
+    try {
+      const taskDate = new Date(task.datetime);
+      
+      // Create a reminder time
+      // Adjust the time ahead as needed
+      const reminderTime = new Date(taskDate);
+      const timeAhead = 0
+      reminderTime.setMinutes(reminderTime.getMinutes() - timeAhead);
+      
+      // Only schedule if in the future
+      if (reminderTime > new Date()) {
+        const identifier = await Notifications.scheduleNotificationAsync({
+          content: {
+            title: `Time for: ${task.title}`,
+            body: `${task.detail || ''} ${task.subDetail || ''}`,
+            data: { taskId: task.id || task.datetime },
+          },
+          trigger: { 
+            type: 'date' as any,
+            date: reminderTime
+          },
+        });
+        
+        console.log(`Scheduled notification ${identifier} for ${task.title} at ${reminderTime.toLocaleString()}`);
+        return identifier;
+      }
+    } catch (error) {
+      console.error("Error scheduling notification:", error);
+    }
   };
 
   // Handle task status updates for care receivers
@@ -449,7 +616,40 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
               <View className="mb-0">
                 <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
                   <Text className="text-lg font-semibold text-[#2A1800]">Today Schedule</Text>
+
+                  {/* Group Selector Dropdown */}
+                  {!isCareReceiver && (
+                    <Pressable 
+                      onPress={() => setShowGroupSelector(true)}
+                      className="flex-row items-center border border-gray-300 rounded-md py-1 px-3"
+                    >
+                      <Text className="text-sm mr-2">{selectedGroupName}</Text>
+                      <MaterialIcons name="arrow-drop-down" size={20} color="#333" />
+                    </Pressable>
+                  )}
                 </View>
+                {/* Filter Options */}
+                {!isCareReceiver && (
+                  <View className="flex-row justify-between px-6 py-2">
+                    {/* Task Assignment Filter */}
+                    <Pressable 
+                      className="flex-row items-center"
+                      onPress={() => setIsFilterModalVisible(true)}
+                    >
+                      <Text className="text-sm text-[#333] mr-1">My Task, Brother's Task</Text>
+                      <MaterialIcons name="arrow-drop-down" size={20} color="#333" />
+                    </Pressable>
+                    
+                    {/* Assigned By Filter */}
+                    <Pressable className="flex-row items-center">
+                      <Text className="text-sm text-[#333] mr-2">Assigned by</Text>
+                      <Image
+                        source={{ uri: 'https://via.placeholder.com/24' }} // Replace with actual avatar
+                        className="w-6 h-6 rounded-full"
+                      />
+                    </Pressable>
+                  </View>
+                )}
                 <View className="bg-white rounded-xl p-4">
                   {filteredTasks.length === 0 ? (
                     <View className="items-center justify-center py-12">
@@ -574,6 +774,9 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
           task={selectedTask}
         />
       )}
+      {/* At the bottom of the main return statement, right before the closing </> tag */}
+      {!isCareReceiver && <GroupSelectorModal />}
+      {!isCareReceiver && <FilterModal />}
     </>
   );
 };
