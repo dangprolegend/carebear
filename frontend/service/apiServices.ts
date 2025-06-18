@@ -70,7 +70,7 @@ const throttleRequest = async <T>(
   }
 };
 
-const API_BASE_URL = "https://dd41-2402-800-61ae-d326-5c64-a276-ac20-aadc.ngrok-free.app";
+const API_BASE_URL = "https://cac5-113-161-79-11.ngrok-free.app";
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
@@ -369,15 +369,12 @@ export const updateTask = async (
   taskID: string,
   payload: Partial<BackendTask>
 ): Promise<FrontendTaskType> => {
-  const token = await getClerkToken();
-  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
   if (!taskID) throw new ApiError("Task ID is required to update a task.", 400);
   const url = `${API_BASE_URL}/api/tasks/${taskID}`;
   const response = await fetch(url, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
   });
@@ -400,6 +397,28 @@ export const updateTaskWithImage = async (
   });
   const updatedBackendTask: BackendTask = await handleApiResponse(response);
   return mapBackendTaskToFrontend(updatedBackendTask);
+};
+
+export const deleteTask = async (
+  taskID: string
+): Promise<{ success: boolean; message: string }> => {
+  if (!taskID) throw new ApiError("Task ID is required to delete a task.", 400);
+  
+  const url = `${API_BASE_URL}/api/tasks/${taskID}`;
+  const response = await fetch(url, {
+    method: 'DELETE',
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new ApiError(
+      `Failed to delete task: ${response.statusText}`,
+      response.status,
+      errorData
+    );
+  }
+  
+  return { success: true, message: "Task deleted successfully" };
 };
 
 export const fetchRecentTasksForGroup = async (

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Pressable, Image, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { fetchTaskById, updateTaskWithImage, fetchUserInfoById } from '../../../../../service/apiServices';
+import { fetchTaskById, updateTaskWithImage, fetchUserInfoById, deleteTask } from '../../../../../service/apiServices';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -163,6 +163,53 @@ const TaskInfoScreen = () => {
               <MaterialIcons name="photo-camera" size={24} color="white" />
             </Pressable>
           )}
+        </View>
+        
+        {/* Edit and Delete Buttons */}
+        <View className="flex-row justify-end px-4 mt-2">
+            <Pressable 
+            className="mr-4 p-2 flex-row items-center" 
+            onPress={() => {
+              // Navigate to the edit task screen with the taskId
+              router.push({
+                pathname: "/(protected)/dashboard/mydashboard/task/editTask",
+                params: { taskId }
+              });
+            }}
+            >
+            <MaterialIcons className = "border rounded-full p-1" name="edit" size={20} color="#2A1800" />
+            </Pressable>
+          <Pressable 
+            className="p-2 flex-row items-center" 
+            onPress={() => {
+              Alert.alert(
+                "Delete Task",
+                "Are you sure you want to delete this task?",
+                [
+                  {
+                    text: "Cancel",
+                    style: "cancel"
+                  },
+                  { 
+                    text: "Delete", 
+                    style: "destructive",
+                    onPress: async () => {
+                      try {
+                        // Implement delete functionality here
+                        await deleteTask(taskId as string);
+                        Alert.alert("Success", "Task deleted successfully");
+                        router.back();
+                      } catch (err: any) {
+                        Alert.alert("Error", err?.message || "Failed to delete task");
+                      }
+                    }
+                  }
+                ]
+              );
+            }}
+          >
+            <MaterialIcons className = "border rounded-full p-1" name="delete" size={20} color="#2A1800" />
+          </Pressable>
         </View>
 
         {/* Info section */}

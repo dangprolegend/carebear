@@ -200,6 +200,7 @@ const AiTaskInputScreen = () => {
         contentContainerStyle={{ flexGrow: 1 }}
         className="p-5"
         keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled={true}
       >
         <View className="flex-1">
           {/* Tab selector */}

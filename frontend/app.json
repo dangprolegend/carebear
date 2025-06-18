@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "owner": "vtmp-group-4",
     "orientation": "portrait",
-    "icon": "./assets/icons/App Logo (1).png",
+    "icon": "./assets/icons/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -22,7 +22,7 @@
       "package": "carebare.group4.com",
       "minSdkVersion": 26,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icons/App Logo (1).png",
+        "foregroundImage": "./assets/icons/image 3.png",
         "backgroundColor": "#ffffff"
       },
       "intentFilters": [
@@ -59,14 +59,14 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/icons/App Logo (1).png"
+      "favicon": "./assets/icons/icon.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/icons/App Logo (1).png",
+          "image": "./assets/icons/icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
