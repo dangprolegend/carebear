@@ -87,7 +87,8 @@ export default function Feed() {
   
   const [feedData, setFeedData] = useState<FeedItem[]>([]);
   const [filteredData, setFilteredData] = useState<FeedItem[]>([]);
-  const [refreshing, setRefreshing] = useState(false);  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [dataReady, setDataReady] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -267,7 +268,6 @@ const loadFeedData = async () => {
   return (
     <View className="flex-1 bg-white">    
       <View className="px-3 py-3">        
-        
         <View className="flex-row justify-between items-center">
           <Text className="font-semibold left-4 text-lg text-gray-900 font-['Lato']">
             {!!isToday(new Date()) ? "Today" : new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -316,13 +316,11 @@ const loadFeedData = async () => {
                     </Text>
                   </View>
                 ) : null}
-
                 <View className="pl-3 relative">
                   <View
                     className="absolute left-9 top-2 bottom-0 w-0.5 bg-[#2A1800]"
                     style={{ marginLeft: -0.5, zIndex: 0 }}
                   />
-
                   {group.items.map((item, index) => (
                     <FeedItemCard
                       key={item.id}
