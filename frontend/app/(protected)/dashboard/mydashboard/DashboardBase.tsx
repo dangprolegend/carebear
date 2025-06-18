@@ -35,10 +35,13 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
   const router = useRouter();
 
   // New state for group filtering
+  // New state for group filtering
   const [userGroups, setUserGroups] = useState<{id: string, name: string}[]>([]);
   const [showGroupSelector, setShowGroupSelector] = useState(false);
+  const [showTaskFilter, setShowTaskFilter] = useState(false);
   const [selectedGroupName, setSelectedGroupName] = useState<string>('The Cheese Fam');
-  const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  const [selectedTaskFilter, setSelectedTaskFilter] = useState<string>("My Task, Brother's Task");
+  
 
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
@@ -97,82 +100,17 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
     // For now, we'll just update the displayed name
   };
 
-  // Add a modal component for group selection
-  const GroupSelectorModal = () => (
-    <Modal
-      visible={showGroupSelector}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={() => setShowGroupSelector(false)}
-    >
-      <Pressable 
-        style={{
-          flex: 1,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          justifyContent: 'flex-start',
-          paddingTop: 100
-        }}
-        onPress={() => setShowGroupSelector(false)}
-      >
-        <View 
-          className="bg-white rounded-md mx-4"
-          style={{ elevation: 5 }}
-        >
-          {userGroups.map((group, index) => (
-            <Pressable
-              key={index}
-              className={`py-3 px-4 ${index < userGroups.length - 1 ? 'border-b border-gray-200' : ''}`}
-              onPress={() => handleGroupChange(group.name)}
-            >
-              <Text
-                className={`${selectedGroupName === group.name ? 'font-bold' : 'font-normal'}`}
-                style={{ color: '#2A1800' }}
-              >
-                {group.name}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </Pressable>
-    </Modal>
-  );
+  // Add a function to handle task filter selection
+  const handleTaskFilterChange = (filter: string) => {
+    setSelectedTaskFilter(filter);
+    setShowTaskFilter(false);
+  };
 
-  // Add a modal for the task assignment filter
-  const FilterModal = () => (
-    <Modal
-      visible={isFilterModalVisible}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={() => setIsFilterModalVisible(false)}
-    >
-      <Pressable 
-        style={{
-          flex: 1,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          justifyContent: 'flex-start',
-          paddingTop: 100
-        }}
-        onPress={() => setIsFilterModalVisible(false)}
-      >
-        <View 
-          className="bg-white rounded-md mx-4"
-          style={{ elevation: 5 }}
-        >
-          {['My Tasks', 'Brother\'s Tasks', 'Mom\'s Tasks', 'All Tasks'].map((option, index) => (
-            <Pressable
-              key={index}
-              className={`py-3 px-4 ${index < 3 ? 'border-b border-gray-200' : ''}`}
-              onPress={() => setIsFilterModalVisible(false)}
-            >
-              <Text style={{ color: '#2A1800' }}>
-                {option}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </Pressable>
-    </Modal>
-  );
+  // Add a function to close all dropdowns
+  const closeAllDropdowns = () => {
+    setShowGroupSelector(false);
+    setShowTaskFilter(false);
+  };
 
   // Helper: Request permissions
   const registerForPushNotificationsAsync = async () => {
@@ -462,7 +400,8 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
           // CARE RECEIVER VIEW - Simple task cards
           <View className="flex-1 mt-6">
             <View className="mb-0">
-              <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
+              <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4"
+                style={{ paddingTop: 16, paddingBottom: 16 }}>
                 <Text className="text-lg font-semibold text-[#2A1800]">Today's Tasks</Text>
               </View>
               <View className="bg-white px-4">
@@ -619,35 +558,154 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
 
                   {/* Group Selector Dropdown */}
                   {!isCareReceiver && (
-                    <Pressable 
-                      onPress={() => setShowGroupSelector(true)}
-                      className="flex-row items-center border border-gray-300 rounded-md py-1 px-3"
-                    >
-                      <Text className="text-sm mr-2">{selectedGroupName}</Text>
-                      <MaterialIcons name="arrow-drop-down" size={20} color="#333" />
-                    </Pressable>
+                    <View style = {{paddingTop: 16}}>
+                      <Pressable 
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          setShowTaskFilter(false);
+                          setShowGroupSelector(!showGroupSelector);
+                        }}
+                        style={{
+                          display: 'flex',
+                          width: 153,
+                          height: 44,
+                          padding: 8,
+                          paddingLeft: 12,
+                          paddingRight: 8,
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          flexShrink: 0,
+                          borderRadius: 4, // Assuming var(--radius) is 4px
+                          borderWidth: 1,
+                          borderColor: '#FAE5CA',
+                          backgroundColor: '#FFF',
+                          flexDirection: 'row'
+                        }}
+                      >
+                        <Text className="text-sm mr-2">{selectedGroupName}</Text>
+                        <MaterialIcons 
+                          name={showGroupSelector ? "arrow-drop-up" : "arrow-drop-down"} 
+                          size={20} color="#333" 
+                        />
+                      </Pressable>
+                      
+                      {/* Dropdown menu */}
+                      {showGroupSelector && (
+                        <View
+                          className="absolute top-12 right-0 bg-white rounded-md border border-gray-300 z-10 w-40"
+                          style={{ 
+                            position: 'absolute',
+                            top: 44 + 16, // Height of selector (44) + paddingTop (16)
+                            right: 0,
+                            backgroundColor: 'white',
+                            borderRadius: 4,
+                            borderWidth: 1,
+                            borderColor: '#FAE5CA',
+                            zIndex: 10,
+                            width: 153, // Same width as selector
+                            elevation: 5,
+                          }}
+                        >
+                          {userGroups.map((group, index) => (
+                            <Pressable
+                              key={index}
+                              style={{
+                                paddingVertical: 8,
+                                paddingHorizontal: 12,
+                                borderBottomWidth: index < userGroups.length - 1 ? 1 : 0,
+                                borderBottomColor: '#FAE5CA',
+                              }}
+                              onPress={(e) => {
+                                e.stopPropagation();
+                                handleGroupChange(group.name);
+                              }}
+                            >
+                              <Text
+                                style={{ 
+                                  color: '#2A1800',
+                                  fontWeight: selectedGroupName === group.name ? 'bold' : 'normal'
+                                }}
+                              >
+                                {group.name}
+                              </Text>
+                            </Pressable>
+                          ))}
+                        </View>
+                      )}
+                    </View>
                   )}
                 </View>
+
                 {/* Filter Options */}
                 {!isCareReceiver && (
-                  <View className="flex-row justify-between px-6 py-2">
-                    {/* Task Assignment Filter */}
-                    <Pressable 
-                      className="flex-row items-center"
-                      onPress={() => setIsFilterModalVisible(true)}
-                    >
-                      <Text className="text-sm text-[#333] mr-1">My Task, Brother's Task</Text>
-                      <MaterialIcons name="arrow-drop-down" size={20} color="#333" />
-                    </Pressable>
-                    
-                    {/* Assigned By Filter */}
-                    <Pressable className="flex-row items-center">
-                      <Text className="text-sm text-[#333] mr-2">Assigned by</Text>
-                      <Image
-                        source={{ uri: 'https://via.placeholder.com/24' }} // Replace with actual avatar
-                        className="w-6 h-6 rounded-full"
-                      />
-                    </Pressable>
+                  <View 
+                    style={{
+                      display: 'flex',
+                      height: 44,
+                      padding: 0,
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      gap: 8
+                    }}
+                    className="px-6 py-2"
+                  >
+                    <View className="flex-row justify-between w-full">
+                      {/* Task Assignment Filter */}
+                      <View>
+                        <Pressable 
+                          className="flex-row items-center"
+                          onPress={(e) => {
+                            e.stopPropagation();
+                            setShowGroupSelector(false);
+                            setShowTaskFilter(!showTaskFilter);
+                          }}
+                        >
+                          <Text className="text-sm text-[#333] mr-1">{selectedTaskFilter}</Text>
+                          <MaterialIcons 
+                            name={showTaskFilter ? "arrow-drop-up" : "arrow-drop-down"} 
+                            size={20} color="#333" 
+                          />
+                        </Pressable>
+                        
+                        {/* Dropdown menu for task filter */}
+                        {showTaskFilter && (
+                          <View
+                            className="absolute top-8 left-0 bg-white rounded-md border border-gray-300 z-10 w-40"
+                            style={{ elevation: 5 }}
+                          >
+                            {['My Tasks', "Brother's Tasks", "All Tasks"].map((option, index) => (
+                              <Pressable
+                                key={index}
+                                className={`py-2 px-3 ${index < 2 ? 'border-b border-gray-200' : ''}`}
+                                onPress={(e) => {
+                                  e.stopPropagation();
+                                  handleTaskFilterChange(option);
+                                }}
+                              >
+                                <Text 
+                                  style={{ color: '#2A1800' }}
+                                  className={selectedTaskFilter === option ? 'font-bold' : 'font-normal'}
+                                >
+                                  {option}
+                                </Text>
+                              </Pressable>
+                            ))}
+                          </View>
+                        )}
+                      </View>
+                      
+                      {/* Assigned By Filter */}
+                      <Pressable 
+                        className="flex-row items-center"
+                        onPress={closeAllDropdowns}
+                      >
+                        <Text className="text-sm text-[#333] mr-2">Assigned by</Text>
+                        <Image
+                          source={{ uri: 'https://via.placeholder.com/24' }} // Replace with actual avatar
+                          className="w-6 h-6 rounded-full"
+                        />
+                      </Pressable>
+                    </View>
                   </View>
                 )}
                 <View className="bg-white rounded-xl p-4">
@@ -774,9 +832,6 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
           task={selectedTask}
         />
       )}
-      {/* At the bottom of the main return statement, right before the closing </> tag */}
-      {!isCareReceiver && <GroupSelectorModal />}
-      {!isCareReceiver && <FilterModal />}
     </>
   );
 };
