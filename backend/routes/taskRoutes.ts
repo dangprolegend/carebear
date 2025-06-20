@@ -8,8 +8,10 @@ import {
   acceptTask,
   completeTask,
   getUserTasks,
+  getUserGroupTasks,
   getGroupTasks,
-  getRecentGroupTasks
+  getRecentGroupTasks,
+  getUserTaskCompletionPercentage
 } from '../controllers/taskController';
 import { canManageTasks, hasTaskPermission, isAdmin, canManageSpecificTask } from '../middlewares/permissions';
 
@@ -280,5 +282,91 @@ router.get('/group/:groupID', getGroupTasks);
  *         description: Recent tasks retrieved successfully
  */
 router.get('/group/:groupID/recent', getRecentGroupTasks);
+
+/**
+ * @swagger
+ * /api/tasks/user/:userID/group/:groupID:
+ *   get:
+ *     summary: Get all tasks assigned to a specific user in a specific group
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: userID
+ *         required: true
+ *         description: The ID of the user
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: groupID
+ *         required: true
+ *         description: The ID of the group
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Tasks retrieved successfully
+ */
+router.get('/user/:userID/group/:groupID', getUserGroupTasks);
+
+/**
+ * @swagger
+ * /api/tasks/user/:userID:
+ *   get:
+ *     summary: Get all tasks assigned to a specific user
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: userID
+ *         required: true
+ *         description: The ID of the user
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Tasks retrieved successfully
+ */
+router.get('/user/:userID', getUserTasks);
+
+/**
+ * @swagger
+ * /api/tasks/user/:userID/group/:groupID/completion:
+ *   get:
+ *     summary: Get task completion percentage for a specific user in a specific group
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: userID
+ *         required: true
+ *         description: The ID of the user
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: groupID
+ *         required: true
+ *         description: The ID of the group
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Task completion statistics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalTasks:
+ *                   type: number
+ *                   description: Total number of tasks assigned to the user in the group
+ *                 completedTasks:
+ *                   type: number
+ *                   description: Number of completed tasks
+ *                 pendingTasks:
+ *                   type: number
+ *                   description: Number of pending or in-progress tasks
+ *                 completionPercentage:
+ *                   type: number
+ *                   description: Percentage of completed tasks (0-100)
+ */
+router.get('/user/:userID/group/:groupID/completion', getUserTaskCompletionPercentage);
 
 export default router;

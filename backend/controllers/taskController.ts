@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import Task from '../models/Task';
 import User from '../models/User';
 import { TypedRequest, UserRequest } from '../types/express';
+import mongoose from 'mongoose';
 
 interface Reminder_setup {
   start_date?: string;
@@ -317,6 +318,74 @@ export const getRecentGroupTasks = async (req: TypedRequest<any, { groupID: stri
       .populate('assignedBy', 'name email')
       .populate('assignedTo', 'name email');
     res.json(tasks);
+  } catch (err: any) {
+    handleError(res, err);
+  }
+};
+
+// Get all tasks for a specific user in a specific group
+export const getUserGroupTasks = async (req: TypedRequest<any, { userID: string, groupID: string }>, res: Response): Promise<void> => {
+  try {
+    const { userID, groupID } = req.params;
+    
+    // Find tasks that are assigned to the specified user and belong to the specified group
+    const tasks = await Task.find({ 
+      assignedTo: userID,
+      groupID: groupID
+    })
+      .sort({ deadline: 1, priority: -1 })  // Sort by deadline (ascending) and priority (high to low)
+      .populate('assignedBy', 'name email')
+      .populate('assignedTo', 'name email');
+    
+    res.json(tasks);
+  } catch (err: any) {
+    handleError(res, err);
+  }
+};
+
+// Calculate the percentage of done tasks over total tasks for a specific user in a specific group
+export const getUserTaskCompletionPercentage = async (req: TypedRequest<any, { userID: string, groupID: string }>, res: Response): Promise<void> => {
+  try {
+    const { userID, groupID } = req.params;
+    
+    // Find all tasks assigned to the user in the specific group
+    const taskCounts = await Task.aggregate([
+      {
+        $match: { 
+          assignedTo: new mongoose.Types.ObjectId(userID),
+          groupID: new mongoose.Types.ObjectId(groupID)
+        }
+      },
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    // Initialize counters
+    let doneCount = 0;
+    let totalCount = 0;
+    
+    // Parse the aggregation results
+    taskCounts.forEach((statusGroup) => {
+      if (statusGroup._id === 'done') {
+        doneCount = statusGroup.count;
+      }
+      totalCount += statusGroup.count;
+    });
+    
+    // Calculate percentage
+    const completionPercentage = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
+    
+    // Return the results
+    res.json({
+      totalTasks: totalCount,
+      completedTasks: doneCount,
+      pendingTasks: totalCount - doneCount,
+      completionPercentage: Math.round(completionPercentage * 100) / 100 // Round to 2 decimal places
+    });
   } catch (err: any) {
     handleError(res, err);
   }
