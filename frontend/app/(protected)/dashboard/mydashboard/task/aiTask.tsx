@@ -295,7 +295,8 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
                       setShowAssigneeDropdown(false);
                     }}
                   >
-                    <View className="mr-3">                            <Avatar 
+                    <View className="mr-3">
+                            <Avatar 
                               name={`${user.firstName || ''} ${user.lastName || ''}`}
                               size="sm"
                               src={user.imageURL || undefined}

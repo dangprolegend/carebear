@@ -70,7 +70,7 @@ const throttleRequest = async <T>(
   }
 };
 
-const API_BASE_URL = "https://cac5-113-161-79-11.ngrok-free.app";
+const API_BASE_URL = "https://0dc2-2402-800-6f5f-9272-398e-d727-415-303c.ngrok-free.app";
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
@@ -223,6 +223,7 @@ const mapBackendTaskToFrontend = (bt: BackendTask): FrontendTaskType => {
     title: bt.title,
     description: bt.description,
     datetime: taskDatetime,
+    groupID: bt.groupID,
     type: bt.type ||
       (bt.title.toLowerCase().includes("appointment") ? "appointment" :
         bt.title.toLowerCase().includes("medication") || bt.title.toLowerCase().includes("pill") || bt.title.toLowerCase().includes("tablet") ? "medication" : undefined),
@@ -459,15 +460,12 @@ export const createManualTaskAPI = async (
 };
 
 export const fetchUsersInGroup = async (groupID: string): Promise<any[]> => {
-  const token = await getClerkToken();
-  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
   if (!groupID) throw new ApiError("Group ID is required to fetch users.", 400);
   const url = `${API_BASE_URL}/api/groups/${groupID}/users`;
   const response = await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
     },
   });
   const users = await handleApiResponse(response);
@@ -488,6 +486,17 @@ export const fetchTaskById = async (
   const url = `${API_BASE_URL}/api/tasks/${taskID}`;
   const response = await fetch(url, { method: 'GET' });
   const backendTask: BackendTask = await handleApiResponse(response);
+  
+  // Log the complete task data to help with debugging
+  console.log("Backend task raw data:", JSON.stringify(backendTask, null, 2));
+  
+  // Specifically log fields that might contain group info
+  if (backendTask.groupID) {
+    console.log("Task groupID field:", typeof backendTask.groupID === 'object' 
+      ? JSON.stringify(backendTask.groupID) 
+      : backendTask.groupID);
+  }
+  
   return mapBackendTaskToFrontend(backendTask);
 };
 
@@ -509,3 +518,4 @@ export const fetchUserNameByID = async (userID: string): Promise<string> => {
     throw new Error('Unable to retrieve user name');
   }
 };
+

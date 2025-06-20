@@ -16,6 +16,7 @@ const TaskInfoScreen = () => {
   const { taskId } = useLocalSearchParams();
   const [task, setTask] = useState<any>(null);
   const [assignedByUser, setAssignedByUser] = useState<any>(null);
+  const [assignedToUser, setAssignedToUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -54,6 +55,24 @@ const TaskInfoScreen = () => {
       }
     };
     fetchAssignedBy();
+  }, [task]);
+
+  // Fetch assigned to user info
+  useEffect(() => {
+    const fetchAssignedTo = async () => {
+      if (task?.assignedTo) {
+        try {
+          const userId = typeof task.assignedTo === 'object' ? task.assignedTo._id : task.assignedTo;
+          const user = await fetchUserInfoById(userId);
+          setAssignedToUser(user);
+        } catch {
+          setAssignedToUser(null);
+        }
+      } else {
+        setAssignedToUser(null);
+      }
+    };
+    fetchAssignedTo();
   }, [task]);
 
   // Image picker
@@ -249,8 +268,20 @@ const TaskInfoScreen = () => {
           <View className="mb-3 flex-row items-center">
             <Text>
                 <Text className="font-bold">Assigned </Text>
-                to <Text className="font-bold">You</Text> by{' '}
+                to{' '}
             </Text>
+            {assignedToUser ? (
+              <>
+                <Image
+                  source={{ uri: assignedToUser.imageURL || 'https://via.placeholder.com/32' }}
+                  className="w-6 h-6 rounded-full mx-1"
+                />
+                <Text className="font-bold">{assignedToUser.fullName || 'Unknown'}</Text>
+              </>
+            ) : (
+              <Text className="font-bold">Unassigned</Text>
+            )}
+            <Text> by{' '}</Text>
             {assignedByUser ? (
               <>
                 <Image

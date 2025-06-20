@@ -9,7 +9,8 @@ import {
   ActivityIndicator, 
   Platform, 
   Modal,
-  StyleSheet
+  StyleSheet,
+  Image
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -18,9 +19,40 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { 
   fetchTaskById, 
   updateTask, 
-  fetchUsersInGroup 
+  fetchUsersInGroup,
+  fetchUserInfoById
 } from '../../../../../service/apiServices';
 import { Avatar } from '../../../../../components/ui/avatar';
+
+interface TaskUser {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  imageURL?: string;
+  profilePicture?: string;
+}
+
+interface TaskData {
+  _id: string;
+  title: string;
+  description?: string;
+  datetime?: string;
+  reminder?: {
+    start_date?: string;
+    end_date?: string;
+    times_of_day?: string[];
+    recurrence_rule?: string;
+  };
+  detail?: string;
+  subDetail?: string;
+  priority?: 'high' | 'medium' | 'low';
+  groupID?: string | { _id: string; name?: string };
+  assignedTo?: string | TaskUser;
+  assignedBy?: string | TaskUser;
+  status?: string;
+  group?: string | { _id: string; name?: string };
+}
 
 interface UserOption {
   label: string;
@@ -67,14 +99,53 @@ const EditTaskScreen = () => {
       
       setLoading(true);
       try {
-        const task = await fetchTaskById(taskId as string);
+        console.log("Fetching task data for ID:", taskId);
+        const task = await fetchTaskById(taskId as string) as TaskData;
+        console.log("Task data retrieved:", task);
+        // Log all task properties to find which one might contain group info
+        console.log("Task properties:");
+        Object.keys(task).forEach(key => {
+          console.log(`- ${key}: ${JSON.stringify(task[key as keyof TaskData])}`);
+        });
         setOriginalTask(task);
         
         // Extract groupID for fetching assignees
+        let groupId = null;
+        
+        // First check for groupID in task data
         if (task.groupID) {
-          const groupId = typeof task.groupID === 'object' ? task.groupID._id : task.groupID;
-          setCurrentGroupID(groupId);
+          groupId = typeof task.groupID === 'object' ? task.groupID._id : task.groupID;
+          console.log("Extracted group ID from groupID:", groupId);
+        } else if (task.group) {
+          groupId = typeof task.group === 'object' ? task.group._id : task.group;
+          console.log("Extracted group ID from group property:", groupId);
+        } else if (task.assignedBy && typeof task.assignedBy === 'object') {
+          // If there's no group ID, try to use assignedBy's ID to at least fetch the user
+          const assignedByUserId = task.assignedBy._id;
+          console.log("No group ID found, but have assignedBy user ID:", assignedByUserId);
         }
+        
+        if (groupId) {
+          console.log("Setting current group ID:", groupId);
+          setCurrentGroupID(groupId);
+        } else {
+          console.log("No group ID found in task data");
+        }
+        
+        // Extract assignedTo
+        let assignedToId = '';
+        if (task.assignedTo) {
+          if (typeof task.assignedTo === 'object' && task.assignedTo !== null) {
+            const assignedUser = task.assignedTo as TaskUser;
+            assignedToId = assignedUser._id;
+            console.log("Assigned to user (object):", assignedUser._id, 
+              assignedUser.firstName ? `${assignedUser.firstName} ${assignedUser.lastName}` : assignedUser.email);
+          } else if (typeof task.assignedTo === 'string') {
+            assignedToId = task.assignedTo;
+            console.log("Assigned to user (ID):", task.assignedTo);
+          }
+        }
+        console.log("Final assignedToId extracted:", assignedToId);
         
         // Set form data from task
         setTaskForm({
@@ -85,11 +156,7 @@ const EditTaskScreen = () => {
           detail: task.detail || '', // timesOfDay
           subDetail: task.subDetail || 'NONE', // recurrence
           priority: task.priority || 'medium',
-          assignedTo: task.assignedTo 
-                      ? (typeof task.assignedTo === 'object' 
-                        ? (task.assignedTo as any)._id 
-                        : task.assignedTo) 
-                      : '',
+          assignedTo: assignedToId
         });
       } catch (err: any) {
         console.error('Error fetching task:', err);
@@ -102,30 +169,71 @@ const EditTaskScreen = () => {
     fetchTaskData();
   }, [taskId]);
 
-  // Fetch assignees
+  // Fetch assignees and add user info if necessary
   useEffect(() => {
-    const fetchAssignees = async () => {
-      if (!currentGroupID) return;
-      
-      try {
-        const users = await fetchUsersInGroup(currentGroupID);
-        setAssigneeOptions(
-          users.map((user: any) => ({
-            label: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email,
-            value: user._id,
-            imageURL: user.imageURL || user.profilePicture || null,
-            firstName: user.firstName,
-            lastName: user.lastName
-          }))
-        );
-      } catch (e) {
-        console.error('Error fetching users:', e);
-        setAssigneeOptions([]);
+    const fetchUsers = async () => {
+      // Only proceed if we have task form data
+      if (!taskForm.title) {
+        console.log("Task form not yet initialized, waiting to fetch users");
+        return;
       }
+      
+      let usersList: any[] = [];
+      
+      // If we have a group ID, fetch all users in that group
+      if (currentGroupID) {
+        try {
+          console.log("Fetching users for group:", currentGroupID);
+          usersList = await fetchUsersInGroup(currentGroupID);
+          console.log("Fetched users from group:", usersList.length);
+        } catch (e) {
+          console.error('Error fetching group users:', e);
+        }
+      } else {
+        console.log("No group ID available to fetch users");
+      }
+      
+      // Map the users we have
+      const mappedUsers = usersList.map((user: any) => ({
+        label: user.firstName && user.lastName 
+          ? `${user.firstName} ${user.lastName}` 
+          : user.email || 'Unknown User',
+        value: user._id,
+        imageURL: user.imageURL || user.profilePicture || null,
+        firstName: user.firstName || '',
+        lastName: user.lastName || ''
+      }));
+      
+      // Always try to fetch the assigned user's info if we have an assignedTo value
+      const assignedToId = taskForm.assignedTo;
+      if (assignedToId && !mappedUsers.some(u => u.value === assignedToId)) {
+        console.log("Assigned user not in mapped list, fetching user info:", assignedToId);
+        try {
+          const userInfo = await fetchUserInfoById(assignedToId);
+          console.log("Fetched assigned user info:", userInfo);
+          if (userInfo) {
+            mappedUsers.push({
+              label: userInfo.firstName && userInfo.lastName 
+                ? `${userInfo.firstName} ${userInfo.lastName}` 
+                : userInfo.email || 'Unknown User',
+              value: userInfo._id,
+              imageURL: userInfo.imageURL || userInfo.profilePicture || null,
+              firstName: userInfo.firstName || '',
+              lastName: userInfo.lastName || ''
+            });
+            console.log("Added assigned user to options:", userInfo.email || userInfo._id);
+          }
+        } catch (err) {
+          console.error("Failed to fetch assigned user info:", err);
+        }
+      }
+      
+      console.log("Final user options:", mappedUsers.length);
+      setAssigneeOptions(mappedUsers);
     };
     
-    fetchAssignees();
-  }, [currentGroupID]);
+    fetchUsers();
+  }, [currentGroupID, taskForm]);
 
   // Handle form field changes
   const handleInputChange = (field: string, value: any) => {
@@ -150,20 +258,34 @@ const EditTaskScreen = () => {
 
     setSaving(true);
     try {
+      console.log("Saving task with data:", {
+        title: taskForm.title,
+        description: taskForm.description,
+        priority: taskForm.priority,
+        detail: taskForm.detail,
+        subDetail: taskForm.subDetail,
+        assignedTo: taskForm.assignedTo,
+        assignedToUser: assigneeOptions.find(opt => opt.value === taskForm.assignedTo)?.label || 'None',
+        datetime: taskForm.datetime,
+        endDate: taskForm.endDate
+      });
+      
       const payload = {
         title: taskForm.title,
         description: taskForm.description,
         priority: taskForm.priority,
         detail: taskForm.detail, // timesOfDay
         subDetail: taskForm.subDetail, // recurrence
-        assignedTo: taskForm.assignedTo || null,
+        assignedTo: taskForm.assignedTo || null, // Send null explicitly if empty to unassign
         reminder: {
           start_date: taskForm.datetime ? new Date(taskForm.datetime).toISOString() : undefined,
           end_date: taskForm.endDate ? new Date(taskForm.endDate).toISOString() : undefined,
         }
       };
 
-      await updateTask(taskId as string, payload);
+      const updatedTask = await updateTask(taskId as string, payload);
+      console.log("Task updated successfully:", updatedTask);
+      
       Alert.alert(
         'Success', 
         'Task updated successfully!',
@@ -226,6 +348,136 @@ const EditTaskScreen = () => {
           onChangeText={(text) => handleInputChange('title', text)}
           placeholder="Enter task title"
         />
+
+        {/* Assignee */}
+        <Text className="font-semibold mb-2">Assign to</Text>
+        <View className="border rounded-lg mb-6 px-3 py-3 bg-white relative">
+          <Pressable
+            className="flex-row items-center justify-between"
+            onPress={() => {
+              console.log("Opening assignee dropdown. Current assignedTo:", taskForm.assignedTo);
+              console.log("Available assignees:", assigneeOptions.length);
+              setShowAssigneeDropdown(!showAssigneeDropdown);
+            }}
+          >
+            {taskForm.assignedTo ? (
+              <View className="flex-row items-center">
+                {(() => {
+                  const selectedUser = assigneeOptions.find(opt => opt.value === taskForm.assignedTo);
+                  
+                  // If we have an assignedTo ID but no matching user in options yet
+                  if (!selectedUser) {
+                    return (
+                      <View className="flex-row items-center">
+                        <ActivityIndicator size="small" color="#FAE5CA" style={{ marginRight: 8 }} />
+                        <Text className="text-base text-gray-500">Loading user...</Text>
+                      </View>
+                    );
+                  }
+                  
+                  return (
+                    <>
+                      {selectedUser.imageURL ? (
+                        <Image 
+                          source={{ uri: selectedUser.imageURL }} 
+                          className="w-8 h-8 rounded-full mr-2"
+                          onError={() => console.log("Failed to load image for", selectedUser.label)} 
+                        />
+                      ) : (
+                        <Avatar 
+                          name={`${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() || selectedUser.label || 'User'} 
+                          size="sm"
+                          className="mr-2"
+                        />
+                      )}
+                      <Text className="text-base">{selectedUser.label}</Text>
+                    </>
+                  );
+                })()}
+              </View>
+            ) : (
+              <Text className="text-base text-gray-500">Select User</Text>
+            )}
+            <MaterialIcons name={showAssigneeDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
+          </Pressable>
+          {showAssigneeDropdown && (
+            <View 
+              className="absolute left-0 right-0 top-14 z-50 bg-white border rounded-lg shadow-lg max-h-60"
+              style={{ elevation: 5 }}
+            >
+              {assigneeOptions.length > 0 ? (
+                <ScrollView 
+                  nestedScrollEnabled={true} 
+                  showsVerticalScrollIndicator={true} 
+                  contentContainerStyle={{ flexGrow: 0 }}
+                  style={{ maxHeight: 240 }}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {/* Option to clear assignee */}
+                  <Pressable
+                    className={`py-3 px-4 flex-row items-center ${!taskForm.assignedTo ? 'bg-blue-100' : ''}`}
+                    onPress={() => {
+                      handleInputChange('assignedTo', '');
+                      setShowAssigneeDropdown(false);
+                    }}
+                  >
+                    <View className="mr-3">
+                      <Avatar 
+                        name="?" 
+                        size="sm"
+                      />
+                    </View>
+                    <View>
+                      <Text className={`text-base ${!taskForm.assignedTo ? 'font-bold text-blue-700' : 'text-black'}`}>
+                        Unassigned
+                      </Text>
+                    </View>
+                  </Pressable>
+                  
+                  {/* User options */}
+                  {assigneeOptions.map(user => (
+                    <Pressable
+                      key={user.value}
+                      className={`py-3 px-4 flex-row items-center ${taskForm.assignedTo === user.value ? 'bg-blue-100' : ''}`}
+                      onPress={() => {
+                        console.log("Selected user:", user.label, user.value);
+                        handleInputChange('assignedTo', user.value);
+                        setShowAssigneeDropdown(false);
+                      }}
+                    >
+                      <View className="mr-3">
+                        {user.imageURL ? (
+                          <Image 
+                            source={{ uri: user.imageURL }} 
+                            className="w-8 h-8 rounded-full"
+                            onError={(e) => {
+                              console.log("Failed to load image for", user.label);
+                            }} 
+                          />
+                        ) : (
+                          <Avatar 
+                            name={`${user.firstName || ''} ${user.lastName || ''}`.trim() || user.label || 'User'}
+                            size="sm"
+                          />
+                        )}
+                      </View>
+                      <View>
+                        <Text className={`text-base ${taskForm.assignedTo === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>
+                          {user.label}
+                        </Text>
+                      </View>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              ) : (
+                <View className="py-4 px-3">
+                  <Text className="text-center text-gray-500">No users available</Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+
 
         {/* Description */}
         <Text className="font-semibold mb-2">Description</Text>
@@ -447,62 +699,6 @@ const EditTaskScreen = () => {
           )}
         </View>
 
-        {/* Assignee */}
-        {assigneeOptions.length > 0 && (
-          <View className="mb-6">
-            <Text className="font-semibold mb-2">Assign to</Text>
-            <View className="border rounded-lg px-3 py-3 bg-white relative">
-              <Pressable
-                className="flex-row items-center justify-between"
-                onPress={() => setShowAssigneeDropdown(!showAssigneeDropdown)}
-              >
-                <Text className="text-base">
-                  {assigneeOptions.find(opt => opt.value === taskForm.assignedTo)?.label || 'Select User'}
-                </Text>
-                <MaterialIcons name={showAssigneeDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
-              </Pressable>
-              {showAssigneeDropdown && (
-                <View 
-                  className="absolute left-0 right-0 top-14 z-50 bg-white border rounded-lg shadow-lg max-h-60"
-                  style={{ elevation: 5 }}
-                >
-                  <ScrollView 
-                    nestedScrollEnabled={true} 
-                    showsVerticalScrollIndicator={true} 
-                    contentContainerStyle={{ flexGrow: 0 }}
-                    style={{ maxHeight: 240 }}
-                    keyboardShouldPersistTaps="handled"
-                  >
-                    {assigneeOptions.map(user => (
-                      <Pressable
-                        key={user.value}
-                        className={`py-3 px-4 flex-row items-center ${taskForm.assignedTo === user.value ? 'bg-blue-100' : ''}`}
-                        onPress={() => {
-                          handleInputChange('assignedTo', user.value);
-                          setShowAssigneeDropdown(false);
-                        }}
-                      >
-                        <View className="mr-3">
-                          <Avatar 
-                            name={`${user.firstName || ''} ${user.lastName || ''}`}
-                            size="sm"
-                            src={user.imageURL || undefined}
-                          />
-                        </View>
-                        <View>
-                          <Text className={`text-base ${taskForm.assignedTo === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>
-                            {user.label}
-                          </Text>
-                        </View>
-                      </Pressable>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-          </View>
-        )}
-
         {/* Priority */}
         <Text className="font-semibold mb-2">Priority</Text>
         <View className="flex-row mb-6">
@@ -527,11 +723,11 @@ const EditTaskScreen = () => {
         {/* Save Button */}
         <View className="my-6">
           <Pressable
-            className={`py-4 rounded-full items-center ${formChanged ? 'bg-black' : 'bg-gray-400'}`}
+            className={`py-3 px-4 mb-6 rounded-full items-center flex-row justify-center ${formChanged ? 'bg-black' : 'bg-gray-400'}`}
             onPress={handleSaveTask}
             disabled={!formChanged || saving}
           >
-            <Text className="text-white text-lg font-semibold">
+            <Text className="text-white text-lg text-base font-semibold">
               {saving ? 'Saving...' : 'Save Changes'}
             </Text>
           </Pressable>
