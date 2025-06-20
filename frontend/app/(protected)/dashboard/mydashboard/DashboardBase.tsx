@@ -638,53 +638,76 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
 
                 {/* Filter Options */}
                 {!isCareReceiver && (
-                  <View 
-                    style={{
-                      display: 'flex',
-                      height: 44,
-                      padding: 0,
-                      flexDirection: 'column',
-                      alignItems: 'flex-start',
-                      gap: 8
-                    }}
-                    className="px-6 py-2"
-                  >
+                  <View className="px-6 pb-4">
                     <View className="flex-row justify-between w-full">
-                      {/* Task Assignment Filter */}
+                      {/* Task Assignment Filter with updated CSS */}
                       <View>
                         <Pressable 
-                          className="flex-row items-center"
                           onPress={(e) => {
                             e.stopPropagation();
                             setShowGroupSelector(false);
                             setShowTaskFilter(!showTaskFilter);
                           }}
+                          style={{
+                            display: 'flex',
+                            height: 44,
+                            padding: 8,
+                            paddingLeft: 12,
+                            paddingRight: 8,
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            flexShrink: 0,
+                            alignSelf: 'stretch',
+                            borderRadius: 4, // Assuming var(--radius) is 4px
+                            borderWidth: 1,
+                            borderColor: '#FAE5CA',
+                            backgroundColor: '#FFF',
+                            flexDirection: 'row',
+                            width: 153 // Matching the group selector width
+                          }}
                         >
-                          <Text className="text-sm text-[#333] mr-1">{selectedTaskFilter}</Text>
+                          <Text className="text-sm text-[#333]">{selectedTaskFilter}</Text>
                           <MaterialIcons 
                             name={showTaskFilter ? "arrow-drop-up" : "arrow-drop-down"} 
                             size={20} color="#333" 
                           />
                         </Pressable>
                         
-                        {/* Dropdown menu for task filter */}
+                        {/* Dropdown menu for task filter - aligned with selector */}
                         {showTaskFilter && (
                           <View
-                            className="absolute top-8 left-0 bg-white rounded-md border border-gray-300 z-10 w-40"
-                            style={{ elevation: 5 }}
+                            style={{ 
+                              position: 'absolute',
+                              top: 44, // Height of the task filter selector
+                              left: 0,
+                              backgroundColor: 'white',
+                              borderRadius: 4,
+                              borderWidth: 1,
+                              borderColor: '#FAE5CA',
+                              zIndex: 10,
+                              width: 153, // Same width as selector
+                              elevation: 5,
+                            }}
                           >
                             {['My Tasks', "Brother's Tasks", "All Tasks"].map((option, index) => (
                               <Pressable
                                 key={index}
-                                className={`py-2 px-3 ${index < 2 ? 'border-b border-gray-200' : ''}`}
+                                style={{
+                                  paddingVertical: 8,
+                                  paddingHorizontal: 12,
+                                  borderBottomWidth: index < 2 ? 1 : 0,
+                                  borderBottomColor: '#FAE5CA',
+                                }}
                                 onPress={(e) => {
                                   e.stopPropagation();
                                   handleTaskFilterChange(option);
                                 }}
                               >
                                 <Text 
-                                  style={{ color: '#2A1800' }}
-                                  className={selectedTaskFilter === option ? 'font-bold' : 'font-normal'}
+                                  style={{ 
+                                    color: '#2A1800',
+                                    fontWeight: selectedTaskFilter === option ? 'bold' : 'normal'
+                                  }}
                                 >
                                   {option}
                                 </Text>
@@ -694,15 +717,30 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
                         )}
                       </View>
                       
+                      
                       {/* Assigned By Filter */}
                       <Pressable 
-                        className="flex-row items-center"
                         onPress={closeAllDropdowns}
+                        style={{
+                          display: 'flex',
+                          height: 44,
+                          padding: 8,
+                          paddingLeft: 12,
+                          paddingRight: 8,
+                          alignItems: 'center',
+                          gap: 16,
+                          flexDirection: 'row',
+                          borderRadius: 4, // Assuming var(--radius) is 4px
+                          borderWidth: 1,
+                          borderColor: '#FAE5CA',
+                          backgroundColor: '#FFF',
+                          width: 153
+                        }}
                       >
-                        <Text className="text-sm text-[#333] mr-2">Assigned by</Text>
+                        <Text className="text-sm text-[#333]">Assigned by</Text>
                         <Image
-                          source={{ uri: 'https://via.placeholder.com/24' }} // Replace with actual avatar
-                          className="w-6 h-6 rounded-full"
+                          source={{ uri: 'https://via.placeholder.com/24' }}
+                          style={{ width: 24, height: 24, borderRadius: 12 }}
                         />
                       </Pressable>
                     </View>
