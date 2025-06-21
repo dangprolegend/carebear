@@ -70,7 +70,7 @@ const throttleRequest = async <T>(
   }
 };
 
-const API_BASE_URL = "https://0dc2-2402-800-6f5f-9272-398e-d727-415-303c.ngrok-free.app";
+const API_BASE_URL = "https://mature-catfish-cheaply.ngrok-free.app";
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
