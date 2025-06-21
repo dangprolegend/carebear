@@ -211,7 +211,12 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
         </Pressable>
         {showAssigneeDropdown && (
           <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg max-h-60">
-            <ScrollView>
+            <ScrollView 
+              nestedScrollEnabled={true} 
+              showsVerticalScrollIndicator={true} 
+              contentContainerStyle={{ flexGrow: 0 }}
+              style={{ maxHeight: 240 }}
+            >
               {assigneeOptions.length === 0 ? (
                 <Text className="text-slate-400 px-3 py-2">No users found</Text>
               ) : (
@@ -366,7 +371,12 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
         </Pressable>
         {showTimesDropdown && (
           <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg max-h-60">
-            <ScrollView>
+            <ScrollView 
+              nestedScrollEnabled={true} 
+              showsVerticalScrollIndicator={true} 
+              contentContainerStyle={{ flexGrow: 0 }}
+              style={{ maxHeight: 240 }}
+            >
               {Array.from({ length: 24 }).map((_, hour) => {
                 const label = hour.toString().padStart(2, '0') + ':00';
                 return (
@@ -406,23 +416,29 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
         </Pressable>
         {showRecurrenceDropdown && (
           <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg">
-            {[
-              { label: 'None', value: 'NONE' },
-              { label: 'Daily', value: 'DAILY' },
-              { label: 'Weekly', value: 'WEEKLY' },
-              { label: 'Monthly', value: 'MONTHLY' }
-            ].map(opt => (
-              <Pressable
-                key={opt.value}
-                className={`py-2 px-3 ${manualForm.recurrenceRule === opt.value ? 'bg-blue-100' : ''}`}
-                onPress={() => {
-                  handleInputChange('recurrenceRule', opt.value);
-                  setShowRecurrenceDropdown(false);
-                }}
-              >
-                <Text className={`text-base ${manualForm.recurrenceRule === opt.value ? 'font-bold text-blue-700' : 'text-black'}`}>{opt.label}</Text>
-              </Pressable>
-            ))}
+            <ScrollView 
+              nestedScrollEnabled={true} 
+              showsVerticalScrollIndicator={true} 
+              contentContainerStyle={{ flexGrow: 0 }}
+            >
+              {[
+                { label: 'None', value: 'NONE' },
+                { label: 'Daily', value: 'DAILY' },
+                { label: 'Weekly', value: 'WEEKLY' },
+                { label: 'Monthly', value: 'MONTHLY' }
+              ].map(opt => (
+                <Pressable
+                  key={opt.value}
+                  className={`py-2 px-3 ${manualForm.recurrenceRule === opt.value ? 'bg-blue-100' : ''}`}
+                  onPress={() => {
+                    handleInputChange('recurrenceRule', opt.value);
+                    setShowRecurrenceDropdown(false);
+                  }}
+                >
+                  <Text className={`text-base ${manualForm.recurrenceRule === opt.value ? 'font-bold text-blue-700' : 'text-black'}`}>{opt.label}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
           </View>
         )}
       </View>

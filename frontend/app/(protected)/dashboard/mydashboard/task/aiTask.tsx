@@ -222,7 +222,13 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         ))}
       </View>
 
-      <ScrollView className="pt-5 mt-4 pt-4  ml-2 mr-2">
+      <ScrollView 
+        className="pb-10" 
+        showsVerticalScrollIndicator={true}
+        nestedScrollEnabled={true}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
         <Text className="font-semibold mb-2">Task Name</Text>
         <TextInput
           className="border rounded-lg px-3 py-3 mb-8"
@@ -264,41 +270,45 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
               </View>
             ) : (
               <Text className="text-base">Select Assignee</Text>
-            )}
+            )
+            }
             <MaterialIcons name={showAssigneeDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
           </Pressable>
           {showAssigneeDropdown && (
-            <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg max-h-60">
-              <ScrollView>
-                {assigneeOptions.length === 0 ? (
-                  <Text className="text-slate-400 px-3 py-2">No users found</Text>
-                ) : (
-                  assigneeOptions.map(user => (
-                    <Pressable
-                      key={user.value}
-                      className={`py-2 px-3 ${formTasks[activeTab]?.assignedTo === user.value ? 'bg-blue-100' : ''}`}
-                      onPress={() => {
-                        handleInputChange('assignedTo', user.value);
-                        setShowAssigneeDropdown(false);
-                      }}
-                    >
-                      <View className="flex-row items-center">
-                        {user.imageURL ? (
-                          <Image source={{ uri: user.imageURL }} className="w-8 h-8 rounded-full mr-2" />
-                        ) : (
-                          <Avatar 
-                            name={user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.label} 
-                            size="sm"
-                            className="mr-2"
-                          />
-                        )}
-                        <Text className={`text-base ${formTasks[activeTab]?.assignedTo === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>
-                          {user.label}
-                        </Text>
-                      </View>
-                    </Pressable>
-                  ))
-                )}
+            <View 
+              className="absolute left-0 right-0 top-14 z-50 bg-white border rounded-lg shadow-lg max-h-60"
+              style={{ elevation: 5 }}
+            >
+              <ScrollView 
+                nestedScrollEnabled={true} 
+                showsVerticalScrollIndicator={true} 
+                contentContainerStyle={{ flexGrow: 0 }}
+                style={{ maxHeight: 240 }}
+                keyboardShouldPersistTaps="handled"
+              >
+                {assigneeOptions.map(user => (
+                  <Pressable
+                    key={user.value}
+                    className={`py-3 px-4 flex-row items-center ${formTasks[activeTab]?.assignedTo === user.value ? 'bg-blue-100' : ''}`}
+                    onPress={() => {
+                      handleInputChange('assignedTo', user.value);
+                      setShowAssigneeDropdown(false);
+                    }}
+                  >
+                    <View className="mr-3">
+                            <Avatar 
+                              name={`${user.firstName || ''} ${user.lastName || ''}`}
+                              size="sm"
+                              src={user.imageURL || undefined}
+                            />
+                    </View>
+                    <View>
+                      <Text className={`text-base ${formTasks[activeTab]?.assignedTo === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>
+                        {user.label}
+                      </Text>
+                    </View>
+                  </Pressable>
+                ))}
               </ScrollView>
             </View>
           )}
@@ -435,14 +445,23 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
             <MaterialIcons name={showTimesDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
           </Pressable>
           {showTimesDropdown && (
-            <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg max-h-60">
-              <ScrollView>
+            <View 
+              className="absolute left-0 right-0 top-14 z-50 bg-white border rounded-lg shadow-lg max-h-60"
+              style={{ elevation: 5 }}
+            >
+              <ScrollView 
+                nestedScrollEnabled={true} 
+                showsVerticalScrollIndicator={true}
+                contentContainerStyle={{ flexGrow: 0 }}
+                style={{ maxHeight: 240 }}
+                keyboardShouldPersistTaps="handled"
+              >
                 {Array.from({ length: 24 }).map((_, hour) => {
                   const label = hour.toString().padStart(2, '0') + ':00';
                   return (
                     <Pressable
                       key={label}
-                      className={`py-2 px-3 ${formTasks[activeTab]?.detail === label ? 'bg-blue-100' : ''}`}
+                      className={`py-3 px-4 ${formTasks[activeTab]?.detail === label ? 'bg-blue-100' : ''}`}
                       onPress={() => {
                         handleInputChange('detail', label);
                         setShowTimesDropdown(false);
@@ -472,21 +491,32 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
             <MaterialIcons name={showRecurrenceDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
           </Pressable>
           {showRecurrenceDropdown && (
-            <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg">
-              {['NONE', 'DAILY', 'WEEKLY', 'MONTHLY'].map(option => (
-                <Pressable
-                  key={option}
-                  className={`py-2 px-3 ${formTasks[activeTab]?.subDetail === option ? 'bg-blue-100' : ''}`}
-                  onPress={() => {
-                    handleInputChange('subDetail', option);
-                    setShowRecurrenceDropdown(false);
-                  }}
-                >
-                  <Text className={`text-base ${formTasks[activeTab]?.subDetail === option ? 'font-bold text-blue-700' : 'text-black'}`}>
-                    {option.charAt(0) + option.slice(1).toLowerCase()}
-                  </Text>
-                </Pressable>
-              ))}
+            <View 
+              className="absolute left-0 right-0 top-14 z-50 bg-white border rounded-lg shadow-lg"
+              style={{ elevation: 5 }}
+            >
+              <ScrollView 
+                nestedScrollEnabled={true} 
+                showsVerticalScrollIndicator={true} 
+                contentContainerStyle={{ flexGrow: 0 }}
+                style={{ maxHeight: 240 }}
+                keyboardShouldPersistTaps="handled"
+              >
+                {['NONE', 'DAILY', 'WEEKLY', 'MONTHLY'].map(option => (
+                  <Pressable
+                    key={option}
+                    className={`py-3 px-4 ${formTasks[activeTab]?.subDetail === option ? 'bg-blue-100' : ''}`}
+                    onPress={() => {
+                      handleInputChange('subDetail', option);
+                      setShowRecurrenceDropdown(false);
+                    }}
+                  >
+                    <Text className={`text-base ${formTasks[activeTab]?.subDetail === option ? 'font-bold text-blue-700' : 'text-black'}`}>
+                      {option.charAt(0) + option.slice(1).toLowerCase()}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
             </View>
           )}
         </View>
