@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, View, Text, Pressable, Platform, Image, Modal } from 'react-native';
+import { ScrollView, View, Text, Pressable, Platform, Image, Modal, ActivityIndicator } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Calendar from 'expo-calendar';
 import * as Notifications from 'expo-notifications';
@@ -7,7 +7,24 @@ import { groupTasksByTimeAndType, TaskGroup, Task } from './task';
 import TaskCard from './taskcard';
 import { Link, useRouter } from 'expo-router';
 import DashboardTimelineMarker from '../../../../components/DashboardTimelineMarker';
-import { updateTaskStatus, completeTaskWithMethod, fetchTasksForDashboard, getCurrentGroupID } from '../../../../service/apiServices';
+import { 
+  updateTaskStatus, 
+  completeTaskWithMethod, 
+  fetchTasksForDashboard, 
+  getCurrentGroupID,
+  fetchUsersInGroup
+} from '../../../../service/apiServices';
+// Add this import at the top of the file
+import { useAuth, useUser } from '@clerk/clerk-expo';
+import { setClerkAuthTokenForApiService } from '../../../../service/apiServices';
+
+type DashboardBaseProps = {
+  tasks: Task[];
+  showHighPrioritySection?: boolean;
+  title?: string;
+  userRole?: string;
+};
+
 
 // Configure notifications (unchanged)...
 Notifications.setNotificationHandler({
@@ -17,13 +34,6 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
-
-type DashboardBaseProps = {
-  tasks: Task[];
-  showHighPrioritySection?: boolean;
-  title?: string;
-  userRole?: string;
-};
 
 const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Dashboard', userRole = 'member' }: DashboardBaseProps) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -35,16 +45,40 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
   const router = useRouter();
 
   // New state for group filtering
-  // New state for group filtering
   const [userGroups, setUserGroups] = useState<{id: string, name: string}[]>([]);
   const [showGroupSelector, setShowGroupSelector] = useState(false);
   const [showTaskFilter, setShowTaskFilter] = useState(false);
   const [selectedGroupName, setSelectedGroupName] = useState<string>('The Cheese Fam');
   const [selectedTaskFilter, setSelectedTaskFilter] = useState<string>("My Task, Brother's Task");
   
+  // New state for assigned by filter
+  const [familyMembers, setFamilyMembers] = useState<{id: string, name: string, avatar: string}[]>([]);
+  const [showAssignedByFilter, setShowAssignedByFilter] = useState(false);
+  const [selectedAssignedBy, setSelectedAssignedBy] = useState<{id: string, name: string, avatar: string} | null>(null);
+  const [loadingMembers, setLoadingMembers] = useState(false);
 
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
+
+  // Get the current user
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  
+  // Existing state variables...
+  
+  // Add this effect to set the Clerk token for API service
+  useEffect(() => {
+    const setAuthToken = async () => {
+      try {
+        const token = await getToken();
+        setClerkAuthTokenForApiService(token);
+      } catch (error) {
+        console.error('Failed to get Clerk token:', error);
+      }
+    };
+    
+    setAuthToken();
+  }, [getToken]);
 
   // Add this effect to load user groups on component mount
   useEffect(() => {
@@ -91,6 +125,7 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
     };
   }, []);
 
+  
   // Add a function to handle group selection
   const handleGroupChange = (groupName: string) => {
     setSelectedGroupName(groupName);
@@ -106,11 +141,39 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
     setShowTaskFilter(false);
   };
 
-  // Add a function to close all dropdowns
+  // Update close all dropdowns function
   const closeAllDropdowns = () => {
     setShowGroupSelector(false);
     setShowTaskFilter(false);
+    setShowAssignedByFilter(false);
   };
+
+  // Add function to handle assigned by selection
+  const handleAssignedByChange = (member: {id: string, name: string, avatar: string} | null) => {
+    setSelectedAssignedBy(member);
+    setShowAssignedByFilter(false);
+    
+    // Filter tasks by assignedBy
+    if (!member) {
+      // Show all tasks if "All Members" is selected
+      setLocalTasks(tasks);
+    } else {
+      // Filter tasks assigned by the selected member
+      const filteredTasks = tasks.filter(task => {
+        const assignedById = typeof task.assignedBy === 'object' && task.assignedBy !== null 
+          ? task.assignedBy._id 
+          : task.assignedBy;
+          
+        return assignedById === member.id;
+      });
+      
+      setLocalTasks(filteredTasks);
+    }
+  };
+
+  // Rest of the component...
+
+  // Now update the "Assigned by" filter in the Filter Options section
 
   // Helper: Request permissions
   const registerForPushNotificationsAsync = async () => {
@@ -252,6 +315,61 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
 
   // Check if user is care receiver
   const isCareReceiver = userRole === 'carereceiver';
+
+  // Load family members when group changes
+  useEffect(() => {
+    const loadFamilyMembers = async () => {
+      if (isCareReceiver) return;
+      
+      try {
+        setLoadingMembers(true);
+        const groupID = getCurrentGroupID();
+        
+        if (!groupID) {
+          console.error("No group ID available to load family members");
+          return;
+        }
+        
+        const members = await fetchUsersInGroup(groupID);
+        
+        // Map the API response to our format
+        const mappedMembers = members.map(member => ({
+          id: member._id,
+          name: member.firstName && member.lastName 
+            ? `${member.firstName} ${member.lastName}`
+            : member.firstName || member.email || 'Unknown User',
+          avatar: member.imageURL || 'https://via.placeholder.com/40'
+        }));
+        
+        setFamilyMembers(mappedMembers);
+
+        // Find myself in the members list and set as default
+        if (user) {
+          const currentUserId = user.id;
+          // Look for a member with matching clerkID
+          const myself = members.find(member => member.clerkID === currentUserId);
+          
+          if (myself) {
+            setSelectedAssignedBy({
+              id: myself._id,
+              name: myself.firstName && myself.lastName 
+                ? `${myself.firstName} ${myself.lastName}`
+                : myself.firstName || myself.email || 'Me',
+              avatar: myself.imageURL || 'https://via.placeholder.com/40'
+            });
+          }
+        }
+        
+      } catch (error) {
+        console.error('Error loading family members:', error);
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+    
+    loadFamilyMembers();
+  }, [selectedGroupName, isCareReceiver]);
+  
 
   // Get avatar URL helper function
   const getAvatarUrl = (user: any): string => {
@@ -638,7 +756,7 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
 
                 {/* Filter Options */}
                 {!isCareReceiver && (
-                  <View className="px-6 pb-4">
+                  <View style={{ marginTop: 16 }} className="px-6 pb-4">
                     <View className="flex-row justify-between w-full">
                       {/* Task Assignment Filter with updated CSS */}
                       <View>
@@ -719,30 +837,130 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
                       
                       
                       {/* Assigned By Filter */}
-                      <Pressable 
-                        onPress={closeAllDropdowns}
-                        style={{
-                          display: 'flex',
-                          height: 44,
-                          padding: 8,
-                          paddingLeft: 12,
-                          paddingRight: 8,
-                          alignItems: 'center',
-                          gap: 16,
-                          flexDirection: 'row',
-                          borderRadius: 4, // Assuming var(--radius) is 4px
-                          borderWidth: 1,
-                          borderColor: '#FAE5CA',
-                          backgroundColor: '#FFF',
-                          width: 153
-                        }}
-                      >
-                        <Text className="text-sm text-[#333]">Assigned by</Text>
-                        <Image
-                          source={{ uri: 'https://via.placeholder.com/24' }}
-                          style={{ width: 24, height: 24, borderRadius: 12 }}
-                        />
-                      </Pressable>
+                      <View>
+                        <Pressable 
+                          onPress={() => {
+                            setShowGroupSelector(false);
+                            setShowTaskFilter(false);
+                            setShowAssignedByFilter(!showAssignedByFilter);
+                          }}
+                          style={{
+                            display: 'flex',
+                            height: 44,
+                            padding: 8,
+                            paddingLeft: 12,
+                            paddingRight: 8,
+                            alignItems: 'center',
+                            gap: 16,
+                            flexDirection: 'row',
+                            borderRadius: 4,
+                            borderWidth: 1,
+                            borderColor: '#FAE5CA',
+                            backgroundColor: '#FFF',
+                            width: 153
+                          }}
+                        >
+                          <Text className="text-sm text-[#333]">Assigned by</Text>
+                          <Image
+                            source={{ 
+                              uri: selectedAssignedBy?.avatar || 
+                                  'https://via.placeholder.com/24?text=🧑' 
+                            }}
+                            style={{ 
+                              width: 24, 
+                              height: 24, 
+                              borderRadius: 12,
+                              backgroundColor: selectedAssignedBy ? 'transparent' : '#E0E0E0'
+                            }}
+                          />
+                        </Pressable>
+                        
+                        {/* Assigned by dropdown */}
+                        {showAssignedByFilter && (
+                          <View
+                            style={{ 
+                              position: 'absolute',
+                              top: 44,
+                              right: 0,
+                              backgroundColor: 'white',
+                              borderRadius: 4,
+                              borderWidth: 1,
+                              borderColor: '#FAE5CA',
+                              zIndex: 10,
+                              width: 153,
+                              elevation: 5,
+                            }}
+                          >
+                            {loadingMembers ? (
+                              <View style={{ padding: 12, alignItems: 'center' }}>
+                                <ActivityIndicator size="small" color="#2A1800" />
+                              </View>
+                            ) : (
+                              <>
+                                {/* Option for All Members */}
+                                <Pressable
+                                  style={{
+                                    paddingVertical: 8,
+                                    paddingHorizontal: 12,
+                                    borderBottomWidth: 1,
+                                    borderBottomColor: '#FAE5CA',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between'
+                                  }}
+                                  onPress={() => handleAssignedByChange(null)}
+                                >
+                                  <Text 
+                                    style={{ 
+                                      color: '#2A1800',
+                                      fontWeight: selectedAssignedBy === null ? 'bold' : 'normal'
+                                    }}
+                                  >
+                                    All Members
+                                  </Text>
+                                </Pressable>
+                                
+                                {/* Individual family members */}
+                                {familyMembers.map((member, index) => (
+                                  <Pressable
+                                    key={index}
+                                    style={{
+                                      paddingVertical: 8,
+                                      paddingHorizontal: 12,
+                                      borderBottomWidth: index < familyMembers.length - 1 ? 1 : 0,
+                                      borderBottomColor: '#FAE5CA',
+                                      flexDirection: 'row',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between'
+                                    }}
+                                    onPress={() => handleAssignedByChange(member)}
+                                  >
+                                    <Text 
+                                      style={{ 
+                                        color: '#2A1800',
+                                        fontWeight: selectedAssignedBy?.id === member.id ? 'bold' : 'normal'
+                                      }}
+                                      numberOfLines={1}
+                                    >
+                                      {member.name}
+                                    </Text>
+                                    <Image
+                                      source={{ uri: member.avatar }}
+                                      style={{ width: 20, height: 20, borderRadius: 10 }}
+                                    />
+                                  </Pressable>
+                                ))}
+                                
+                                {familyMembers.length === 0 && (
+                                  <View style={{ padding: 12, alignItems: 'center' }}>
+                                    <Text style={{ color: '#666' }}>No members found</Text>
+                                  </View>
+                                )}
+                              </>
+                            )}
+                          </View>
+                        )}
+                      </View>
                     </View>
                   </View>
                 )}

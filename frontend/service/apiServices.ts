@@ -318,15 +318,12 @@ export const createManualTaskAPI = async (
 };
 
 export const fetchUsersInGroup = async (groupID: string): Promise<any[]> => {
-  const token = await getClerkToken();
-  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
   if (!groupID) throw new ApiError("Group ID is required to fetch users.", 400);
   const url = `${API_BASE_URL}/api/groups/${groupID}/users`;
   const response = await fetch(url, {
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
     },
   });
   const users = await handleApiResponse(response);
