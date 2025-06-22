@@ -216,7 +216,7 @@ export default function Profile() {
           </View>
         </View>
 
-          <CalendarStrip selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+          <CalendarStrip selectedDate={selectedDate} setSelectedDate={setSelectedDate} userID={userID} />
       </View>
 
         <View className="flex flex-col items-start gap-[8px] p-4 rounded-lg bg-[#FAE5CA] mt-10 w-5/6 self-center">

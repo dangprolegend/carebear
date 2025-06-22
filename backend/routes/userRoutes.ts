@@ -5,6 +5,7 @@ import { sendInvitation } from '../controllers/invitationController';
 
 const router: Router = express.Router();
 
+router.get('/:userID', getUser);
 router.get('/:userID/group', getUserGroup);
 router.get('/:userID/allGroups', getAllGroups);
 router.patch('/:userID/onboarding', provideAdditionalUserInfo);

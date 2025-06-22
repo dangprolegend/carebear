@@ -1,19 +1,74 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, Pressable, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Calendar from 'expo-calendar';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 type CalendarStripProps = {
   selectedDate: Date;
   setSelectedDate: (date: Date) => void;
+  userID: string; // Added userID as a prop
   // might want to pass down calendarEvents if intend to display them
   // or pass a function to fetch them based on the selectedDate in the parent
   // calendarEvents: Calendar.Event[]; 
 };
 
-const CalendarStrip = ({ selectedDate, setSelectedDate }: CalendarStripProps) => {
+const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripProps) => {
   const [calendarEvents, setCalendarEvents] = useState<Calendar.Event[]>([]);
+  const [userCreatedDate, setUserCreatedDate] = useState<Date | null>(null);
+  const [taskCompletionByDate, setTaskCompletionByDate] = useState<{[dateKey: string]: number}>({});
+  const [primaryGroupId, setPrimaryGroupId] = useState<string | null>(null);
 
+  const CircularProgress = ({ percentage, size = 18 }: { percentage: number; size?: number }) => {
+    const radius = size / 2;
+    const centerX = size / 2;
+    const centerY = size / 2;
+    
+    // Calculate the end point of the arc based on percentage
+    const angle = (percentage / 100) * 360 - 90; // Start from top (-90 degrees)
+    const endX = centerX + radius * Math.cos((angle * Math.PI) / 180);
+    const endY = centerY + radius * Math.sin((angle * Math.PI) / 180);
+    
+    // Large arc flag for arcs > 180 degrees
+    const largeArcFlag = percentage > 50 ? 1 : 0;
+    
+    // Create path for filled arc
+    const pathData = percentage === 0 
+      ? '' 
+      : `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY} Z`;
+
+    return (
+      <View className="relative" style={{ width: size, height: size }}>
+        {/* Background circle with heart */}
+        <View 
+          className="bg-[#2A1800] rounded-full flex items-center justify-center"
+          style={{ width: size, height: size }}
+        >
+          <Image 
+            source={require('../assets/icons/heart.png')} // Adjust path to your heart icon
+            style={{ width: size * 0.6, height: size * 0.6 }}
+            resizeMode="contain"
+          />
+        </View>
+        
+        {/* Blue filled progress overlay with circular clipping */}
+        {percentage > 0 && (
+          <View 
+            className="absolute top-0 left-0 rounded-full overflow-hidden"
+            style={{ width: size, height: size }}
+          >
+            <Svg width={size} height={size}>
+              <Path
+                d={pathData}
+                fill="#007AFF"
+                opacity={0.8}
+              />
+            </Svg>
+          </View>
+        )}
+      </View>
+    );
+  };
   useEffect(() => {
     (async () => {
       const { status } = await Calendar.requestCalendarPermissionsAsync();
