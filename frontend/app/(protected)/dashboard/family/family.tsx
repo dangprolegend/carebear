@@ -4,7 +4,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from 'expo-router';
 import { useEffect, useState, useRef } from 'react';
-import AddFamily from './add_family';
 import { useAuth } from '@clerk/clerk-expo';
 import axios from 'axios';
 import PillIcon from '../../../../assets/icons/pill.png';
@@ -27,6 +26,7 @@ import bear3 from '../../../../assets/images/Bear-3.png';
 import bear4 from '../../../../assets/images/Bear-4.png';
 import bear5 from '../../../../assets/images/Bear-5.png';
 import bear6 from '../../../../assets/images/Bear-6.png';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 // Define the FamilyMember type
 interface FamilyMember {
@@ -60,6 +60,8 @@ export default function Family() {
   const [userID, setUserID] = useState(null);
   const [userImageURL, setUserImageURL] = useState<string | null>(null);
   const [userFullName, setUserFullName] = useState<string | null>(null);
+  const [taskCompletionByUser, setTaskCompletionByUser] = useState<{[userID: string]: number}>({});
+  const [primaryGroupId, setPrimaryGroupId] = useState<string | null>(null);
 
   // Daily status display states (store both value and emoji for user)
   const [todayMoodValue, setTodayMoodValue] = useState<string>('');
@@ -160,6 +162,36 @@ export default function Family() {
           return 'BearBoss';
         default:
           return role;
+      }
+    };
+
+    const fetchPrimaryGroupId = async (userID: string) => {
+      try {
+        const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/group`);
+        setPrimaryGroupId(response.data.groupID);
+        return response.data.groupID;
+      } catch (error) {
+        console.error('Error fetching primary group ID:', error);
+        return null;
+      }
+    };
+
+    const fetchTaskCompletion = async (userID: string, groupID: string) => {
+      try {
+        const response = await axios.get(`https://mature-catfish-cheaply.ngrok-free.app/api/tasks/user/${userID}/group/${groupID}/completion`);
+        const percentage = response.data.completionPercentage || 0;
+        setTaskCompletionByUser(prev => ({
+          ...prev,
+          [userID]: percentage
+        }));
+        return percentage;
+      } catch (error) {
+        console.error('Error fetching task completion:', error);
+        setTaskCompletionByUser(prev => ({
+          ...prev,
+          [userID]: 0
+        }));
+        return 0;
       }
     };
 
@@ -308,10 +340,17 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
       const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/familyMembers?groupID=${groupID}`);
       console.log(`Fetched family members for group ${groupID}:`, response.data);
 
-      // Fetch daily status for each family member
+      // Fetch daily status and task completion for each family member
       const membersWithStatus = await Promise.all(
         response.data.map(async (member: any) => {
           const status = await fetchMemberStatus(member.userID);
+          
+          // Fetch each member's primary group ID and their task completion
+          const memberPrimaryGroup = await fetchPrimaryGroupId(member.userID);
+          if (memberPrimaryGroup) {
+            await fetchTaskCompletion(member.userID, memberPrimaryGroup);
+          }
+          
           return {
             ...member,
             mood: status.mood,
@@ -467,6 +506,12 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
           const res = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/info`);
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
+
+          const primaryGroup = await fetchPrimaryGroupId(userID);
+          if (primaryGroup) {
+            await fetchTaskCompletion(userID, primaryGroup);
+          }
+
           const { groupIDs } = await fetchUserGroups(userID);
           if (groupIDs.length > 0) {
             await fetchFamilyMembersForGroup(userID, groupIDs[0]);
@@ -544,6 +589,52 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
     </TouchableOpacity>
   );
 
+  const CircularProgress = ({ percentage, size = 24 }: { percentage: number; size?: number }) => {
+    const radius = size / 2;
+    const centerX = size / 2;
+    const centerY = size / 2;
+    
+    // Calculate the end point of the arc based on percentage
+    const angle = (percentage / 100) * 360 - 90; // Start from top (-90 degrees)
+    const endX = centerX + radius * Math.cos((angle * Math.PI) / 180);
+    const endY = centerY + radius * Math.sin((angle * Math.PI) / 180);
+    
+    // Large arc flag for arcs > 180 degrees
+    const largeArcFlag = percentage > 50 ? 1 : 0;
+    
+    const pathData = percentage === 0 
+      ? '' 
+      : `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY} Z`;
+
+    return (
+      <View className="relative" style={{ width: size, height: size }}>
+        {/* Background circle with heart */}
+        <View 
+          className="bg-[#2A1800] rounded-full flex items-center justify-center"
+          style={{ width: size, height: size }}
+        >
+          <Image source={Heart} className="w-3.5 h-3.5" />
+        </View>
+        
+        {/* Blue filled progress overlay with circular clipping */}
+        {percentage > 0 && (
+          <View 
+            className="absolute top-0 left-0 rounded-full overflow-hidden"
+            style={{ width: size, height: size }}
+          >
+            <Svg width={size} height={size}>
+              <Path
+                d={pathData}
+                fill="#198AE9"
+                opacity={0.8} 
+              />
+            </Svg>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   // FamilyMemberCard Component
 const FamilyMemberCard = ({ 
   member, 
@@ -599,14 +690,26 @@ const FamilyMemberCard = ({
           <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
             <Text className="text-xs">{getBodyEmoji(member.body || '')}</Text>
           </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+          {/* <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
             <Image source={Heart} className="w-3.5 h-3.5" />
-          </View>
+          </View> */}
+          {isCurrentUser ? (
+           <CircularProgress 
+              percentage={taskCompletionByUser[userID] || 0} 
+              size={24} 
+            />
+         ) : (
+           <CircularProgress 
+             percentage={taskCompletionByUser[member.userID] || 0} 
+             size={24} 
+           />
+         )}
         </View>
       </View>
     </Pressable>
   );
 };
+
 
   // Show loading screen while checking status
   if (isCheckingStatus) {
