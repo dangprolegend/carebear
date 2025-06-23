@@ -62,7 +62,7 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
 
   // Add/modify these state variables in the DashboardBase component
   const [showWhoseTaskFilter, setShowWhoseTaskFilter] = useState(false);
-  const [selectedTaskAssignee, setSelectedTaskAssignee] = useState<{id: string, name: string, avatar: string} | null>(null);
+  const [selectedTaskAssignee, setSelectedTaskAssignee] = useState<{id: string, name: string, avatar: string}[]>([]);
   const [taskFilterLabel, setTaskFilterLabel] = useState<string>("All Tasks");
 
   // Get the current user
@@ -315,28 +315,74 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
     );
   };
 
+  // Add a helper function to filter tasks by multiple assignees
+const filterTasksByAssignee = (assignees: {id: string, name: string, avatar: string}[]) => {
+  if (assignees.length === 0) {
+    setLocalTasks(tasks);
+    return;
+  }
+  
+  const assigneeIds = assignees.map(assignee => assignee.id);
+  
+  const filteredTasks = tasks.filter(task => {
+    const assignedTo = task.assignedTo as { _id?: string } | string | null | undefined;
+    const assignedToId = typeof assignedTo === 'object' && assignedTo !== null && '_id' in assignedTo
+      ? assignedTo._id
+      : assignedTo;
+      
+    return assigneeIds.includes(assignedToId as string);
+  });
+  
+  setLocalTasks(filteredTasks);
+};
+
+// Close the dropdown but don't reset selections
+const closeWhoseTaskFilter = () => {
+  setShowWhoseTaskFilter(false);
+};
+
   // Add this function to handle task assignee selection
 const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: string} | null) => {
-  setSelectedTaskAssignee(member);
-  setShowWhoseTaskFilter(false);
   
   if (!member) {
     setTaskFilterLabel("All Tasks");
-    // Show all tasks for the selected date
+    setSelectedTaskAssignee([]);
+    setTaskFilterLabel("All Tasks");
+    setLocalTasks(tasks);
+    return;
+  }
+  // Check if the member is already selected
+  const isAlreadySelected = (selectedTaskAssignee ?? []).some(selected => selected.id === member.id);
+  
+  let newSelection;
+  if (isAlreadySelected) {
+    // Remove the member from selection
+    newSelection = selectedTaskAssignee.filter(selected => selected.id !== member.id);
+  } else {
+    // Add the member to selection
+    newSelection = [...selectedTaskAssignee, member];
+  }
+  
+  // Update the selection state
+  setSelectedTaskAssignee(newSelection);
+
+  // Update the filter label
+  if (newSelection.length === 0) {
+    setTaskFilterLabel("All Tasks");
+    // Show all tasks
+    setLocalTasks(tasks);
+  } else if (newSelection.length === 1) {
+    setTaskFilterLabel(`${newSelection[0].name}'s Tasks`);
+    // Filter for just one member
+    filterTasksByAssignee(newSelection);
+  } else if (newSelection.length === familyMembers.length) {
+    setTaskFilterLabel("Everyone's Tasks");
+    // If all members are selected, show all tasks
     setLocalTasks(tasks);
   } else {
-    setTaskFilterLabel(`${member.name}'s Tasks`);
-    // Filter tasks by assignee
-    const filteredTasks = tasks.filter(task => {
-      const assignedTo = task.assignedTo as { _id?: string } | string | null | undefined;
-      const assignedToId = typeof assignedTo === 'object' && assignedTo !== null && '_id' in assignedTo
-        ? assignedTo._id
-        : assignedTo;
-        
-      return assignedToId === member.id;
-    });
-    
-    setLocalTasks(filteredTasks);
+    setTaskFilterLabel(`${newSelection.length} Members' Tasks`);
+    // Filter for multiple members
+    filterTasksByAssignee(newSelection);
   }
 };
 
@@ -830,7 +876,7 @@ useEffect(() => {
                           />
                         </Pressable>
                         
-                        {/* Dropdown menu for task filter - aligned with selector */}
+                        // Update the dropdown menu for task filter to match the Figma design
                         {showWhoseTaskFilter && (
                           <View
                             style={{ 
@@ -844,6 +890,7 @@ useEffect(() => {
                               zIndex: 1000,
                               width: 153,
                               elevation: 10,
+                              paddingVertical: 8,
                             }}
                           >
                             {loadingMembers ? (
@@ -857,54 +904,87 @@ useEffect(() => {
                                   style={{
                                     paddingVertical: 8,
                                     paddingHorizontal: 12,
-                                    borderBottomWidth: 1,
-                                    borderBottomColor: '#FAE5CA',
                                     flexDirection: 'row',
                                     alignItems: 'center',
-                                    justifyContent: 'space-between'
                                   }}
                                   onPress={() => handleTaskAssigneeChange(null)}
                                 >
-                                  <Text 
-                                    style={{ 
-                                      color: '#2A1800',
-                                      fontWeight: selectedTaskAssignee === null ? 'bold' : 'normal'
+                                  <View 
+                                    style={{
+                                      width: 20,
+                                      height: 20,
+                                      borderWidth: 1,
+                                      borderColor: '#2A1800',
+                                      borderRadius: 2,
+                                      marginRight: 8,
+                                      justifyContent: 'center',
+                                      alignItems: 'center',
+                                      backgroundColor: selectedTaskAssignee.length === 0 ? '#2A1800' : 'transparent'
                                     }}
                                   >
-                                    All Tasks
-                                  </Text>
+                                    {selectedTaskAssignee.length === 0 && (
+                                      <MaterialIcons name="check" size={16} color="white" />
+                                    )}
+                                  </View>
+                                  <Text style={{ color: '#2A1800', fontSize: 14 }}>All</Text>
                                 </Pressable>
                                 
-                                {/* Individual family members */}
+                                {/* Individual family members with square checkboxes */}
                                 {familyMembers.map((member, index) => (
                                   <Pressable
                                     key={index}
                                     style={{
                                       paddingVertical: 8,
                                       paddingHorizontal: 12,
-                                      borderBottomWidth: index < familyMembers.length - 1 ? 1 : 0,
-                                      borderBottomColor: '#FAE5CA',
                                       flexDirection: 'row',
                                       alignItems: 'center',
                                       justifyContent: 'space-between'
                                     }}
                                     onPress={() => handleTaskAssigneeChange(member)}
                                   >
-                                    <Text 
-                                      style={{ 
-                                        color: '#2A1800',
-                                        fontWeight: selectedTaskAssignee?.id === member.id ? 'bold' : 'normal'
-                                      }}
-                                      numberOfLines={1}
-                                    >
-                                      {member.name}'s Tasks
-                                    </Text>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                      <View 
+                                        style={{
+                                          width: 20,
+                                          height: 20,
+                                          borderWidth: 1,
+                                          borderColor: '#2A1800',
+                                          borderRadius: 2,
+                                          marginRight: 8,
+                                          justifyContent: 'center',
+                                          alignItems: 'center',
+                                          backgroundColor: selectedTaskAssignee.some(selected => selected.id === member.id) ? '#2A1800' : 'transparent'
+                                        }}
+                                      >
+                                        {selectedTaskAssignee.some(selected => selected.id === member.id) && (
+                                          <MaterialIcons name="check" size={16} color="white" />
+                                        )}
+                                      </View>
+                                      <Text 
+                                        style={{ 
+                                          color: '#2A1800',
+                                          fontSize: 14
+                                        }}
+                                        numberOfLines={1}
+                                      >
+                                        {member.name.split(' ')[0]}
+                                      </Text>
+                                    </View>
+                                    
                                     <Image
                                       source={{ uri: member.avatar }}
-                                      style={{ width: 20, height: 20, borderRadius: 10 }}
+                                      style={{ 
+                                        width: 24, 
+                                        height: 24, 
+                                        borderRadius: 12,
+                                        borderWidth: 1,
+                                        borderColor: '#FAE5CA', 
+                                      }}
                                     />
                                   </Pressable>
                                 ))}
+                                
+                                {/* No Apply button needed - matches Figma design */}
                                 
                                 {familyMembers.length === 0 && (
                                   <View style={{ padding: 12, alignItems: 'center' }}>
