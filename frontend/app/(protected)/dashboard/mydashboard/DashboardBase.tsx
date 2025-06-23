@@ -466,9 +466,9 @@ useEffect(() => {
   // Get priority color helper function
   const getPriorityColor = (priority?: string): string => {
     switch (priority) {
-      case 'high': return '#FF0000';
-      case 'medium': return '#FFD700';
-      case 'low': return '#0000FF';
+      case 'high': return '#FF5555';
+      case 'medium': return '#FFCC00';
+      case 'low': return '#198AE9';
       default: return '#666';
     }
   };
@@ -1162,16 +1162,18 @@ useEffect(() => {
                                 {/* Task content */}
                                 <View className="flex-row items-center justify-between mb-2">
                                   <View className="flex-row items-center gap-4 flex-1">
-                                    <MaterialIcons
-                                      name={task.type === 'medicine' ? 'medication' : 'home'}
-                                      size={24}
-                                      color="#666"
+                                    {/* Avatar of assignee */}
+                                    <Image
+                                      source={{ uri: getAvatarUrl(task.assignedTo) }}
+                                      className="w-6 h-6 rounded-full"
                                     />
+                                    {/* Priority flag */}
                                     <MaterialIcons
                                       name="flag"
                                       size={20}
                                       color={getPriorityColor(task.priority as any)}
                                     />
+                                    {/* Task title */}
                                     <Text
                                       style={{ fontFamily: 'Lato', fontSize: 16 }}
                                       className="text-sm font-bold text-[#2A1800] flex-shrink"
@@ -1179,12 +1181,19 @@ useEffect(() => {
                                       {task.title}
                                     </Text>
                                   </View>
-                                  <Image
-                                    source={{ uri: getAvatarUrl(task.assignedTo) }}
-                                    className="w-6 h-6 rounded-full"
-                                  />
+                                  
+                                  {/* Notification bell moved to far right */}
+                                  <Pressable
+                                    onPress={() => console.log('Notification for:', task.title)}
+                                    className="w-6 h-6 flex items-center justify-center"
+                                  >
+                                    <Image
+                                      source={require('../../../../assets/icons/bell-icon.png')}
+                                      style={{ width: 20, height: 20 }}
+                                      resizeMode="contain"
+                                    />
+                                  </Pressable>
                                 </View>
-
                                 {/* Second Line */}
                                 <View className="flex-row items-center gap-4 mb-2">
                                   <Text
@@ -1200,32 +1209,6 @@ useEffect(() => {
                                     {task.checked && (
                                       <MaterialIcons name="check" size={16} color="#2A1800" />
                                     )}
-                                  </Pressable>
-                                </View>
-
-                                {/* Third Line */}
-                                <View className="flex-row items-center justify-between gap-4">
-                                  <View className="flex-row items-center gap-2">
-                                    <Text
-                                      style={{ fontFamily: 'Lato', fontSize: 14 }}
-                                      className="text-xs text-[#666]"
-                                    >
-                                      Assigned by
-                                    </Text>
-                                    <Image
-                                      source={{ uri: getAvatarUrl(task.assignedBy) }}
-                                      className="w-6 h-6 rounded-full"
-                                    />
-                                  </View>
-                                  <Pressable
-                                    onPress={() => console.log('Notification for:', task.title)}
-                                    className="w-6 h-6 flex items-center justify-center"
-                                  >
-                                    <Image
-                                      source={require('../../../../assets/icons/bell-icon.png')}
-                                      style={{ width: 20, height: 20 }}
-                                      resizeMode="contain"
-                                    />
                                   </Pressable>
                                 </View>
                               </Pressable>
