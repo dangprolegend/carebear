@@ -35,6 +35,13 @@ export default function Profile() {
   const [todayBodyEmoji, setTodayBodyEmoji] = useState<string>('');
   const [isCheckingStatus, setIsCheckingStatus] = useState<boolean>(false);
 
+  const [userCreatedDate, setUserCreatedDate] = useState<Date | null>(null);
+  const [daysHealthy, setDaysHealthy] = useState<number>(0);
+
+  const [taskCompletionByDate, setTaskCompletionByDate] = useState<{[dateKey: string]: number}>({});
+  const [primaryGroupId, setPrimaryGroupId] = useState<string | null>(null);
+  const [daysWithHearts, setDaysWithHearts] = useState<number>(0);
+
   const moods = [
     { id: 'happy', emoji: '😊', label: 'Happy', value: 'happy' },
     { id: 'excited', emoji: '🤩', label: 'Excited', value: 'excited' },
@@ -66,6 +73,47 @@ export default function Profile() {
     return body ? body.emoji : '';
   };
 
+  const getDayText = (count: number): string => {
+    return count === 1 ? 'Day' : 'Days';
+  };
+
+  const calculateDaysDifference = (startDate: Date, endDate: Date): number => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    
+    const timeDifference = end.getTime() - start.getTime();
+    const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+    
+    return Math.max(0, daysDifference); 
+  };
+
+  // Fetch user created date
+  const fetchUserCreatedDate = async (userID: string) => {
+    try {
+      const response = await axios.get(`https://mature-catfish-cheaply.ngrok-free.app/api/users/${userID}`);
+      const createdDate = new Date(response.data.createdAt);
+      setUserCreatedDate(createdDate);
+      
+      const today = new Date();
+      const daysSinceCreation = calculateDaysDifference(createdDate, today);
+      setDaysHealthy(daysSinceCreation);
+
+      const groupID = await fetchPrimaryGroupId(userID);
+      if (groupID) {
+        setPrimaryGroupId(groupID);
+        await countDaysWithHearts(userID, groupID, createdDate);
+      }
+      
+      return createdDate;
+    } catch (error) {
+      console.error('Error fetching user created date:', error);
+      return null;
+    }
+  };
+
   // Fetch today's daily status
   const fetchTodayStatus = async (userID: string) => {
     try {
@@ -90,6 +138,74 @@ export default function Profile() {
     }
   };
 
+  const fetchPrimaryGroupId = async (userID: string) => {
+    try {
+      const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/group`);
+      setPrimaryGroupId(response.data.groupID);
+      return response.data.groupID;
+    } catch (error) {
+      console.error('Error fetching primary group ID:', error);
+      return null;
+    }
+  };
+
+  // Helper function to format date as YYYY-MM-DD
+  const formatDateForAPI = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const fetchTaskCompletionForDate = async (userID: string, groupID: string, date: Date) => {
+    try {
+      const dateKey = formatDateForAPI(date); // Use helper function for consistent formatting
+      const response = await axios.get(`https://mature-catfish-cheaply.ngrok-free.app/api/tasks/user/${userID}/group/${groupID}/completion`, {
+        params: {
+          date: dateKey 
+        }
+      });
+      const percentage = response.data.completionPercentage || 0;
+      setTaskCompletionByDate(prev => ({
+        ...prev,
+        [dateKey]: percentage
+      }));
+      return percentage;
+    } catch (error) {
+      console.error(error);
+      setTaskCompletionByDate(prev => ({
+        ...prev,
+        [formatDateForAPI(date)]: 0
+      }));
+      return 0;
+    }
+  };
+
+  const countDaysWithHearts = async (userID: string, groupID: string, createdDate: Date) => {
+    const today = new Date();
+    const promises = [];
+    let currentDate = new Date(createdDate);
+    
+    currentDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    
+    while (currentDate <= today) {
+      promises.push(fetchTaskCompletionForDate(userID, groupID, new Date(currentDate)));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    try {
+      const completionPercentages = await Promise.all(promises);
+      const daysWithCompletion = completionPercentages.filter(percentage => percentage > 0).length;
+      setDaysWithHearts(daysWithCompletion);
+      return daysWithCompletion;
+    } catch (error) {
+      console.error('Error counting days with hearts:', error);
+      setDaysWithHearts(0);
+      return 0;
+    }
+  };
+
   useEffect(() => {
     const getUserInfo = async () => {
       if (isSignedIn && userId) {
@@ -101,6 +217,8 @@ export default function Profile() {
           const res = await axios.get(`https://carebear-backend.onrender.com/api/users/${fetchedUserID}/info`);
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
+
+          fetchUserCreatedDate(fetchedUserID);
         } catch (error) {
           console.error('Error fetching user info:', error);
         } 
@@ -211,8 +329,8 @@ export default function Profile() {
         <View className="flex-row justify-between items-center">
           <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">Diary</Text>
           <View className="flex-row items-center">
-            <Text className="text-black font-lato text-[24px] font-extrabold leading-[32px] tracking-[0.3px]">39</Text>
-            <Text className="text-black font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px] ml-2">Days</Text>
+            <Text className="text-black font-lato text-[24px] font-extrabold leading-[32px] tracking-[0.3px]">{daysWithHearts}</Text>
+            <Text className="text-black font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px] ml-2">{getDayText(daysWithHearts)}</Text>
           </View>
         </View>
 
@@ -224,58 +342,9 @@ export default function Profile() {
             <View className="flex w-6 h-6 p-0.5 justify-center items-center gap-2 aspect-square rounded-full border border-[#2A1800] bg-[#198AE9]">
               <Image source={Heart} className='w-4 h-4'/>
             </View>
-            <Text className='text-[#2A1800] font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]'>39</Text>
+            <Text className='text-[#2A1800] font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]'>{daysHealthy}</Text>
         </View>
-          <Text className='text-[#2A1800] font-lato text-[16px] font-light leading-[24px] tracking-[-0.1px]'>Days Healthy</Text>
-        </View>
-
-        <View className="w-5/6 self-center mt-10">
-          <View className="flex-row justify-between items-center">
-            <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">Automatic Tracking</Text>
-            <View className="flex items-center justify-center p-[6px] gap-0 rounded-[100px] bg-[#2A1800]">
-              <Image source={Plus} className="w-4 h-4" />
-            </View>
-          </View>
-
-          <View className="flex flex-row items-center justify-around mt-[33px] gap-4">
-            <View className="flex flex-col items-center gap-[14px]">
-              <View className="relative">
-                <View className="w-8 h-8 bg-[#2A1800] rounded-full flex items-center justify-center">
-                  <Image source={Steps} className="w-6 h-6" />
-                </View>
-                <View className="absolute -top-1 -right-1 w-3 h-3 bg-[#4ADE80] rounded-full border-2 border-white" />
-              </View>
-              <Text className="text-[#2A1800] text-center font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px]">Steps iPhone</Text>
-            </View>
-
-            <View className="flex flex-col items-center gap-[14px]">
-              <View className="relative">
-                <View className="w-8 h-8 bg-[#2A1800] rounded-full flex items-center justify-center">
-                  <Image source={AppleHealth} className="w-6 h-6" />
-                </View>
-                <View className="absolute -top-1 -right-1 w-3 h-3 bg-[#4ADE80] rounded-full border-2 border-white" />
-              </View>
-              <Text className="text-[#2A1800] text-center font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px]">Apple Health</Text>
-            </View>
-
-            <View className="flex flex-col items-center gap-[14px]">
-              <View className="relative">
-                <View className="w-8 h-8 bg-[#2A1800] rounded-full flex items-center justify-center">
-                  <Image source={AppleWatch} className="w-6 h-6" />
-                </View>
-              </View>
-              <Text className="text-[#2A1800] text-center font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px]">Apple Watch</Text>
-            </View>
-
-            <View className="flex flex-col items-center gap-[14px]">
-              <View className="relative">
-                <View className="w-8 h-8 bg-[#2A1800] rounded-full flex items-center justify-center">
-                  <Image source={Fitbit} className="w-6 h-6" />
-                </View>
-              </View>
-              <Text className="text-[#2A1800] text-center font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px]">FitBit</Text>
-            </View>
-          </View>
+          <Text className='text-[#2A1800] font-lato text-[16px] font-light leading-[24px] tracking-[-0.1px]'>{getDayText(daysHealthy)} Healthy</Text>
         </View>
 
     </ScrollView>

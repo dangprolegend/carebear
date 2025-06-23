@@ -158,7 +158,8 @@ export const getUserGroup = async (req: Request, res: Response) => {
 
 export const getUser = async (req: TypedRequest<any, UserParams>, res: Response): Promise<void> => {
   try {
-    const user = await User.findById(req.params.userID);
+    const { userID } = req.params;
+    const user = await User.findById(userID);
     
     if (!user) {
       res.status(404).json({ message: 'User not found' });

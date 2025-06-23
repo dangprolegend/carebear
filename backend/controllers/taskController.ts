@@ -365,8 +365,6 @@ export const getUserTaskCompletionPercentage = async (req: TypedRequest<any, { u
       const endOfDay = new Date(targetDate);
       endOfDay.setHours(23, 59, 59, 999);
 
-      console.log('Date range:', { startOfDay, endOfDay, originalDate: date });
-
       const pendingTasks = await Task.find({
         ...matchCriteria,
         status: { $ne: 'done' }
@@ -376,8 +374,6 @@ export const getUserTaskCompletionPercentage = async (req: TypedRequest<any, { u
         ...matchCriteria,
         status: 'done'
       }).select('name title status completedAt');
-
-      console.log('All done tasks:', allDoneTasks);
 
       const completedTasks = await Task.find({
         ...matchCriteria,

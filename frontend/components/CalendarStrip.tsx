@@ -3,6 +3,7 @@ import { View, Text, Pressable, Image } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Calendar from 'expo-calendar';
 import Svg, { Circle, Path } from 'react-native-svg';
+import axios from 'axios';
 
 type CalendarStripProps = {
   selectedDate: Date;
@@ -45,7 +46,7 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
           style={{ width: size, height: size }}
         >
           <Image 
-            source={require('../assets/icons/heart.png')} // Adjust path to your heart icon
+            source={require('../assets/icons/heart 2.png')} 
             style={{ width: size * 0.6, height: size * 0.6 }}
             resizeMode="contain"
           />
@@ -69,6 +70,86 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
       </View>
     );
   };
+
+    const fetchUserCreatedDate = async (userID: string) => {
+    try {
+      const response = await axios.get(`https://mature-catfish-cheaply.ngrok-free.app/api/users/${userID}`);
+      const createdDate = new Date(response.data.createdAt);
+      setUserCreatedDate(createdDate);
+      return createdDate;
+    } catch (error) {
+      console.error('Error fetching user created date:', error);
+      return null;
+    }
+  };
+
+  const fetchPrimaryGroupId = async (userID: string) => {
+    try {
+      const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/group`);
+      setPrimaryGroupId(response.data.groupID);
+      return response.data.groupID;
+    } catch (error) {
+      console.error('Error fetching primary group ID:', error);
+      return null;
+    }
+  };
+
+  // Helper function to format date as YYYY-MM-DD
+  const formatDateForAPI = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const fetchTaskCompletionForDate = async (userID: string, groupID: string, date: Date) => {
+    try {
+      const dateKey = formatDateForAPI(date); // Use helper function for consistent formatting
+      const response = await axios.get(`https://mature-catfish-cheaply.ngrok-free.app/api/tasks/user/${userID}/group/${groupID}/completion`, {
+        params: {
+          date: dateKey 
+        }
+      });
+      const percentage = response.data.completionPercentage || 0;
+      setTaskCompletionByDate(prev => ({
+        ...prev,
+        [dateKey]: percentage
+      }));
+      return percentage;
+    } catch (error) {
+      console.error(error);
+      setTaskCompletionByDate(prev => ({
+        ...prev,
+        [formatDateForAPI(date)]: 0
+      }));
+      return 0;
+    }
+  };
+
+   useEffect(() => {
+    const fetchUserData = async () => {
+      if (userID) { 
+        const createdDate = await fetchUserCreatedDate(userID);
+        const groupID = await fetchPrimaryGroupId(userID);
+        
+        if (createdDate && groupID) {
+          const promises = [];
+          for (let i = -3; i <= 3; i++) {
+            const date = new Date(selectedDate);
+            date.setDate(date.getDate() + i);
+            
+            if (date >= createdDate) {
+              promises.push(fetchTaskCompletionForDate(userID, groupID, date));
+            }
+          }
+          await Promise.all(promises);
+        }
+      }
+    };
+    
+    fetchUserData();
+  }, [userID, selectedDate]);
+
   useEffect(() => {
     (async () => {
       const { status } = await Calendar.requestCalendarPermissionsAsync();
@@ -90,8 +171,34 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
           setCalendarEvents(events);
         }
       }
+      
+      // Fetch task completions for new week when selectedDate changes
+      if (userID && primaryGroupId && userCreatedDate) {
+        const promises = [];
+        for (let i = -3; i <= 3; i++) {
+          const date = new Date(selectedDate);
+          date.setDate(date.getDate() + i);
+          
+          if (date >= userCreatedDate) {
+            promises.push(fetchTaskCompletionForDate(userID, primaryGroupId, date));
+          }
+        }
+        await Promise.all(promises);
+      }
     })();
-  }, [selectedDate]);
+  }, [selectedDate, userID, primaryGroupId, userCreatedDate]);
+
+  const shouldShowHeart = (date: Date) => {
+    if (!userCreatedDate) return false;
+    
+    const dateToCheck = new Date(date);
+    dateToCheck.setHours(0, 0, 0, 0);
+    const createdDateNormalized = new Date(userCreatedDate);
+    createdDateNormalized.setHours(0, 0, 0, 0);
+    
+    return dateToCheck >= createdDateNormalized;
+  };
+
 
   return (
     <View className="px-4">
@@ -138,6 +245,7 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
                   const dateToCompare = new Date(date);
                   dateToCompare.setHours(0, 0, 0, 0);
                   const isPastDate = dateToCompare <= today;
+                  const completionPercentage = taskCompletionByDate[formatDateForAPI(date)] || 0;
     
                   return (
                     <Pressable
@@ -171,23 +279,20 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
                         {date.getDate()}
                       </Text>
     
-                      {isPastDate ? (
-                        <Image
-                          source={require('../assets/icons/elipse.png')}
-                          style={{ width: 22, height: 22, borderRadius: 20 }}
-                          resizeMode="contain"
-                        />
-                      ) : (
-                      <View
-                        className={`w-[19px] h-6 rounded-full flex items-center justify-center bg-[#B0B0B0]`}
-                      />
-              )}
-          </Pressable>
-          );
-        })}
-      </View>
-    </View>
-  );
-};
+                      {shouldShowHeart(date) && completionPercentage > 0 ? (
+                          <CircularProgress 
+                            percentage={completionPercentage} 
+                            size={20} 
+                          />
+                        ) : (
+                          <View className="w-5 h-5" />
+                        )}
+                                </Pressable>
+                                );
+                              })}
+                            </View>
+                          </View>
+                        );
+                      };
 
 export default CalendarStrip;
