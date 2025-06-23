@@ -34,6 +34,7 @@ export default function Profile() {
   const [isLoadingDaysWithHearts, setIsLoadingDaysWithHearts] = useState<boolean>(false);
 
   const [taskCompletion, setTaskCompletion] = useState<number>(0);
+  const [numFamilies, setNumFamilies] = useState<number>(0);
 
   const moods = [
     { id: 'happy', emoji: '😊', label: 'Happy', value: 'happy' },
@@ -70,6 +71,10 @@ export default function Profile() {
     return count === 1 ? 'Day' : 'Days';
   };
 
+  const getGroupText = (count: number): string => {
+    return count === 1 ? 'Group' : 'Groups';
+  };
+
   const calculateDaysDifference = (startDate: Date, endDate: Date): number => {
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -83,6 +88,18 @@ export default function Profile() {
     return Math.max(0, daysDifference); 
   };
 
+  const fetchNumGroups = async (userID: string) => {
+      try {
+        const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/allGroups`);
+        const numGroups = response.data.totalGroups || 0;
+        setNumFamilies(numGroups);
+        return numGroups;
+      } catch (error) {
+        console.error('Error fetching:', error);
+        return 0;
+      }
+    };
+  
   const fetchTaskCompletion = async (userID: string, groupID: string) => {
       try {
         const response = await axios.get(`https://mature-catfish-cheaply.ngrok-free.app/api/tasks/user/${userID}/group/${groupID}/completion`);
@@ -229,6 +246,7 @@ export default function Profile() {
           fetchUserCreatedDate(fetchedUserID);
           const groupID = await fetchPrimaryGroupId(fetchedUserID);
           fetchTaskCompletion(fetchedUserID, groupID);
+          fetchNumGroups(fetchedUserID);
         } catch (error) {
           console.error('Error fetching user info:', error);
         } 
@@ -310,8 +328,8 @@ export default function Profile() {
           </Text>
         </View>
         <View className="items-center px-4">
-          <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">1</Text>
-          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">Family Group</Text>
+          <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">{numFamilies}</Text>
+          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">Family {getGroupText(numFamilies)}</Text>
         </View>
         <View className="pl-4">
           <Pressable onPress={() => router.push('/(protected)/dashboard/profile/settings')}>
