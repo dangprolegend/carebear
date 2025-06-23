@@ -49,7 +49,7 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
   const [showGroupSelector, setShowGroupSelector] = useState(false);
   const [showTaskFilter, setShowTaskFilter] = useState(false);
   const [selectedGroupName, setSelectedGroupName] = useState<string>('The Cheese Fam');
-  const [selectedTaskFilter, setSelectedTaskFilter] = useState<string>("My Task, Brother's Task");
+  const [selectedTaskFilter, setSelectedTaskFilter] = useState<string>("All Tasks");
   
   // New state for assigned by filter
   const [familyMembers, setFamilyMembers] = useState<{id: string, name: string, avatar: string}[]>([]);
@@ -59,6 +59,11 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
 
   const notificationListener = useRef<any>();
   const responseListener = useRef<any>();
+
+  // Add/modify these state variables in the DashboardBase component
+  const [showWhoseTaskFilter, setShowWhoseTaskFilter] = useState(false);
+  const [selectedTaskAssignee, setSelectedTaskAssignee] = useState<{id: string, name: string, avatar: string} | null>(null);
+  const [taskFilterLabel, setTaskFilterLabel] = useState<string>("All Tasks");
 
   // Get the current user
   const { user } = useUser();
@@ -141,11 +146,11 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
     setShowTaskFilter(false);
   };
 
-  // Update close all dropdowns function
+  // Update the closeAllDropdowns function
   const closeAllDropdowns = () => {
     setShowGroupSelector(false);
-    setShowTaskFilter(false);
     setShowAssignedByFilter(false);
+    setShowWhoseTaskFilter(false);
   };
 
   // Add function to handle assigned by selection
@@ -310,66 +315,99 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
     );
   };
 
+  // Add this function to handle task assignee selection
+const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: string} | null) => {
+  setSelectedTaskAssignee(member);
+  setShowWhoseTaskFilter(false);
+  
+  if (!member) {
+    setTaskFilterLabel("All Tasks");
+    // Show all tasks for the selected date
+    setLocalTasks(tasks);
+  } else {
+    setTaskFilterLabel(`${member.name}'s Tasks`);
+    // Filter tasks by assignee
+    const filteredTasks = tasks.filter(task => {
+      const assignedTo = task.assignedTo as { _id?: string } | string | null | undefined;
+      const assignedToId = typeof assignedTo === 'object' && assignedTo !== null && '_id' in assignedTo
+        ? assignedTo._id
+        : assignedTo;
+        
+      return assignedToId === member.id;
+    });
+    
+    setLocalTasks(filteredTasks);
+  }
+};
+
   // Filter tasks for the selected date
   const filteredTasks = localTasks.filter(isTaskForSelectedDate);
 
   // Check if user is care receiver
   const isCareReceiver = userRole === 'carereceiver';
 
-  // Load family members when group changes
-  useEffect(() => {
-    const loadFamilyMembers = async () => {
-      if (isCareReceiver) return;
-      
-      try {
-        setLoadingMembers(true);
-        const groupID = getCurrentGroupID();
-        
-        if (!groupID) {
-          console.error("No group ID available to load family members");
-          return;
-        }
-        
-        const members = await fetchUsersInGroup(groupID);
-        
-        // Map the API response to our format
-        const mappedMembers = members.map(member => ({
-          id: member._id,
-          name: member.firstName && member.lastName 
-            ? `${member.firstName} ${member.lastName}`
-            : member.firstName || member.email || 'Unknown User',
-          avatar: member.imageURL || 'https://via.placeholder.com/40'
-        }));
-        
-        setFamilyMembers(mappedMembers);
-
-        // Find myself in the members list and set as default
-        if (user) {
-          const currentUserId = user.id;
-          // Look for a member with matching clerkID
-          const myself = members.find(member => member.clerkID === currentUserId);
-          
-          if (myself) {
-            setSelectedAssignedBy({
-              id: myself._id,
-              name: myself.firstName && myself.lastName 
-                ? `${myself.firstName} ${myself.lastName}`
-                : myself.firstName || myself.email || 'Me',
-              avatar: myself.imageURL || 'https://via.placeholder.com/40'
-            });
-          }
-        }
-        
-      } catch (error) {
-        console.error('Error loading family members:', error);
-      } finally {
-        setLoadingMembers(false);
-      }
-    };
+  // Add this effect to load family members and set up both filters
+useEffect(() => {
+  const loadFamilyMembers = async () => {
+    if (isCareReceiver) return;
     
-    loadFamilyMembers();
-  }, [selectedGroupName, isCareReceiver]);
+    try {
+      setLoadingMembers(true);
+      const groupID = getCurrentGroupID();
+      
+      if (!groupID) {
+        console.error("No group ID available to load family members");
+        return;
+      }
+      
+      const members = await fetchUsersInGroup(groupID);
+      
+      // Map the API response to our format
+      const mappedMembers = members.map(member => ({
+        id: member._id,
+        name: member.firstName && member.lastName 
+          ? `${member.firstName} ${member.lastName}`
+          : member.firstName || member.email || 'Unknown User',
+        avatar: member.imageURL || 'https://via.placeholder.com/40'
+      }));
+      
+      setFamilyMembers(mappedMembers);
+
+      // Find myself in the members list and set as default for who assigned tasks
+      if (user) {
+        const currentUserId = user.id;
+        // Look for a member with matching clerkID
+        const myself = members.find(member => member.clerkID === currentUserId);
+        
+        if (myself) {
+          const myMemberInfo = {
+            id: myself._id,
+            name: myself.firstName && myself.lastName 
+              ? `${myself.firstName} ${myself.lastName}`
+              : myself.firstName || myself.email || 'Me',
+            avatar: myself.imageURL || 'https://via.placeholder.com/40'
+          };
+          
+          // Set myself as default for "Assigned by" filter
+          setSelectedAssignedBy(myMemberInfo);
+          
+          // Also set myself as default for "Whose Task" filter
+          // setSelectedTaskAssignee(myMemberInfo);
+          // setTaskFilterLabel(`${myMemberInfo.name}'s Tasks`);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading family members:', error);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
   
+  loadFamilyMembers();
+}, [selectedGroupName, isCareReceiver, user]);
+
+
+
 
   // Get avatar URL helper function
   const getAvatarUrl = (user: any): string => {
@@ -764,7 +802,8 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
                           onPress={(e) => {
                             e.stopPropagation();
                             setShowGroupSelector(false);
-                            setShowTaskFilter(!showTaskFilter);
+                            setShowAssignedByFilter(false);
+                            setShowWhoseTaskFilter(!showWhoseTaskFilter);
                           }}
                           style={{
                             display: 'flex',
@@ -776,61 +815,104 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
                             alignItems: 'center',
                             flexShrink: 0,
                             alignSelf: 'stretch',
-                            borderRadius: 4, // Assuming var(--radius) is 4px
+                            borderRadius: 4,
                             borderWidth: 1,
                             borderColor: '#FAE5CA',
                             backgroundColor: '#FFF',
                             flexDirection: 'row',
-                            width: 153 // Matching the group selector width
+                            width: 153
                           }}
                         >
-                          <Text className="text-sm text-[#333]">{selectedTaskFilter}</Text>
+                          <Text className="text-sm text-[#333]" numberOfLines={1}>{taskFilterLabel}</Text>
                           <MaterialIcons 
-                            name={showTaskFilter ? "arrow-drop-up" : "arrow-drop-down"} 
+                            name={showWhoseTaskFilter ? "arrow-drop-up" : "arrow-drop-down"} 
                             size={20} color="#333" 
                           />
                         </Pressable>
                         
                         {/* Dropdown menu for task filter - aligned with selector */}
-                        {showTaskFilter && (
+                        {showWhoseTaskFilter && (
                           <View
                             style={{ 
                               position: 'absolute',
-                              top: 44, // Height of the task filter selector
+                              top: 44,
                               left: 0,
                               backgroundColor: 'white',
                               borderRadius: 4,
                               borderWidth: 1,
                               borderColor: '#FAE5CA',
-                              zIndex: 10,
-                              width: 153, // Same width as selector
-                              elevation: 5,
+                              zIndex: 1000,
+                              width: 153,
+                              elevation: 10,
                             }}
                           >
-                            {['My Tasks', "Brother's Tasks", "All Tasks"].map((option, index) => (
-                              <Pressable
-                                key={index}
-                                style={{
-                                  paddingVertical: 8,
-                                  paddingHorizontal: 12,
-                                  borderBottomWidth: index < 2 ? 1 : 0,
-                                  borderBottomColor: '#FAE5CA',
-                                }}
-                                onPress={(e) => {
-                                  e.stopPropagation();
-                                  handleTaskFilterChange(option);
-                                }}
-                              >
-                                <Text 
-                                  style={{ 
-                                    color: '#2A1800',
-                                    fontWeight: selectedTaskFilter === option ? 'bold' : 'normal'
+                            {loadingMembers ? (
+                              <View style={{ padding: 12, alignItems: 'center' }}>
+                                <ActivityIndicator size="small" color="#2A1800" />
+                              </View>
+                            ) : (
+                              <>
+                                {/* Option for All Tasks */}
+                                <Pressable
+                                  style={{
+                                    paddingVertical: 8,
+                                    paddingHorizontal: 12,
+                                    borderBottomWidth: 1,
+                                    borderBottomColor: '#FAE5CA',
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between'
                                   }}
+                                  onPress={() => handleTaskAssigneeChange(null)}
                                 >
-                                  {option}
-                                </Text>
-                              </Pressable>
-                            ))}
+                                  <Text 
+                                    style={{ 
+                                      color: '#2A1800',
+                                      fontWeight: selectedTaskAssignee === null ? 'bold' : 'normal'
+                                    }}
+                                  >
+                                    All Tasks
+                                  </Text>
+                                </Pressable>
+                                
+                                {/* Individual family members */}
+                                {familyMembers.map((member, index) => (
+                                  <Pressable
+                                    key={index}
+                                    style={{
+                                      paddingVertical: 8,
+                                      paddingHorizontal: 12,
+                                      borderBottomWidth: index < familyMembers.length - 1 ? 1 : 0,
+                                      borderBottomColor: '#FAE5CA',
+                                      flexDirection: 'row',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between'
+                                    }}
+                                    onPress={() => handleTaskAssigneeChange(member)}
+                                  >
+                                    <Text 
+                                      style={{ 
+                                        color: '#2A1800',
+                                        fontWeight: selectedTaskAssignee?.id === member.id ? 'bold' : 'normal'
+                                      }}
+                                      numberOfLines={1}
+                                    >
+                                      {member.name}'s Tasks
+                                    </Text>
+                                    <Image
+                                      source={{ uri: member.avatar }}
+                                      style={{ width: 20, height: 20, borderRadius: 10 }}
+                                    />
+                                  </Pressable>
+                                ))}
+                                
+                                {familyMembers.length === 0 && (
+                                  <View style={{ padding: 12, alignItems: 'center' }}>
+                                    <Text style={{ color: '#666' }}>No members found</Text>
+                                  </View>
+                                )}
+                              </>
+                            )}
                           </View>
                         )}
                       </View>
