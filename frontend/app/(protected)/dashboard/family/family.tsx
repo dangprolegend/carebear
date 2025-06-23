@@ -593,6 +593,34 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
     const radius = size / 2;
     const centerX = size / 2;
     const centerY = size / 2;
+
+      if (percentage >= 100) {
+        return (
+          <View className="relative" style={{ width: size, height: size }}>
+            <View
+              className="bg-[#2A1800] rounded-full flex items-center justify-center"
+              style={{ width: size, height: size }}
+            >
+              <Image source={Heart} className="w-3.5 h-3.5" />
+            </View>
+            {/* Full circle overlay */}
+            <View
+              className="absolute top-0 left-0 rounded-full overflow-hidden"
+              style={{ width: size, height: size }}
+            >
+              <Svg width={size} height={size}>
+                <Circle
+                  cx={centerX}
+                  cy={centerY}
+                  r={radius}
+                  fill="#198AE9"
+                  opacity={0.8}
+                />
+              </Svg>
+            </View>
+          </View>
+        );
+      }
     
     // Calculate the end point of the arc based on percentage
     const angle = (percentage / 100) * 360 - 90; // Start from top (-90 degrees)

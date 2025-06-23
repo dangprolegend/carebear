@@ -12,12 +12,15 @@ import Foot from '../../../../assets/icons/footprints.png';
 import Dumbbell from '../../../../assets/icons/dumbbell.png';
 import Settings from '../../../../assets/icons/settings.png';
 import Heart from '../../../../assets/icons/heart.png';
+import Heart2 from '../../../../assets/icons/heart 2.png';
 import Plus from '../../../../assets/icons/plus.png';
 import Steps from '../../../../assets/icons/steps.png';
 import Fitbit from '../../../../assets/icons/fitbit.png';
 import AppleHealth from '../../../../assets/icons/apple_health.png';
 import AppleWatch from '../../../../assets/icons/apple_watch.png';
 import CalendarStrip from '~/components/CalendarStrip';
+import Svg, { Circle, Path } from 'react-native-svg';
+
 
 export default function Profile() {
   const router = useRouter();
@@ -41,6 +44,9 @@ export default function Profile() {
   const [taskCompletionByDate, setTaskCompletionByDate] = useState<{[dateKey: string]: number}>({});
   const [primaryGroupId, setPrimaryGroupId] = useState<string | null>(null);
   const [daysWithHearts, setDaysWithHearts] = useState<number>(0);
+  const [isLoadingDaysWithHearts, setIsLoadingDaysWithHearts] = useState<boolean>(false);
+
+  const [taskCompletion, setTaskCompletion] = useState<number>(0);
 
   const moods = [
     { id: 'happy', emoji: '😊', label: 'Happy', value: 'happy' },
@@ -90,6 +96,18 @@ export default function Profile() {
     return Math.max(0, daysDifference); 
   };
 
+  const fetchTaskCompletion = async (userID: string, groupID: string) => {
+      try {
+        const response = await axios.get(`https://mature-catfish-cheaply.ngrok-free.app/api/tasks/user/${userID}/group/${groupID}/completion`);
+        const percentage = response.data.completionPercentage || 0;
+        setTaskCompletion(percentage);
+        return percentage;
+      } catch (error) {
+        console.error('Error fetching task completion:', error);
+        return 0;
+      }
+    };
+
   // Fetch user created date
   const fetchUserCreatedDate = async (userID: string) => {
     try {
@@ -104,12 +122,15 @@ export default function Profile() {
       const groupID = await fetchPrimaryGroupId(userID);
       if (groupID) {
         setPrimaryGroupId(groupID);
+        setIsLoadingDaysWithHearts(true);
         await countDaysWithHearts(userID, groupID, createdDate);
+        setIsLoadingDaysWithHearts(false);
       }
       
       return createdDate;
     } catch (error) {
       console.error('Error fetching user created date:', error);
+      setIsLoadingDaysWithHearts(false);
       return null;
     }
   };
@@ -219,6 +240,8 @@ export default function Profile() {
           setUserFullName(res.data.fullName);
 
           fetchUserCreatedDate(fetchedUserID);
+          const groupID = await fetchPrimaryGroupId(fetchedUserID);
+          fetchTaskCompletion(fetchedUserID, groupID);
         } catch (error) {
           console.error('Error fetching user info:', error);
         } 
@@ -257,6 +280,80 @@ export default function Profile() {
     checkDailyStatus();
   }, [isSignedIn, userId]);
 
+  const CircularProgress = ({ percentage, size = 24 }: { percentage: number; size?: number }) => {
+    const radius = size / 2;
+    const centerX = size / 2;
+    const centerY = size / 2;
+
+      if (percentage >= 100) {
+        return (
+          <View className="relative" style={{ width: size, height: size }}>
+            <View
+              className="bg-[#2A1800] rounded-full flex items-center justify-center"
+              style={{ width: size, height: size }}
+            >
+              <Image source={Heart2} className="w-3.5 h-3.5" />
+            </View>
+            {/* Full circle overlay */}
+            <View
+              className="absolute top-0 left-0 rounded-full overflow-hidden"
+              style={{ width: size, height: size }}
+            >
+              <Svg width={size} height={size}>
+                <Circle
+                  cx={centerX}
+                  cy={centerY}
+                  r={radius}
+                  fill="#198AE9"
+                  opacity={0.8}
+                />
+              </Svg>
+            </View>
+          </View>
+        );
+      }
+    
+    // Calculate the end point of the arc based on percentage
+    const angle = (percentage / 100) * 360 - 90; // Start from top (-90 degrees)
+    const endX = centerX + radius * Math.cos((angle * Math.PI) / 180);
+    const endY = centerY + radius * Math.sin((angle * Math.PI) / 180);
+    
+    // Large arc flag for arcs > 180 degrees
+    const largeArcFlag = percentage > 50 ? 1 : 0;
+    
+    const pathData = percentage === 0 
+      ? '' 
+      : `M ${centerX} ${centerY} L ${centerX} ${centerY - radius} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY} Z`;
+
+    return (
+      <View className="relative" style={{ width: size, height: size }}>
+        {/* Background circle with heart */}
+        <View 
+          className="bg-[#2A1800] rounded-full flex items-center justify-center"
+          style={{ width: size, height: size }}
+        >
+          <Image source={Heart2} className="w-3.5 h-3.5" />
+        </View>
+        
+        {/* Blue filled progress overlay with circular clipping */}
+        {percentage > 0 && (
+          <View 
+            className="absolute top-0 left-0 rounded-full overflow-hidden"
+            style={{ width: size, height: size }}
+          >
+            <Svg width={size} height={size}>
+              <Path
+                d={pathData}
+                fill="#198AE9"
+                opacity={0.8} 
+              />
+            </Svg>
+          </View>
+        )}
+      </View>
+    );
+  };
+
   // Show loading screen while checking status
     if (isCheckingStatus) {
       return (
@@ -282,24 +379,10 @@ export default function Profile() {
           <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
             <Text className="text-xs">{todayBodyEmoji}</Text>
           </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Image source={PillIcon} className="w-3.5 h-3.5" />
-          </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Image source={PillBotte} className="w-3.5 h-3.5" />
-          </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Image source={Moon} className="w-3.5 h-3.5" />
-          </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Image source={Scale} className="w-3.5 h-3.5" />
-          </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Image source={Foot} className="w-3.5 h-3.5" />
-          </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Image source={Dumbbell} className="w-3.5 h-3.5" />
-          </View>
+          <CircularProgress 
+              percentage={taskCompletion} 
+              size={24} 
+            />
         </View>
         </View>
 
@@ -329,7 +412,11 @@ export default function Profile() {
         <View className="flex-row justify-between items-center">
           <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">Diary</Text>
           <View className="flex-row items-center">
-            <Text className="text-black font-lato text-[24px] font-extrabold leading-[32px] tracking-[0.3px]">{daysWithHearts}</Text>
+            {isLoadingDaysWithHearts ? (
+              <ActivityIndicator size="small" color="#198AE9" />
+            ) : (
+              <Text className="text-black font-lato text-[24px] font-extrabold leading-[32px] tracking-[0.3px]">{daysWithHearts}</Text>
+            )}
             <Text className="text-black font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px] ml-2">{getDayText(daysWithHearts)}</Text>
           </View>
         </View>
