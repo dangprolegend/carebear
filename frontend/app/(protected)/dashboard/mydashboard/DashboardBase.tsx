@@ -515,11 +515,31 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
   }
 };
 
-  // Filter tasks for the selected date
-  const filteredTasks = localTasks.filter(isTaskForSelectedDate);
+  // Add this new function to filter tasks for the care receiver
+  const getTasksForCareReceiver = (allTasks: Task[]): Task[] => {
+    const currentUserId = getCurrentUserID();
+    if (!currentUserId) return [];
+    
+    // Filter tasks that are specifically assigned to the current user (care receiver)
+    return allTasks.filter(task => {
+      let assignedToId: string | undefined;
+      if (typeof task.assignedTo === 'object' && task.assignedTo !== null && '_id' in task.assignedTo) {
+        assignedToId = (task.assignedTo as { _id: string })._id;
+      } else {
+        assignedToId = task.assignedTo as string;
+      }
+      
+      return assignedToId === currentUserId;
+    });
+  };
 
   // Check if user is care receiver
   const isCareReceiver = userRole === 'carereceiver';
+
+  // Filter tasks for the selected date
+  const filteredTasks = isCareReceiver 
+  ? getTasksForCareReceiver(localTasks).filter(isTaskForSelectedDate)
+  : localTasks.filter(isTaskForSelectedDate);
 
   // Add this effect to load family members and set up both filters
 useEffect(() => {
