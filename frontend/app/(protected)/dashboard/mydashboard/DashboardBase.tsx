@@ -1202,7 +1202,6 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                           />
                         </Pressable>
                         
-                        // Update the dropdown menu for task filter to match the Figma design
                         {showWhoseTaskFilter && (
                           <View
                             style={{ 
