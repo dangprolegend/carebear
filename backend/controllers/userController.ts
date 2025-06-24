@@ -63,6 +63,49 @@ export const provideAdditionalUserInfo = async (req: any, res: any) => {
   } catch (error: any) {}
 }
 
+// Add this new function to get all groups for a user (main + additional)
+export const getAllUserGroups = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+
+    // Find the user and populate both main group and additional groups
+    const user = await User.findById(userID)
+      .populate('groupID')
+      .populate('additionalGroups.groupID');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Prepare the result array
+    const allGroups = [];
+    
+    // Add main group if it exists
+    if (user.groupID) {
+      const mainGroup = user.groupID;
+      allGroups.push(mainGroup);
+    }
+
+    // Add additional groups if they exist
+    if (Array.isArray(user.additionalGroups) && user.additionalGroups.length > 0) {
+      for (const groupEntry of user.additionalGroups) {
+        if (groupEntry.groupID) {
+          allGroups.push(groupEntry.groupID);
+        }
+      }
+    }
+
+    return res.status(200).json(allGroups);
+    
+  } catch (error: any) {
+    console.error('Error fetching all user groups:', error);
+    return res.status(500).json({ 
+      message: 'Failed to fetch user groups',
+      error: error.message 
+    });
+  }
+};
+
 // Get the groupID of a specific user
 export const getUserGroup = async (req: Request, res: Response) => {
   try {

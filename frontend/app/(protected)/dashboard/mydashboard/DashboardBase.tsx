@@ -13,7 +13,8 @@ import {
   fetchTasksForDashboard, 
   getCurrentGroupID,
   fetchUsersInGroup,
-  getCurrentUserID
+  getCurrentUserID,
+  setCurrentGroupIDForApiService
 } from '../../../../service/apiServices';
 // Add this import at the top of the file
 import { useAuth, useUser } from '@clerk/clerk-expo';
@@ -50,7 +51,7 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
   const [userGroups, setUserGroups] = useState<{id: string, name: string}[]>([]);
   const [showGroupSelector, setShowGroupSelector] = useState(false);
   const [showTaskFilter, setShowTaskFilter] = useState(false);
-  const [selectedGroupName, setSelectedGroupName] = useState<string>('The Cheese Fam');
+  const [selectedGroupName, setSelectedGroupName] = useState<string>();
   const [selectedTaskFilter, setSelectedTaskFilter] = useState<string>("All Tasks");
   
   // New state for assigned by filter
@@ -71,6 +72,9 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
   const [weekMoodStatuses, setWeekMoodStatuses] = useState<{[date: string]: string}>({});
   const [weekBodyStatuses, setWeekBodyStatuses] = useState<{[date: string]: string}>({});
   const [isLoadingStatuses, setIsLoadingStatuses] = useState(false);
+
+  // Near line 60, where other state variables are declared
+  const [groupsLoading, setGroupsLoading] = useState<boolean>(false);
 
   // Get the current user
   const { user } = useUser();
@@ -214,18 +218,117 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
     setAuthToken();
   }, [getToken]);
 
-  // Add this effect to load user groups on component mount
+  // Update the function to fetch complete group data for each ID
   useEffect(() => {
-    // In a real implementation, fetch the user's groups from the API
-    // For now, we'll use mock data to match your screenshot
-    const mockGroups = [
-      { id: '1', name: 'The Cheese Fam' },
-      { id: '2', name: 'Johnson Family' },
-      { id: '3', name: 'Smith Household' }
-    ];
-    
-    setUserGroups(mockGroups);
+    const fetchUserGroups = async () => {
+      try {
+        if (!getCurrentUserID()) {
+          console.log("Cannot fetch groups: No current user ID available");
+          return;
+        }
+        
+        const userID = getCurrentUserID();
+        setGroupsLoading(true);
+        
+        // Step 1: Fetch the user's group IDs
+        const response = await fetch(`${API_BASE_URL}/api/users/${userID}/allGroups`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch user groups: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        const groupIDs = data.groupIDs || [];
+        console.log("Group IDs:", groupIDs);
+        
+        if (groupIDs.length === 0) {
+          console.log("No group IDs found for user");
+          setUserGroups([]);
+          setGroupsLoading(false);
+          return;
+        }
+
+        // Step 2: Fetch complete group data for each ID
+        const groupsData = await Promise.all(
+          groupIDs.map(async (groupID: string) => {
+            try {
+              const groupResponse = await fetch(`${API_BASE_URL}/api/groups/${groupID}`, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              });
+
+              if (!groupResponse.ok) {
+                console.error(`Failed to fetch group data for ID ${groupID}: ${groupResponse.statusText}`);
+                return null;
+              }
+
+              const groupData = await groupResponse.json();
+              return {
+                id: groupData._id || groupData.id,
+                name: groupData.name || `Group ${groupID.substring(0, 5)}`
+              };
+            } catch (error) {
+              console.error(`Error fetching group ${groupID}:`, error);
+              return null;
+            }
+          })
+        );
+
+        // Filter out any null values (failed fetches)
+        const validGroups = groupsData.filter(group => group !== null);
+        console.log("Fetched groups data:", validGroups);
+
+        if (validGroups.length > 0) {
+          setUserGroups(validGroups);
+          
+          // If no group is currently selected, select the first one
+          if (!selectedGroupName) {
+            setSelectedGroupName(validGroups[0].name);
+            
+            // Also update the current group ID for API service
+            setCurrentGroupIDForApiService(validGroups[0].id);
+          }
+        } else {
+          console.log("No valid groups found for user");
+          setUserGroups([]);
+        }
+      } catch (error) {
+        console.error("Error fetching user groups:", error);
+        setUserGroups([]);
+      } finally {
+        setGroupsLoading(false);
+      }
+    };
+
+    // Only fetch groups if we have a user ID
+    if (getCurrentUserID()) {
+      fetchUserGroups();
+    }
   }, []);
+
+  // Update the useEffect that runs when tasks or selectedGroupName changes
+useEffect(() => {
+  if (tasks.length > 0) {
+    // Find the selected group ID
+    const selectedGroup = userGroups.find(group => group.name === selectedGroupName);
+    
+    if (selectedGroup) {
+      // Filter tasks by the selected group
+      const groupTasks = filterTasksByGroup(tasks, selectedGroup.id);
+      setLocalTasks(groupTasks);
+    } else {
+      // If no group is selected yet, show all tasks
+      setLocalTasks(tasks);
+    }
+  }
+}, [tasks, selectedGroupName, userGroups]);
 
   // Update tasks when props change
   useEffect(() => {
@@ -259,14 +362,41 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
     };
   }, []);
 
-  
-  // Add a function to handle group selection
+  // Add this function to filter tasks by selected group
+  const filterTasksByGroup = (allTasks: Task[], groupId: string | undefined): Task[] => {
+    if (!groupId) return allTasks;
+    
+    return allTasks.filter(task => {
+      // Check if task.groupID matches the selected group
+      const taskGroupId = typeof task.groupID === 'object' && task.groupID !== null && '_id' in task.groupID 
+        ? task.groupID._id 
+        : task.groupID;
+        
+      return taskGroupId === groupId;
+    });
+  };
+
+  // Update the handleGroupChange function
   const handleGroupChange = (groupName: string) => {
     setSelectedGroupName(groupName);
     setShowGroupSelector(false);
     
-    // In a real implementation, you would filter tasks by the selected group ID
-    // For now, we'll just update the displayed name
+    // Find the selected group ID
+    const selectedGroup = userGroups.find(group => group.name === groupName);
+    
+    if (selectedGroup) {
+      // Update the current group ID in API service
+      setCurrentGroupIDForApiService(selectedGroup.id);
+      
+      // Filter tasks by the selected group
+      const groupTasks = filterTasksByGroup(tasks, selectedGroup.id);
+      setLocalTasks(groupTasks);
+      
+      // Reset any other filters
+      setSelectedTaskAssignee([]);
+      setTaskFilterLabel("All Tasks");
+      setSelectedAssignedBy(null);
+    }
   };
 
   // Add a function to handle task filter selection
@@ -411,7 +541,7 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
     }
   };
 
-  // Refresh tasks after status change
+  // Update refreshTasks to only fetch tasks for the selected group
   const refreshTasks = async () => {
     try {
       const groupID = getCurrentGroupID();
@@ -421,7 +551,10 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
       }
       
       const updatedTasks = await fetchTasksForDashboard(groupID);
-      setLocalTasks(updatedTasks);
+      
+      // Apply filtering to ensure only tasks from this group are shown
+      const filteredByGroup = filterTasksByGroup(updatedTasks, groupID);
+      setLocalTasks(filteredByGroup);
     } catch (error) {
       console.error('Error refreshing tasks:', error);
     }
@@ -542,66 +675,81 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
   : localTasks.filter(isTaskForSelectedDate);
 
   // Add this effect to load family members and set up both filters
-useEffect(() => {
-  const loadFamilyMembers = async () => {
-    if (isCareReceiver) return;
-    
-    try {
-      setLoadingMembers(true);
-      const groupID = getCurrentGroupID();
+  useEffect(() => {
+    const loadFamilyMembers = async () => {
+      if (isCareReceiver) return;
       
-      if (!groupID) {
-        console.error("No group ID available to load family members");
-        return;
-      }
-      
-      const members = await fetchUsersInGroup(groupID);
-      
-      // Map the API response to our format
-      const mappedMembers = members.map(member => ({
-        id: member._id,
-        name: member.firstName && member.lastName 
-          ? `${member.firstName} ${member.lastName}`
-          : member.firstName || member.email || 'Unknown User',
-        avatar: member.imageURL || 'https://via.placeholder.com/40'
-      }));
-      
-      setFamilyMembers(mappedMembers);
-
-      // Find myself in the members list and set as default for who assigned tasks
-      if (user) {
-        const currentUserId = user.id;
-        // Look for a member with matching clerkID
-        const myself = members.find(member => member.clerkID === currentUserId);
+      try {
+        setLoadingMembers(true);
+        const groupID = getCurrentGroupID();
         
-        if (myself) {
-          const myMemberInfo = {
-            id: myself._id,
-            name: myself.firstName && myself.lastName 
-              ? `${myself.firstName} ${myself.lastName}`
-              : myself.firstName || myself.email || 'Me',
-            avatar: myself.imageURL || 'https://via.placeholder.com/40'
-          };
-          
-          // Set myself as default for "Assigned by" filter
-          setSelectedAssignedBy(myMemberInfo);
-          
-          // Also set myself as default for "Whose Task" filter
-          // setSelectedTaskAssignee(myMemberInfo);
-          // setTaskFilterLabel(`${myMemberInfo.name}'s Tasks`);
+        if (!groupID) {
+          console.error("No group ID available to load family members");
+          return;
         }
+        
+        const members = await fetchUsersInGroup(groupID);
+        
+        // Map the API response to our format
+        const mappedMembers = members.map(member => ({
+          id: member._id,
+          name: member.firstName && member.lastName 
+            ? `${member.firstName} ${member.lastName}`
+            : member.firstName || member.email || 'Unknown User',
+          avatar: member.imageURL || 'https://via.placeholder.com/40'
+        }));
+        
+        setFamilyMembers(mappedMembers);
+
+        // Find myself in the members list and set as default for who assigned tasks
+        if (user) {
+          const currentUserId = user.id;
+          // Look for a member with matching clerkID
+          const myself = members.find(member => member.clerkID === currentUserId);
+          
+          if (myself) {
+            const myMemberInfo = {
+              id: myself._id,
+              name: myself.firstName && myself.lastName 
+                ? `${myself.firstName} ${myself.lastName}`
+                : myself.firstName || myself.email || 'Me',
+              avatar: myself.imageURL || 'https://via.placeholder.com/40'
+            };
+            
+            // Set myself as default for "Assigned by" filter
+            setSelectedAssignedBy(myMemberInfo);
+            
+            // Also set myself as default for "Whose Task" filter
+            // setSelectedTaskAssignee(myMemberInfo);
+            // setTaskFilterLabel(`${myMemberInfo.name}'s Tasks`);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading family members:', error);
+      } finally {
+        setLoadingMembers(false);
       }
-    } catch (error) {
-      console.error('Error loading family members:', error);
-    } finally {
-      setLoadingMembers(false);
-    }
-  };
-  
-  loadFamilyMembers();
-}, [selectedGroupName, isCareReceiver, user]);
+    };
+    
+    loadFamilyMembers();
+  }, [selectedGroupName, isCareReceiver, user]);
 
-
+  // Add this useEffect to load tasks when the default group is selected
+  useEffect(() => {
+    const loadInitialTasks = async () => {
+      const groupID = getCurrentGroupID();
+      if (!groupID) return;
+      
+      try {
+        const groupTasks = await fetchTasksForDashboard(groupID);
+        setLocalTasks(groupTasks);
+      } catch (error) {
+        console.error('Error loading initial tasks:', error);
+      }
+    };
+    
+    loadInitialTasks();
+  }, []);
 
 
   // Get avatar URL helper function
