@@ -12,11 +12,13 @@ import {
   completeTaskWithMethod, 
   fetchTasksForDashboard, 
   getCurrentGroupID,
-  fetchUsersInGroup
+  fetchUsersInGroup,
+  getCurrentUserID
 } from '../../../../service/apiServices';
 // Add this import at the top of the file
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { setClerkAuthTokenForApiService } from '../../../../service/apiServices';
+import axios from 'axios';
 
 type DashboardBaseProps = {
   tasks: Task[];
@@ -65,11 +67,138 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
   const [selectedTaskAssignee, setSelectedTaskAssignee] = useState<{id: string, name: string, avatar: string}[]>([]);
   const [taskFilterLabel, setTaskFilterLabel] = useState<string>("All Tasks");
 
+  // Add these new state variables for mood/body status
+  const [weekMoodStatuses, setWeekMoodStatuses] = useState<{[date: string]: string}>({});
+  const [weekBodyStatuses, setWeekBodyStatuses] = useState<{[date: string]: string}>({});
+  const [isLoadingStatuses, setIsLoadingStatuses] = useState(false);
+
   // Get the current user
   const { user } = useUser();
   const { getToken } = useAuth();
+
+  // API base URL - use the same as your other API calls
+  const API_BASE_URL = "https://mature-catfish-cheaply.ngrok-free.app";
   
-  // Existing state variables...
+  // Function to get emoji for mood
+  const getMoodEmoji = (mood: string): string => {
+    switch(mood) {
+      case 'happy': return '😊';
+      case 'excited': return '🤩';
+      case 'sad': return '😢';
+      case 'angry': return '😠';
+      case 'nervous': return '😬';
+      case 'peaceful': return '🧘';
+      default: return '⚪';
+    }
+  };
+  
+  // Function to get emoji for body feeling
+  const getBodyEmoji = (body: string): string => {
+    switch(body) {
+      case 'energized': return '⚡';
+      case 'sore': return '💪';
+      case 'tired': return '😴';
+      case 'sick': return '🤒';
+      case 'relaxed': return '😌';
+      case 'tense': return '😣';
+      default: return '⚪';
+    }
+  };
+
+  // Function to fetch status for a specific date
+  const fetchDailyStatusForDate = async (userID: string, date: Date) => {
+    try {
+      // Format the date as YYYY-MM-DD for the API
+      const formattedDate = date.toISOString().split('T')[0];
+      
+      // Since the API doesn't support querying by date directly, we'll need to get history and filter
+      const response = await axios.get(`${API_BASE_URL}/api/daily/history/${userID}`);
+      
+      if (response.data && response.data.data) {
+        // Find the status for the specified date
+        const statusForDate = response.data.data.find((status: any) => {
+          return status.date?.split('T')[0] === formattedDate;
+        });
+        
+        if (statusForDate) {
+          return {
+            mood: statusForDate.mood,
+            body: statusForDate.body
+          };
+        }
+      }
+      
+      // Return empty status if nothing found
+      return { mood: '', body: '' };
+    } catch (error) {
+      console.error(`Error fetching status for date ${date.toISOString()}:`, error);
+      return { mood: '', body: '' };
+    }
+  };
+  
+  // Function to fetch statuses for the displayed week
+  const fetchWeekStatuses = async () => {
+    if (!getCurrentUserID()) return;
+    
+    try {
+      setIsLoadingStatuses(true);
+      const userID = getCurrentUserID();
+      if (!userID) return;
+      
+      // Get dates for the displayed week
+      const weekDates = [];
+      for (let i = -3; i <= 3; i++) {
+        const date = new Date(selectedDate);
+        date.setDate(selectedDate.getDate() + i);
+        weekDates.push(date);
+      }
+      
+      // Fetch status for each date in the week
+      const moodStatuses: {[date: string]: string} = {};
+      const bodyStatuses: {[date: string]: string} = {};
+      
+      // Fetch all history at once (more efficient)
+      const response = await axios.get(`${API_BASE_URL}/api/daily/history/${userID}`);
+      
+      if (response.data && response.data.data) {
+        // Process each date in the week
+        for (const date of weekDates) {
+          const formattedDate = date.toISOString().split('T')[0];
+          
+          // Find the status for this date in the history data
+          const statusForDate = response.data.data.find((status: any) => {
+            return status.date?.split('T')[0] === formattedDate;
+          });
+          
+          if (statusForDate) {
+            moodStatuses[formattedDate] = statusForDate.mood;
+            bodyStatuses[formattedDate] = statusForDate.body;
+          }
+        }
+      }
+      
+      setWeekMoodStatuses(moodStatuses);
+      setWeekBodyStatuses(bodyStatuses);
+    } catch (error) {
+      console.error('Error fetching week statuses:', error);
+    } finally {
+      setIsLoadingStatuses(false);
+    }
+  };
+
+  // Effect to fetch statuses when the selected date changes
+  useEffect(() => {
+    fetchWeekStatuses();
+  }, [selectedDate]);
+  
+  // Add this effect to fetch statuses when the component mounts
+  useEffect(() => {
+    const initializeDailyStatus = async () => {
+      await fetchWeekStatuses();
+    };
+    
+    initializeDailyStatus();
+  }, []);
   
   // Add this effect to set the Clerk token for API service
   useEffect(() => {
@@ -536,25 +665,33 @@ useEffect(() => {
             </Pressable>
           </View>
 
-          {/* Week Days (Common for all users) */}
+          {/* Week Days with Mood and Body Status Indicators */}
           <View className="flex-row items-center justify-between mt-4">
             {Array.from({ length: 7 }).map((_, index) => {
               const date = new Date(selectedDate);
               date.setDate(date.getDate() - 3 + index);
+              const formattedDate = date.toISOString().split('T')[0];
+              
               const isSelected = date.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
               const today = new Date();
               today.setHours(0, 0, 0, 0);
               const dateToCompare = new Date(date);
               dateToCompare.setHours(0, 0, 0, 0);
               const isPastDate = dateToCompare <= today;
+              
+              // Get mood and body status for this date
+              const moodStatus = weekMoodStatuses[formattedDate] || '';
+              const bodyStatus = weekBodyStatuses[formattedDate] || '';
+              const moodEmoji = getMoodEmoji(moodStatus);
+              const bodyEmoji = getBodyEmoji(bodyStatus);
 
               return (
                 <Pressable
                   key={index}
                   onPress={() => setSelectedDate(new Date(date))}
                   style={{
-                    width: 35,
-                    height: 88,
+                    width: 40,
+                    height: 100, // Increased height to accommodate mood/body indicators
                     borderRadius: 4,
                     borderStyle: 'solid',
                     borderWidth: isSelected ? 1 : 0,
@@ -565,32 +702,53 @@ useEffect(() => {
                     marginHorizontal: 2,
                   }}
                 >
+                  {/* Day letter */}
                   <Text
-                    className={`w-[24px] h-[24px] text-center text-xs ${
+                    className={`text-center text-xs ${
                       isSelected ? 'text-gray-800' : 'text-gray-500'
                     }`}
                   >
                     {date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0).toUpperCase()}
                   </Text>
+                  
+                  {/* Day number */}
                   <Text
-                    className={`w-[19px] h-[24px] text-center text-xs ${
+                    className={`text-center text-xs ${
                       isSelected ? 'text-gray-800' : 'text-gray-500'
                     }`}
                   >
                     {date.getDate()}
                   </Text>
+                  
+                  <View>
+                    <Text 
+                      className="text-xl"
+                      style={{ 
+                        color: bodyStatus ? 'white' : '#2A1800',
+                        // Added text shadow to create border effect around the emoji
+                        textShadowColor: '#000',
+                        textShadowOffset: { width: 0, height: 0 },
+                        textShadowRadius: 1,
+                      }}
+                    >
+                      {getMoodEmoji(moodStatus)}
+                    </Text>
+                  </View>
 
-                  {isPastDate ? (
-                    <Image
-                      source={require('../../../../assets/icons/elipse.png')}
-                      style={{ width: 22, height: 22, borderRadius: 20 }}
-                      resizeMode="contain"
-                    />
-                  ) : (
-                    <View
-                      className={`w-[19px] h-6 rounded-full flex items-center justify-center bg-[#B0B0B0]`}
-                    />
-                  )}
+                  <View>
+                    <Text 
+                      className="text-xl" 
+                      style={{ 
+                        color: moodStatus ? 'white' : '#2A1800',
+                        // Added text shadow to create border effect around the emoji
+                        textShadowColor: '#000',
+                        textShadowOffset: { width: 0, height: 0 },
+                        textShadowRadius: 1,
+                      }}
+                    >
+                      {getBodyEmoji(bodyStatus)}
+                    </Text>
+                  </View>
                 </Pressable>
               );
             })}
