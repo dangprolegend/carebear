@@ -6,12 +6,15 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
 import axios from 'axios';
 
-// Helper function to check if a date is today
+// Helper function to check if a date is today (more accurate comparison)
 function isToday(date: Date): boolean {
   const today = new Date();
-  return date.getDate() === today.getDate() && 
-         date.getMonth() === today.getMonth() &&
-         date.getFullYear() === today.getFullYear();
+  
+  // Convert both to same timezone for date-only comparison
+  const todayStr = today.toLocaleDateString();
+  const dateStr = date.toLocaleDateString();
+  
+  return dateStr === todayStr;
 }
 
 // Helper function to check if a date is yesterday
@@ -33,10 +36,11 @@ function groupItemsByDate(items: any[]): DateGroup[] {
   const groups: Record<string, any[]> = {};
 
   items.forEach(item => {
-    // Use createdAt as the primary timestamp for grouping
+    // Use createdAt as the timestamp for grouping
     const itemDate = new Date(item.createdAt || item.timestamp || item.time);
     let dateLabel = '';
     
+    // Categorize the date based on creation time
     if (isToday(itemDate)) {
       dateLabel = 'Today';
     } else if (isYesterday(itemDate)) {
@@ -65,16 +69,18 @@ function groupItemsByDate(items: any[]): DateGroup[] {
     });
   });
 
+  // Create date groups and apply custom sorting for display
   return Object.keys(groups).map(dateLabel => ({
     dateLabel,
     items: groups[dateLabel]
   })).sort((a, b) => {
+    // Handle special date labels in order: Today, Yesterday, then other dates chronologically
     if (a.dateLabel === 'Today') return -1;
     if (b.dateLabel === 'Today') return 1;
     if (a.dateLabel === 'Yesterday') return -1;
     if (b.dateLabel === 'Yesterday') return 1;
     
-    // For other dates, compare the first item's timestamp
+    // For other dates, compare chronologically (newest first)
     const aDate = new Date(a.items[0].createdAt || a.items[0].timestamp || a.items[0].time);
     const bDate = new Date(b.items[0].createdAt || b.items[0].timestamp || b.items[0].time);
     return bDate.getTime() - aDate.getTime();
@@ -163,7 +169,7 @@ const NotificationScreen = () => {
         filteredTasks.sort((a: any, b: any) => {
           const aTime = new Date(a.createdAt || a.datetime).getTime();
           const bTime = new Date(b.createdAt || b.datetime).getTime();
-          return bTime - aTime; // Sort by createdAt time
+          return bTime - aTime; 
         });
         
         // Fetch user info for assignedBy and assignedTo in parallel
@@ -201,6 +207,13 @@ const NotificationScreen = () => {
           } else {
             message = `created a task`;
           }
+          // For accurate date comparison across timezones
+          const taskCreatedDate = new Date(task.createdAt);
+          const isTaskCreatedToday = isToday(taskCreatedDate);
+          
+          // Log for debugging
+          console.log(`Task ${task.title}: Created ${taskCreatedDate.toLocaleDateString()}, isToday: ${isTaskCreatedToday}`);
+          
           return {
             avatar: assignedByAvatar,
             senderName: assignedByName,
@@ -210,8 +223,9 @@ const NotificationScreen = () => {
             priorityColor: task.priority === 'high' ? '#FF0000' : task.priority === 'medium' ? '#FFD700' : '#3498db',
             taskTitle: task.title,
             taskId: task._id, // Store the task ID for navigation
-            createdAt: task.createdAt, // Store createdAt for highlighting
-            isCreatedToday: isToday(new Date(task.createdAt)), // Check if created today
+            createdAt: task.createdAt, // Store createdAt for sorting
+            isCreatedToday: isTaskCreatedToday, // Check if created today
+            reminder: task.reminder // Store reminder info for display purposes
           };
         }));
         
@@ -229,42 +243,66 @@ const NotificationScreen = () => {
     }
   }, [currentGroupID, currentUserID]);
 
-  const renderNotification = (n: any, idx: number) => (
-    <View
-      key={idx}
-      className="flex-row items-start py-3 px-2 border-b border-gray-100"
-      style={{
-        backgroundColor: n.isCreatedToday ? '#FFF8EF' : 'white',
-      }}
-    >
-      <Image source={{ uri: n.avatar }} className="w-8 h-8 rounded-full mt-1 mr-2" />
-      <View className="flex-1">
-        <Text className="text-[15px]">
-          <Text className="font-bold">{n.senderName}</Text>{' '}
-          <Text className="font-normal text-black">{n.message}</Text>
-        </Text>
-        <Text className="text-xs text-gray-500 mt-0.5">{n.time}</Text>
-        {n.taskTitle ? (
-          <Pressable 
-            className="flex-row items-center mt-1" 
-            onPress={() => {
-              if (n.taskId) {
-                console.log(`Navigating to task details: ${n.taskId}`);
-                router.push({
-                  pathname: '/dashboard/mydashboard/task/taskInfo',
-                  params: { taskId: n.taskId }
-                });
-              }
-            }}
-          >
-            <MaterialIcons name="flag" size={18} color={n.priorityColor || '#3498db'} />
-            <Text className="ml-1 font-bold text-[15px]">{n.taskTitle}</Text>
-            <MaterialIcons name="chevron-right" size={16} color="#999" style={{ marginLeft: 4 }} />
-          </Pressable>
-        ) : null}
+  const renderNotification = (n: any, idx: number) => {
+    // Show scheduled date if available, but not using it for sorting
+    const hasScheduledDate = n.reminder?.start_date ? true : false;
+    const scheduledDate = hasScheduledDate ? new Date(n.reminder.start_date) : null;
+    
+    // Format the scheduled date for display if applicable
+    const scheduledDateFormatted = scheduledDate ? scheduledDate.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }) : null;
+    
+    return (
+      <View
+        key={idx}
+        className="flex-row items-start py-3 px-2 border-b border-gray-100"
+        style={{
+          backgroundColor: n.isCreatedToday ? '#FFF8EF' : 'white', // Only highlight tasks created today
+        }}
+      >
+        <Image source={{ uri: n.avatar }} className="w-8 h-8 rounded-full mt-1 mr-2" />
+        <View className="flex-1">
+          <Text className="text-[15px]">
+            <Text className="font-bold">{n.senderName}</Text>{' '}
+            <Text className="font-normal text-black">{n.message}</Text>
+          </Text>
+          <Text className="text-xs text-gray-500 mt-0.5">{n.time}</Text>
+          
+          {/* Display scheduled date if available, just for information */}
+          {hasScheduledDate && (
+            <View className="flex-row items-center mt-1">
+              <MaterialIcons name="event" size={16} color="#4285F4" />
+              <Text className="ml-1 text-xs text-blue-600">{scheduledDateFormatted}</Text>
+            </View>
+          )}
+          
+          {n.taskTitle ? (
+            <Pressable 
+              className="flex-row items-center mt-1" 
+              onPress={() => {
+                if (n.taskId) {
+                  console.log(`Navigating to task details: ${n.taskId}`);
+                  router.push({
+                    pathname: '/dashboard/mydashboard/task/taskInfo',
+                    params: { taskId: n.taskId }
+                  });
+                }
+              }}
+            >
+              <MaterialIcons name="flag" size={18} color={n.priorityColor || '#3498db'} />
+              <Text className="ml-1 font-bold text-[15px]">{n.taskTitle}</Text>
+              <MaterialIcons name="chevron-right" size={16} color="#999" style={{ marginLeft: 4 }} />
+            </Pressable>
+          ) : null}
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   if (loading) {
     return (
@@ -289,12 +327,19 @@ const NotificationScreen = () => {
     <View className="flex-1 bg-white">
     <View className="flex-row items-center justify-between px-4 pt-4 pb-2 bg-white">
       <Text className="text-lg font-bold text-black flex-1 text-center">Notifications</Text>
-    </View>
+    </View >
       <ScrollView className="flex-1 ml-5 mr-5" contentContainerStyle={{ paddingBottom: 32 }}>
         {notifications.length === 0 && <Text className="px-4 text-gray-400 mt-4">No notifications</Text>}
         {groupedNotifications.map((group: DateGroup, idx: number) => (
           <View key={idx} className="mb-4">
-            <Text className="font-semibold text-gray-800 text-lg px-4 py-2">
+            {/* Special styling for "Today" section */}
+            <Text 
+              className={`font-semibold text-lg px-4 py-2 ${
+                group.dateLabel === 'Today' 
+                  ? 'text-[#362209] bg-[#FFF8EF]' 
+                  : 'text-gray-800'
+              }`}
+            >
               {group.dateLabel}
             </Text>
             {group.items.map((item, index) => renderNotification(item, index))}
