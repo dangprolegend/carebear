@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Image, ActivityIndicator, Pressable, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { fetchTasksForDashboard, getCurrentGroupID, fetchUserInfoById, getBackendUserID } from '../../../../service/apiServices';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -33,7 +33,8 @@ function groupItemsByDate(items: any[]): DateGroup[] {
   const groups: Record<string, any[]> = {};
 
   items.forEach(item => {
-    const itemDate = new Date(item.timestamp || item.time);
+    // Use createdAt as the primary timestamp for grouping
+    const itemDate = new Date(item.createdAt || item.timestamp || item.time);
     let dateLabel = '';
     
     if (isToday(itemDate)) {
@@ -55,6 +56,15 @@ function groupItemsByDate(items: any[]): DateGroup[] {
     groups[dateLabel].push(item);
   });
 
+  // Sort items within each group by createdAt (newest first)
+  Object.keys(groups).forEach(key => {
+    groups[key].sort((a, b) => {
+      const aDate = new Date(a.createdAt || a.timestamp || a.time);
+      const bDate = new Date(b.createdAt || b.timestamp || b.time);
+      return bDate.getTime() - aDate.getTime();
+    });
+  });
+
   return Object.keys(groups).map(dateLabel => ({
     dateLabel,
     items: groups[dateLabel]
@@ -65,8 +75,8 @@ function groupItemsByDate(items: any[]): DateGroup[] {
     if (b.dateLabel === 'Yesterday') return 1;
     
     // For other dates, compare the first item's timestamp
-    const aDate = new Date(a.items[0].timestamp || a.items[0].time);
-    const bDate = new Date(b.items[0].timestamp || b.items[0].time);
+    const aDate = new Date(a.items[0].createdAt || a.items[0].timestamp || a.items[0].time);
+    const bDate = new Date(b.items[0].createdAt || b.items[0].timestamp || b.items[0].time);
     return bDate.getTime() - aDate.getTime();
   });
 }
@@ -151,9 +161,9 @@ const NotificationScreen = () => {
         
         // Sort tasks by creation date in descending order (newest first)
         filteredTasks.sort((a: any, b: any) => {
-          const aTime = new Date(a.createdAt).getTime();
-          const bTime = new Date(b.createdAt).getTime();
-          return bTime - aTime;
+          const aTime = new Date(a.createdAt || a.datetime).getTime();
+          const bTime = new Date(b.createdAt || b.datetime).getTime();
+          return bTime - aTime; // Sort by createdAt time
         });
         
         // Fetch user info for assignedBy and assignedTo in parallel
@@ -199,6 +209,9 @@ const NotificationScreen = () => {
             timestamp: timestamp, // Store the actual date object for grouping
             priorityColor: task.priority === 'high' ? '#FF0000' : task.priority === 'medium' ? '#FFD700' : '#3498db',
             taskTitle: task.title,
+            taskId: task._id, // Store the task ID for navigation
+            createdAt: task.createdAt, // Store createdAt for highlighting
+            isCreatedToday: isToday(new Date(task.createdAt)), // Check if created today
           };
         }));
         
@@ -221,7 +234,7 @@ const NotificationScreen = () => {
       key={idx}
       className="flex-row items-start py-3 px-2 border-b border-gray-100"
       style={{
-        backgroundColor: isToday(n.timestamp) ? '#FFF8EF' : 'white',
+        backgroundColor: n.isCreatedToday ? '#FFF8EF' : 'white',
       }}
     >
       <Image source={{ uri: n.avatar }} className="w-8 h-8 rounded-full mt-1 mr-2" />
@@ -232,10 +245,22 @@ const NotificationScreen = () => {
         </Text>
         <Text className="text-xs text-gray-500 mt-0.5">{n.time}</Text>
         {n.taskTitle ? (
-          <View className="flex-row items-center mt-1">
+          <Pressable 
+            className="flex-row items-center mt-1" 
+            onPress={() => {
+              if (n.taskId) {
+                console.log(`Navigating to task details: ${n.taskId}`);
+                router.push({
+                  pathname: '/dashboard/mydashboard/task/taskInfo',
+                  params: { taskId: n.taskId }
+                });
+              }
+            }}
+          >
             <MaterialIcons name="flag" size={18} color={n.priorityColor || '#3498db'} />
             <Text className="ml-1 font-bold text-[15px]">{n.taskTitle}</Text>
-          </View>
+            <MaterialIcons name="chevron-right" size={16} color="#999" style={{ marginLeft: 4 }} />
+          </Pressable>
         ) : null}
       </View>
     </View>
