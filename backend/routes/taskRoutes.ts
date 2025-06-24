@@ -11,7 +11,10 @@ import {
   getUserGroupTasks,
   getGroupTasks,
   getRecentGroupTasks,
-  getUserTaskCompletionPercentage
+  getUserTaskCompletionPercentage,
+  markTaskAsReadByUser,
+  getUnreadTasksCount,
+  markAllTasksAsReadByUser
 } from '../controllers/taskController';
 import { canManageTasks, hasTaskPermission, isAdmin, canManageSpecificTask } from '../middlewares/permissions';
 
@@ -368,5 +371,104 @@ router.get('/user/:userID', getUserTasks);
  *                   description: Percentage of completed tasks (0-100)
  */
 router.get('/user/:userID/group/:groupID/completion', getUserTaskCompletionPercentage);
+
+/**
+ * @swagger
+ * /api/tasks/{taskID}/read:
+ *   post:
+ *     summary: Mark a task as read by a user
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: taskID
+ *         required: true
+ *         description: The ID of the task to mark as read
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userID:
+ *                 type: string
+ *                 description: The ID of the user who read the task
+ *     responses:
+ *       200:
+ *         description: Task marked as read successfully
+ */
+router.post('/:taskID/read', markTaskAsReadByUser);
+
+/**
+ * @swagger
+ * /api/tasks/user/{userID}/group/{groupID}/unread:
+ *   get:
+ *     summary: Get count of unread tasks for a user in a group
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: userID
+ *         required: true
+ *         description: The ID of the user
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: groupID
+ *         required: true
+ *         description: The ID of the group
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Unread tasks count retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: number
+ *                   description: Number of unread tasks
+ */
+router.get('/user/:userID/group/:groupID/unread', getUnreadTasksCount);
+
+/**
+ * @swagger
+ * /api/tasks/user/{userID}/group/{groupID}/mark-all-read:
+ *   post:
+ *     summary: Mark all tasks in a group as read by a user
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: userID
+ *         required: true
+ *         description: The ID of the user
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: groupID
+ *         required: true
+ *         description: The ID of the group
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: All tasks marked as read successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 count:
+ *                   type: number
+ *                   description: Number of tasks marked as read
+ */
+router.post('/user/:userID/group/:groupID/mark-all-read', markAllTasksAsReadByUser);
 
 export default router;

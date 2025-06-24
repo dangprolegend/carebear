@@ -70,7 +70,7 @@ const throttleRequest = async <T>(
   }
 };
 
-const API_BASE_URL = "https://0dc2-2402-800-6f5f-9272-398e-d727-415-303c.ngrok-free.app";
+const API_BASE_URL = "https://mature-catfish-cheaply.ngrok-free.app";
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
@@ -516,6 +516,97 @@ export const fetchUserNameByID = async (userID: string): Promise<string> => {
   } catch (error) {
     console.error('Error fetching user name:', error);
     throw new Error('Unable to retrieve user name');
+  }
+};
+
+export const markTaskAsRead = async (taskID: string, userID: string): Promise<void> => {
+  try {
+    const url = `${API_BASE_URL}/api/tasks/${taskID}/read`;
+    console.log(`Marking task ${taskID} as read by user ${userID}`);
+    
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userID }),
+    });
+  } catch (error) {
+    console.error(`Error marking task ${taskID} as read:`, error);
+  }
+};
+
+export const getUnreadTasksCount = async (userID: string, groupID: string): Promise<number> => {
+  try {
+    const url = `${API_BASE_URL}/api/tasks/user/${userID}/group/${groupID}/unread`;
+    console.log(`Fetching unread tasks count for user ${userID} in group ${groupID}`);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    const data = await handleApiResponse(response);
+    console.log('Unread tasks count:', data.count);
+    return data.count;
+  } catch (error) {
+    console.error(`Error fetching unread tasks count:`, error);
+    return 0; // Return 0 on error
+  }
+};
+
+export const markAllTasksAsRead = async (userID: string, groupID: string): Promise<void> => {
+  try {
+    // Use the dedicated endpoint to mark all tasks as read in one go
+    const url = `${API_BASE_URL}/api/tasks/user/${userID}/group/${groupID}/mark-all-read`;
+    console.log(`Marking all tasks as read for user ${userID} in group ${groupID}`);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      console.error(`Failed to mark all tasks as read: ${response.status}`);
+      
+      // Fallback to marking tasks one by one if the bulk endpoint fails
+      console.log('Fallback: marking tasks individually');
+      
+      // Get all tasks for the group
+      const groupTasksUrl = `${API_BASE_URL}/api/tasks/group/${groupID}`;
+      const groupTasksResponse = await fetch(groupTasksUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!groupTasksResponse.ok) {
+        console.error(`Failed to fetch group tasks: ${groupTasksResponse.status}`);
+        return;
+      }
+      
+      const groupTasksData = await groupTasksResponse.json();
+      const tasks = groupTasksData.tasks || [];
+      console.log(`Found ${tasks.length} tasks in group ${groupID}`);
+      
+      // Mark each task as read
+      const markReadPromises = tasks.map((task: any) => 
+        markTaskAsRead(task._id, userID)
+      );
+      
+      await Promise.all(markReadPromises);
+      console.log(`Marked ${tasks.length} tasks as read for user ${userID}`);
+    } else {
+      const data = await response.json();
+      console.log(`Successfully marked all tasks as read: ${data.message || 'Success'}`);
+    }
+  } catch (error) {
+    console.error(`Error marking all tasks as read:`, error);
   }
 };
 

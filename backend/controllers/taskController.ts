@@ -432,3 +432,127 @@ export const checkOverdueTasks = async (): Promise<void> => {
     console.error('Error checking overdue tasks:', error);
   }
 };
+
+// Mark a task as read by a user
+export const markTaskAsReadByUser = async (req: TypedRequest<{ userID: string }, TaskParams>, res: Response): Promise<void> => {
+  try {
+    const { taskID } = req.params;
+    const { userID } = req.body;
+    
+    if (!userID) {
+      res.status(400).json({ message: 'User ID is required' });
+      return;
+    }
+
+    // Find the task
+    const task = await Task.findById(taskID);
+    if (!task) {
+      res.status(404).json({ message: 'Task not found' });
+      return;
+    }
+    
+    // Check if the user already read this task
+    if (!task.readBy) {
+      task.readBy = [];
+    }
+    
+    // Convert readBy to array of strings for easier comparison
+    const readByStrings = task.readBy.map(id => id.toString());
+    
+    // Only add the user to readBy if they haven't already read it
+    if (!readByStrings.includes(userID)) {
+      task.readBy.push(userID as any);
+      await task.save();
+    }
+    
+    res.json({ success: true, message: 'Task marked as read' });
+  } catch (err: any) {
+    console.error('Error marking task as read:', err);
+    res.status(500).json({ message: 'Internal server error', error: err.message });
+  }
+};
+
+// Get count of unread tasks for a user
+export const getUnreadTasksCount = async (req: TypedRequest<any, { userID: string, groupID: string }>, res: Response): Promise<void> => {
+  try {
+    const { userID, groupID } = req.params;
+    
+    console.log(`Getting unread tasks count for user ${userID} in group ${groupID}`);
+    
+    // Find tasks where the user is assignedTo or assignedBy, but not in readBy
+    const unreadTasksCount = await Task.countDocuments({
+      groupID,
+      $and: [
+        {
+          $or: [
+            { assignedTo: userID },
+            { assignedBy: userID }
+          ]
+        },
+        {
+          $or: [
+            { readBy: { $exists: false } },
+            { readBy: { $not: { $elemMatch: { $eq: userID } } } }
+          ]
+        }
+      ]
+    });
+    
+    console.log(`Found ${unreadTasksCount} unread tasks for user ${userID} in group ${groupID}`);
+    
+    res.json({ count: unreadTasksCount });
+  } catch (err: any) {
+    console.error('Error getting unread tasks count:', err);
+    res.status(500).json({ message: 'Internal server error', error: err.message });
+  }
+};
+
+// Mark all tasks as read for a user in a group
+export const markAllTasksAsReadByUser = async (req: TypedRequest<{}, { userID: string, groupID: string }>, res: Response): Promise<void> => {
+  try {
+    const { userID, groupID } = req.params;
+    
+    if (!userID || !groupID) {
+      res.status(400).json({ message: 'User ID and Group ID are required' });
+      return;
+    }
+
+    // Find all tasks in the group
+    const tasks = await Task.find({ groupID });
+    
+    if (!tasks || tasks.length === 0) {
+      res.json({ success: true, message: 'No tasks found for this group', count: 0 });
+      return;
+    }
+    
+    // Mark each task as read by the user
+    const updatePromises = tasks.map(task => {
+      // Check if readBy exists, initialize if not
+      if (!task.readBy) {
+        task.readBy = [];
+      }
+      
+      // Convert readBy to array of strings for easier comparison
+      const readByStrings = task.readBy.map(id => id.toString());
+      
+      // Only add the user to readBy if they haven't already read it
+      if (!readByStrings.includes(userID)) {
+        task.readBy.push(userID as any);
+        return task.save();
+      }
+      
+      return Promise.resolve(); // No need to update if already read
+    });
+    
+    await Promise.all(updatePromises);
+    
+    res.json({ 
+      success: true, 
+      message: `All tasks in group ${groupID} marked as read by user ${userID}`,
+      count: tasks.length
+    });
+  } catch (err: any) {
+    console.error('Error marking all tasks as read:', err);
+    res.status(500).json({ message: 'Internal server error', error: err.message });
+  }
+};
