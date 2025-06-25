@@ -7,6 +7,7 @@ import { Dropdown } from '~/components/ui/dropdown';
 import { FeedItemCard } from '~/components/ui/feed-item-card';
 import { EmptyState } from '~/components/ui/empty-state';
 import { MoodSelector } from '~/components/ui/mood-selector';
+import FeedLoading from '~/components/ui/feed-loading';
 import { 
   fetchFeedData, 
   fetchGroupFeedData, 
@@ -88,6 +89,8 @@ export default function Feed() {
   const [filteredData, setFilteredData] = useState<FeedItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [dataReady, setDataReady] = useState(false);
+  const [showContent, setShowContent] = useState(false);
   const [error, setError] = useState<string | null>(null);
     // Filter states
   const [timeFilter, setTimeFilter] = useState('all');
@@ -197,6 +200,8 @@ export default function Feed() {
 const loadFeedData = async () => {
     try {
       setLoading(true);
+      setDataReady(false);
+      setShowContent(false);
       setError(null);
       
       const groupID = currentGroupID; 
@@ -225,9 +230,8 @@ const loadFeedData = async () => {
     } catch (err) {
       console.error('Error loading feed data:', err);
       setError('Failed to load feed data');
-      setFeedData([]);
-    } finally {
-      setLoading(false);
+      setFeedData([]);    } finally {
+      setDataReady(true);
     }
   };const applyFilters = () => {
     let filtered = [...feedData];
@@ -264,7 +268,6 @@ const loadFeedData = async () => {
   return (
     <View className="flex-1 bg-white">    
       <View className="px-3 py-3">        
-        
         <View className="flex-row justify-between items-center">
           <Text className="font-semibold left-4 text-lg text-gray-900 font-['Lato']">
             {!!isToday(new Date()) ? "Today" : new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -288,9 +291,15 @@ const loadFeedData = async () => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 16 }}
-      >
-        {!filteredData.length ? (
+        contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 16 }}      >{loading || !showContent ? (
+          <FeedLoading 
+            dataReady={dataReady}
+            onFinish={() => {
+              setLoading(false);
+              setShowContent(true);
+            }}
+          />
+        ) : filteredData.length === 0 ? (
           <EmptyState
             icon="feed"
             title="No activities to show"
@@ -307,13 +316,11 @@ const loadFeedData = async () => {
                     </Text>
                   </View>
                 ) : null}
-
                 <View className="pl-3 relative">
                   <View
                     className="absolute left-9 top-2 bottom-0 w-0.5 bg-[#2A1800]"
                     style={{ marginLeft: -0.5, zIndex: 0 }}
                   />
-
                   {group.items.map((item, index) => (
                     <FeedItemCard
                       key={item.id}
