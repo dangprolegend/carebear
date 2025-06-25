@@ -4,7 +4,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from 'expo-router';
 import { useEffect, useState, useRef } from 'react';
-import AddFamily from './add_family';
 import { useAuth } from '@clerk/clerk-expo';
 import axios from 'axios';
 import PillIcon from '../../../../assets/icons/pill.png';
@@ -20,13 +19,13 @@ import CareBear from '../../../../assets/icons/carebear.png';
 import BabyBear from '../../../../assets/icons/babybear.png';
 import BearBoss from '../../../../assets/icons/bearboss.png';
 import Invitation from '../../../../assets/icons/bear-letter.png';
-import Heart from '../../../../assets/icons/heart 2.png';
 import bear1 from '../../../../assets/images/Bear-1.png';
 import bear2 from '../../../../assets/images/Bear-2.png';
 import bear3 from '../../../../assets/images/Bear-3.png';
 import bear4 from '../../../../assets/images/Bear-4.png';
 import bear5 from '../../../../assets/images/Bear-5.png';
 import bear6 from '../../../../assets/images/Bear-6.png';
+import CircularProgress from '~/components/CircularProgress';
 
 // Define the FamilyMember type
 interface FamilyMember {
@@ -60,6 +59,8 @@ export default function Family() {
   const [userID, setUserID] = useState(null);
   const [userImageURL, setUserImageURL] = useState<string | null>(null);
   const [userFullName, setUserFullName] = useState<string | null>(null);
+  const [taskCompletionByUser, setTaskCompletionByUser] = useState<{[userID: string]: number}>({});
+  const [primaryGroupId, setPrimaryGroupId] = useState<string | null>(null);
 
   // Daily status display states (store both value and emoji for user)
   const [todayMoodValue, setTodayMoodValue] = useState<string>('');
@@ -160,6 +161,36 @@ export default function Family() {
           return 'BearBoss';
         default:
           return role;
+      }
+    };
+
+    const fetchPrimaryGroupId = async (userID: string) => {
+      try {
+        const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/group`);
+        setPrimaryGroupId(response.data.groupID);
+        return response.data.groupID;
+      } catch (error) {
+        console.error('Error fetching primary group ID:', error);
+        return null;
+      }
+    };
+
+    const fetchTaskCompletion = async (userID: string, groupID: string) => {
+      try {
+        const response = await axios.get(`https://mature-catfish-cheaply.ngrok-free.app/api/tasks/user/${userID}/group/${groupID}/completion`);
+        const percentage = response.data.completionPercentage || 0;
+        setTaskCompletionByUser(prev => ({
+          ...prev,
+          [userID]: percentage
+        }));
+        return percentage;
+      } catch (error) {
+        console.error('Error fetching task completion:', error);
+        setTaskCompletionByUser(prev => ({
+          ...prev,
+          [userID]: 0
+        }));
+        return 0;
       }
     };
 
@@ -308,10 +339,17 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
       const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/familyMembers?groupID=${groupID}`);
       console.log(`Fetched family members for group ${groupID}:`, response.data);
 
-      // Fetch daily status for each family member
+      // Fetch daily status and task completion for each family member
       const membersWithStatus = await Promise.all(
         response.data.map(async (member: any) => {
           const status = await fetchMemberStatus(member.userID);
+          
+          // Fetch each member's primary group ID and their task completion
+          const memberPrimaryGroup = await fetchPrimaryGroupId(member.userID);
+          if (memberPrimaryGroup) {
+            await fetchTaskCompletion(member.userID, memberPrimaryGroup);
+          }
+          
           return {
             ...member,
             mood: status.mood,
@@ -467,6 +505,12 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
           const res = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/info`);
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
+
+          const primaryGroup = await fetchPrimaryGroupId(userID);
+          if (primaryGroup) {
+            await fetchTaskCompletion(userID, primaryGroup);
+          }
+
           const { groupIDs } = await fetchUserGroups(userID);
           if (groupIDs.length > 0) {
             await fetchFamilyMembersForGroup(userID, groupIDs[0]);
@@ -544,6 +588,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
     </TouchableOpacity>
   );
 
+
   // FamilyMemberCard Component
 const FamilyMemberCard = ({ 
   member, 
@@ -599,14 +644,26 @@ const FamilyMemberCard = ({
           <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
             <Text className="text-xs">{getBodyEmoji(member.body || '')}</Text>
           </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
+          {/* <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
             <Image source={Heart} className="w-3.5 h-3.5" />
-          </View>
+          </View> */}
+          {isCurrentUser ? (
+           <CircularProgress
+              percentage={taskCompletionByUser[userID] || 0} 
+              size={24} 
+            />
+         ) : (
+           <CircularProgress 
+             percentage={taskCompletionByUser[member.userID] || 0} 
+             size={24} 
+           />
+         )}
         </View>
       </View>
     </Pressable>
   );
 };
+
 
   // Show loading screen while checking status
   if (isCheckingStatus) {

@@ -347,45 +347,93 @@ export const getUserGroupTasks = async (req: TypedRequest<any, { userID: string,
 export const getUserTaskCompletionPercentage = async (req: TypedRequest<any, { userID: string, groupID: string }>, res: Response): Promise<void> => {
   try {
     const { userID, groupID } = req.params;
-    
-    // Find all tasks assigned to the user in the specific group
-    const taskCounts = await Task.aggregate([
-      {
-        $match: { 
-          assignedTo: new mongoose.Types.ObjectId(userID),
-          groupID: new mongoose.Types.ObjectId(groupID)
+    const { date } = req.query; // Optional date parameter
+
+    const matchCriteria: any = {
+      assignedTo: new mongoose.Types.ObjectId(userID),
+      groupID: new mongoose.Types.ObjectId(groupID)
+    };
+
+    // If date is provided
+    if (date) {
+      // Parse date as local time, not UTC
+      const [year, month, day] = (date as string).split('-').map(Number);
+      const targetDate = new Date(year, month - 1, day); 
+      
+      const startOfDay = new Date(targetDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(targetDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const pendingTasks = await Task.find({
+        ...matchCriteria,
+        status: { $ne: 'done' }
+      }).select('name title status'); 
+
+      const allDoneTasks = await Task.find({
+        ...matchCriteria,
+        status: 'done'
+      }).select('name title status completedAt');
+
+      const completedTasks = await Task.find({
+        ...matchCriteria,
+        status: 'done',
+        completedAt: {
+          $gte: startOfDay,
+          $lte: endOfDay
         }
-      },
-      {
-        $group: {
-          _id: "$status",
-          count: { $sum: 1 }
+      }).select('name title status completedAt'); 
+
+      const pendingTasksCount = pendingTasks.length;
+      const completedTasksCount = completedTasks.length;
+
+      const activeTasks = completedTasksCount + pendingTasksCount;
+      
+      const completionPercentage = activeTasks > 0 ? (completedTasksCount / activeTasks) * 100 : 0;
+
+      res.json({
+        totalTasks: activeTasks,
+        completedTasks: completedTasksCount,
+        pendingTasks: pendingTasksCount,
+        completionPercentage: Math.round(completionPercentage * 100) / 100,
+        date: date as string,
+        // Debug info
+        pendingTasksList: pendingTasks,
+        completedTasksList: completedTasks
+      });
+    } else {
+      // when no date is specified
+      const taskCounts = await Task.aggregate([
+        {
+          $match: matchCriteria
+        },
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 }
+          }
         }
-      }
-    ]);
-    
-    // Initialize counters
-    let doneCount = 0;
-    let totalCount = 0;
-    
-    // Parse the aggregation results
-    taskCounts.forEach((statusGroup) => {
-      if (statusGroup._id === 'done') {
-        doneCount = statusGroup.count;
-      }
-      totalCount += statusGroup.count;
-    });
-    
-    // Calculate percentage
-    const completionPercentage = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
-    
-    // Return the results
-    res.json({
-      totalTasks: totalCount,
-      completedTasks: doneCount,
-      pendingTasks: totalCount - doneCount,
-      completionPercentage: Math.round(completionPercentage * 100) / 100 // Round to 2 decimal places
-    });
+      ]);
+
+      let doneCount = 0;
+      let totalCount = 0;
+
+      taskCounts.forEach((statusGroup) => {
+        if (statusGroup._id === 'done') {
+          doneCount = statusGroup.count;
+        }
+        totalCount += statusGroup.count;
+      });
+
+      const completionPercentage = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
+
+      res.json({
+        totalTasks: totalCount,
+        completedTasks: doneCount,
+        pendingTasks: totalCount - doneCount,
+        completionPercentage: Math.round(completionPercentage * 100) / 100
+      });
+    }
   } catch (err: any) {
     handleError(res, err);
   }

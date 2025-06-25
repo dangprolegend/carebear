@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+//@ts-nocheck
+import  { useEffect, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Pressable, Image, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { fetchTaskById, updateTaskWithImage, fetchUserInfoById, deleteTask } from '../../../../../service/apiServices';
@@ -111,7 +112,7 @@ const TaskInfoScreen = () => {
           setUploading(false);
           return;
         }
-        await updateTaskWithImage(taskId as string, { status: 'done', image: base64data });
+        await updateTaskWithImage(taskId as string, { status: 'done', image: base64data, completedAt: new Date() });
         Alert.alert('Success', 'Task marked as done!');
         router.back();
       };
