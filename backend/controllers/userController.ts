@@ -63,39 +63,49 @@ export const provideAdditionalUserInfo = async (req: any, res: any) => {
   } catch (error: any) {}
 }
 
-// Add this new function to get all groups for a user (main + additional)
+// Get all groups for a user (main + additional)
 export const getAllUserGroups = async (req: Request, res: Response) => {
   try {
     const { userID } = req.params;
 
-    // Find the user and populate both main group and additional groups
-    const user = await User.findById(userID)
-      .populate('groupID')
-      .populate('additionalGroups.groupID');
+    // Find the user - first without populating to check structure
+    const user = await User.findById(userID);
     
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Prepare the result array
-    const allGroups = [];
+    // Initialize result arrays to store IDs and formatted groups
+    const groupIDs: string[] = [];
     
-    // Add main group if it exists
+    // First add the main groupID if it exists
     if (user.groupID) {
-      const mainGroup = user.groupID;
-      allGroups.push(mainGroup);
+      groupIDs.push(user.groupID.toString());
     }
 
-    // Add additional groups if they exist
-    if (Array.isArray(user.additionalGroups) && user.additionalGroups.length > 0) {
-      for (const groupEntry of user.additionalGroups) {
-        if (groupEntry.groupID) {
-          allGroups.push(groupEntry.groupID);
+    // Then add any additional groups
+    if (user.additionalGroups && Array.isArray(user.additionalGroups)) {
+      for (const group of user.additionalGroups) {
+        if (group && group.groupID) {
+          groupIDs.push(group.groupID.toString());
         }
       }
     }
 
-    return res.status(200).json(allGroups);
+    // Fetch all group data in one query
+    const groups = await Group.find({ _id: { $in: groupIDs } });
+    
+    // Format groups for the frontend
+    const formattedGroups = groups.map((group: any) => ({
+      id: (group._id as string).toString(),
+      name: group.name
+    }));
+
+    // Return a response with both the IDs and formatted group objects
+    return res.status(200).json({
+      groupIDs: groupIDs,
+      groups: formattedGroups
+    });
     
   } catch (error: any) {
     console.error('Error fetching all user groups:', error);

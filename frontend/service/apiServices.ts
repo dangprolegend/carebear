@@ -210,7 +210,6 @@ export const fetchTasksForDashboard = async (groupID: string): Promise<FrontendT
       },
     });
     const backendTasks: BackendTask[] = await handleApiResponse(response);
-    console.log("Fetched tasks:", backendTasks);
     return backendTasks.map(mapBackendTaskToFrontend);
   } catch (error) {
     console.error("Error fetching tasks:", error);

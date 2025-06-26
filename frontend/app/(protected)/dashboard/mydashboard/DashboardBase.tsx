@@ -238,6 +238,7 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
           },
         });
 
+        console.log("123456789", response);
         if (!response.ok) {
           throw new Error(`Failed to fetch user groups: ${response.statusText}`);
         }
