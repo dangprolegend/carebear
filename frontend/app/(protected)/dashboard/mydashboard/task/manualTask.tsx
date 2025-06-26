@@ -368,7 +368,8 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
             {manualForm.timesOfDayInput ? manualForm.timesOfDayInput : 'Select Time'}
           </Text>
           <MaterialIcons name={showTimesDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
-        </Pressable>          {showTimesDropdown && (
+        </Pressable>
+        {showTimesDropdown && (
           <View className="absolute left-0 right-0 top-14 z-10 bg-white border rounded-lg shadow-lg max-h-60">
             <ScrollView 
               nestedScrollEnabled={true} 
