@@ -68,7 +68,6 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
-
     loadDashboardData();
   }, [isSignedIn, clerkID]);
 

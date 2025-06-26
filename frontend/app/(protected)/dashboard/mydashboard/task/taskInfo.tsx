@@ -76,28 +76,38 @@ const TaskInfoScreen = () => {
     fetchAssignedTo();
   }, [task]);
 
-  // Image picker
-  const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert('Permission Required', 'Access to your photo library is needed to select an image.');
+  // Image picker using camera
+  const takePhoto = async () => {
+    // Request camera permissions
+    const cameraPermission = await ImagePicker.requestCameraPermissionsAsync();
+    
+    if (!cameraPermission.granted) {
+      Alert.alert('Permission Required', 'Access to your camera is needed to take a photo.');
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.7,
-    });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setPhotoUri(result.assets[0].uri);
+    
+    try {
+      // Launch camera
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.7,
+      });
+      
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setPhotoUri(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      Alert.alert('Camera Error', 'There was a problem using the camera. Please try again.');
     }
   };
 
   // Mark done with image
   const handleMarkDone = async () => {
     if (!photoUri) {
-      Alert.alert('Photo Required', 'Please upload a photo as evidence before marking as done.');
+      Alert.alert('Photo Required', 'Please take a photo as evidence before marking as done.');
       return;
     }
     setUploading(true);
@@ -161,7 +171,7 @@ const TaskInfoScreen = () => {
 
       {/* Banner */}
       <View className="bg-[#2A1800] mx-4 mt-4 rounded-lg py-4 pl-1 pr-1 items-center">
-        <Text className="text-white text-base font-medium text-center">Show us you took it—just a quick photo!</Text>
+        <Text className="text-white text-base font-medium text-center">Show us you took it-just a quick photo!</Text>
       </View>
 
       {/* Scrollable content with image and info */}
@@ -173,12 +183,12 @@ const TaskInfoScreen = () => {
           ) : photoUri ? (
             <Image source={{ uri: photoUri }} className="absolute w-full h-full" resizeMode="cover" />
           ) : (
-            <Text className="text-gray-400 text-center mt-16">No photo uploaded</Text>
+            <Text className="text-gray-400 text-center mt-5 pt-0">No photo captured</Text>
           )}
           {!taskImage && (
             <Pressable
               className="absolute bottom-3 right-3 bg-[#2A1800] rounded-full p-2"
-              onPress={pickImage}
+              onPress={takePhoto}
             >
               <MaterialIcons name="photo-camera" size={24} color="white" />
             </Pressable>

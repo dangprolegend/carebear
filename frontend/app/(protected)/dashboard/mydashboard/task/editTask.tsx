@@ -635,20 +635,23 @@ const EditTaskScreen = () => {
                 keyboardShouldPersistTaps="handled"
               >
                 {Array.from({ length: 24 }).map((_, hour) => {
-                  const label = hour.toString().padStart(2, '0') + ':00';
-                  return (
-                    <Pressable
-                      key={label}
-                      className={`py-3 px-4 ${taskForm.detail === label ? 'bg-blue-100' : ''}`}
-                      onPress={() => {
-                        handleInputChange('detail', label);
-                        setShowTimesDropdown(false);
-                      }}
-                    >
-                      <Text className={`text-base ${taskForm.detail === label ? 'font-bold text-blue-700' : 'text-black'}`}>{label}</Text>
-                    </Pressable>
-                  );
-                })}
+                  return Array.from({ length: 4 }).map((_, minuteIndex) => {
+                    const minutes = minuteIndex * 15;
+                    const label = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+                    return (
+                      <Pressable
+                        key={label}
+                        className={`py-3 px-4 ${taskForm.detail === label ? 'bg-blue-100' : ''}`}
+                        onPress={() => {
+                          handleInputChange('detail', label);
+                          setShowTimesDropdown(false);
+                        }}
+                      >
+                        <Text className={`text-base ${taskForm.detail === label ? 'font-bold text-blue-700' : 'text-black'}`}>{label}</Text>
+                      </Pressable>
+                    );
+                  });
+                }).flat()}
               </ScrollView>
             </View>
           )}
