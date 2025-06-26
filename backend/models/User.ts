@@ -41,8 +41,8 @@ const UserSchema: Schema = new Schema({
   additionalGroups: [{
     groupID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Group',
-    },
+      ref: 'Group'
+    }
   }]
 }, { timestamps: true });
 
