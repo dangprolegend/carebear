@@ -25,7 +25,9 @@ const taskSchema: Schema = new Schema({
   completionNotes: { type: String },
   evidenceUrl: { type: String },
   // Task escalation field
-  escalated: { type: Boolean, default: false }
+  escalated: { type: Boolean, default: false },
+  // Track which users have read this task notification
+  readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 }, {
   timestamps: true // Adds createdAt and updatedAt fields automatically
 });

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+//@ts-nocheck
+import  { useEffect, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, Pressable, Image, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { fetchTaskById, updateTaskWithImage, fetchUserInfoById } from '../../../../../service/apiServices';
+import { fetchTaskById, updateTaskWithImage, fetchUserInfoById, deleteTask } from '../../../../../service/apiServices';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
@@ -16,6 +17,7 @@ const TaskInfoScreen = () => {
   const { taskId } = useLocalSearchParams();
   const [task, setTask] = useState<any>(null);
   const [assignedByUser, setAssignedByUser] = useState<any>(null);
+  const [assignedToUser, setAssignedToUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -56,6 +58,24 @@ const TaskInfoScreen = () => {
     fetchAssignedBy();
   }, [task]);
 
+  // Fetch assigned to user info
+  useEffect(() => {
+    const fetchAssignedTo = async () => {
+      if (task?.assignedTo) {
+        try {
+          const userId = typeof task.assignedTo === 'object' ? task.assignedTo._id : task.assignedTo;
+          const user = await fetchUserInfoById(userId);
+          setAssignedToUser(user);
+        } catch {
+          setAssignedToUser(null);
+        }
+      } else {
+        setAssignedToUser(null);
+      }
+    };
+    fetchAssignedTo();
+  }, [task]);
+
   // Image picker
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -92,7 +112,7 @@ const TaskInfoScreen = () => {
           setUploading(false);
           return;
         }
-        await updateTaskWithImage(taskId as string, { status: 'done', image: base64data });
+        await updateTaskWithImage(taskId as string, { status: 'done', image: base64data, completedAt: new Date() });
         Alert.alert('Success', 'Task marked as done!');
         router.back();
       };
@@ -164,6 +184,53 @@ const TaskInfoScreen = () => {
             </Pressable>
           )}
         </View>
+        
+        {/* Edit and Delete Buttons */}
+        <View className="flex-row justify-end px-4 mt-2">
+            <Pressable 
+            className="mr-4 p-2 flex-row items-center" 
+            onPress={() => {
+              // Navigate to the edit task screen with the taskId
+              router.push({
+                pathname: "/(protected)/dashboard/mydashboard/task/editTask",
+                params: { taskId }
+              });
+            }}
+            >
+            <MaterialIcons className = "border rounded-full p-1" name="edit" size={20} color="#2A1800" />
+            </Pressable>
+          <Pressable 
+            className="p-2 flex-row items-center" 
+            onPress={() => {
+              Alert.alert(
+                "Delete Task",
+                "Are you sure you want to delete this task?",
+                [
+                  {
+                    text: "Cancel",
+                    style: "cancel"
+                  },
+                  { 
+                    text: "Delete", 
+                    style: "destructive",
+                    onPress: async () => {
+                      try {
+                        // Implement delete functionality here
+                        await deleteTask(taskId as string);
+                        Alert.alert("Success", "Task deleted successfully");
+                        router.back();
+                      } catch (err: any) {
+                        Alert.alert("Error", err?.message || "Failed to delete task");
+                      }
+                    }
+                  }
+                ]
+              );
+            }}
+          >
+            <MaterialIcons className = "border rounded-full p-1" name="delete" size={20} color="#2A1800" />
+          </Pressable>
+        </View>
 
         {/* Info section */}
         <View className="px-4 pt-4">
@@ -202,8 +269,20 @@ const TaskInfoScreen = () => {
           <View className="mb-3 flex-row items-center">
             <Text>
                 <Text className="font-bold">Assigned </Text>
-                to <Text className="font-bold">You</Text> by{' '}
+                to{' '}
             </Text>
+            {assignedToUser ? (
+              <>
+                <Image
+                  source={{ uri: assignedToUser.imageURL || 'https://via.placeholder.com/32' }}
+                  className="w-6 h-6 rounded-full mx-1"
+                />
+                <Text className="font-bold">{assignedToUser.fullName || 'Unknown'}</Text>
+              </>
+            ) : (
+              <Text className="font-bold">Unassigned</Text>
+            )}
+            <Text> by{' '}</Text>
             {assignedByUser ? (
               <>
                 <Image

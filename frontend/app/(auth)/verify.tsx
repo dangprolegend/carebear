@@ -47,13 +47,21 @@ import { router, Stack } from 'expo-router';
       if (!isLoaded) return;
   
       try {
+        console.log('Attempting email verification with code:', code);
         const signUpAttempt = await signUp.attemptEmailAddressVerification({
           code,
         });
   
+        console.log('Verification status:', signUpAttempt.status);
+        console.log('Full verification response:', JSON.stringify(signUpAttempt, null, 2));
+  
         if (signUpAttempt.status === 'complete') {
-          setActive({ session: signUpAttempt.createdSessionId });
-          router.push('../(protected)/setup/health-input');
+          console.log('Verification complete, setting active session');
+          await setActive({ session: signUpAttempt.createdSessionId });
+          
+          console.log('Session activated, redirecting to root to let the index router handle redirection');
+          // Redirect to root, which will then redirect to the appropriate route based on user state
+          router.replace('/');
         } else {
           console.log('Verification failed');
           console.log(signUpAttempt);
@@ -107,7 +115,7 @@ import { router, Stack } from 'expo-router';
 
               <View className="flex flex-row justify-between items-start self-stretch mt-[286px]">
                 <TouchableOpacity 
-                  onPress={() => router.push('/sign-up')}
+                  onPress={() => router.replace('/sign-up')}
                   className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-[#DDD]"
                 >
                 <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>

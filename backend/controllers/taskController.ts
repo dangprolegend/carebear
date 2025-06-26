@@ -2,6 +2,7 @@ import { Response, NextFunction } from 'express';
 import Task from '../models/Task';
 import User from '../models/User';
 import { TypedRequest, UserRequest } from '../types/express';
+import mongoose from 'mongoose';
 
 interface Reminder_setup {
   start_date?: string;
@@ -323,6 +324,122 @@ export const getRecentGroupTasks = async (req: TypedRequest<any, { groupID: stri
   }
 };
 
+// Get all tasks for a specific user in a specific group
+export const getUserGroupTasks = async (req: TypedRequest<any, { userID: string, groupID: string }>, res: Response): Promise<void> => {
+  try {
+    const { userID, groupID } = req.params;
+    
+    // Find tasks that are assigned to the specified user and belong to the specified group
+    const tasks = await Task.find({ 
+      assignedTo: userID,
+      groupID: groupID
+    })
+      .sort({ deadline: 1, priority: -1 })  // Sort by deadline (ascending) and priority (high to low)
+      .populate('assignedBy', 'name email')
+      .populate('assignedTo', 'name email');
+    
+    res.json(tasks);
+  } catch (err: any) {
+    handleError(res, err);
+  }
+};
+
+// Calculate the percentage of done tasks over total tasks for a specific user in a specific group
+export const getUserTaskCompletionPercentage = async (req: TypedRequest<any, { userID: string, groupID: string }>, res: Response): Promise<void> => {
+  try {
+    const { userID, groupID } = req.params;
+    const { date } = req.query; // Optional date parameter
+
+    const matchCriteria: any = {
+      assignedTo: new mongoose.Types.ObjectId(userID),
+      groupID: new mongoose.Types.ObjectId(groupID)
+    };
+
+    // If date is provided
+    if (date) {
+      // Parse date as local time, not UTC
+      const [year, month, day] = (date as string).split('-').map(Number);
+      const targetDate = new Date(year, month - 1, day); 
+      
+      const startOfDay = new Date(targetDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(targetDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const pendingTasks = await Task.find({
+        ...matchCriteria,
+        status: { $ne: 'done' }
+      }).select('name title status'); 
+
+      const allDoneTasks = await Task.find({
+        ...matchCriteria,
+        status: 'done'
+      }).select('name title status completedAt');
+
+      const completedTasks = await Task.find({
+        ...matchCriteria,
+        status: 'done',
+        completedAt: {
+          $gte: startOfDay,
+          $lte: endOfDay
+        }
+      }).select('name title status completedAt'); 
+
+      const pendingTasksCount = pendingTasks.length;
+      const completedTasksCount = completedTasks.length;
+
+      const activeTasks = completedTasksCount + pendingTasksCount;
+      
+      const completionPercentage = activeTasks > 0 ? (completedTasksCount / activeTasks) * 100 : 0;
+
+      res.json({
+        totalTasks: activeTasks,
+        completedTasks: completedTasksCount,
+        pendingTasks: pendingTasksCount,
+        completionPercentage: Math.round(completionPercentage * 100) / 100,
+        date: date as string,
+        // Debug info
+        pendingTasksList: pendingTasks,
+        completedTasksList: completedTasks
+      });
+    } else {
+      // when no date is specified
+      const taskCounts = await Task.aggregate([
+        {
+          $match: matchCriteria
+        },
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 }
+          }
+        }
+      ]);
+
+      let doneCount = 0;
+      let totalCount = 0;
+
+      taskCounts.forEach((statusGroup) => {
+        if (statusGroup._id === 'done') {
+          doneCount = statusGroup.count;
+        }
+        totalCount += statusGroup.count;
+      });
+
+      const completionPercentage = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
+
+      res.json({
+        totalTasks: totalCount,
+        completedTasks: doneCount,
+        pendingTasks: totalCount - doneCount,
+        completionPercentage: Math.round(completionPercentage * 100) / 100
+      });
+    }
+  } catch (err: any) {
+    handleError(res, err);
+  }
+};
+
 export const checkOverdueTasks = async (): Promise<void> => {
   try {
     const now = new Date();
@@ -362,5 +479,129 @@ export const checkOverdueTasks = async (): Promise<void> => {
     }
   } catch (error) {
     console.error('Error checking overdue tasks:', error);
+  }
+};
+
+// Mark a task as read by a user
+export const markTaskAsReadByUser = async (req: TypedRequest<{ userID: string }, TaskParams>, res: Response): Promise<void> => {
+  try {
+    const { taskID } = req.params;
+    const { userID } = req.body;
+    
+    if (!userID) {
+      res.status(400).json({ message: 'User ID is required' });
+      return;
+    }
+
+    // Find the task
+    const task = await Task.findById(taskID);
+    if (!task) {
+      res.status(404).json({ message: 'Task not found' });
+      return;
+    }
+    
+    // Check if the user already read this task
+    if (!task.readBy) {
+      task.readBy = [];
+    }
+    
+    // Convert readBy to array of strings for easier comparison
+    const readByStrings = task.readBy.map(id => id.toString());
+    
+    // Only add the user to readBy if they haven't already read it
+    if (!readByStrings.includes(userID)) {
+      task.readBy.push(userID as any);
+      await task.save();
+    }
+    
+    res.json({ success: true, message: 'Task marked as read' });
+  } catch (err: any) {
+    console.error('Error marking task as read:', err);
+    res.status(500).json({ message: 'Internal server error', error: err.message });
+  }
+};
+
+// Get count of unread tasks for a user
+export const getUnreadTasksCount = async (req: TypedRequest<any, { userID: string, groupID: string }>, res: Response): Promise<void> => {
+  try {
+    const { userID, groupID } = req.params;
+    
+    console.log(`Getting unread tasks count for user ${userID} in group ${groupID}`);
+    
+    // Find tasks where the user is assignedTo or assignedBy, but not in readBy
+    const unreadTasksCount = await Task.countDocuments({
+      groupID,
+      $and: [
+        {
+          $or: [
+            { assignedTo: userID },
+            { assignedBy: userID }
+          ]
+        },
+        {
+          $or: [
+            { readBy: { $exists: false } },
+            { readBy: { $not: { $elemMatch: { $eq: userID } } } }
+          ]
+        }
+      ]
+    });
+    
+    console.log(`Found ${unreadTasksCount} unread tasks for user ${userID} in group ${groupID}`);
+    
+    res.json({ count: unreadTasksCount });
+  } catch (err: any) {
+    console.error('Error getting unread tasks count:', err);
+    res.status(500).json({ message: 'Internal server error', error: err.message });
+  }
+};
+
+// Mark all tasks as read for a user in a group
+export const markAllTasksAsReadByUser = async (req: TypedRequest<{}, { userID: string, groupID: string }>, res: Response): Promise<void> => {
+  try {
+    const { userID, groupID } = req.params;
+    
+    if (!userID || !groupID) {
+      res.status(400).json({ message: 'User ID and Group ID are required' });
+      return;
+    }
+
+    // Find all tasks in the group
+    const tasks = await Task.find({ groupID });
+    
+    if (!tasks || tasks.length === 0) {
+      res.json({ success: true, message: 'No tasks found for this group', count: 0 });
+      return;
+    }
+    
+    // Mark each task as read by the user
+    const updatePromises = tasks.map(task => {
+      // Check if readBy exists, initialize if not
+      if (!task.readBy) {
+        task.readBy = [];
+      }
+      
+      // Convert readBy to array of strings for easier comparison
+      const readByStrings = task.readBy.map(id => id.toString());
+      
+      // Only add the user to readBy if they haven't already read it
+      if (!readByStrings.includes(userID)) {
+        task.readBy.push(userID as any);
+        return task.save();
+      }
+      
+      return Promise.resolve(); // No need to update if already read
+    });
+    
+    await Promise.all(updatePromises);
+    
+    res.json({ 
+      success: true, 
+      message: `All tasks in group ${groupID} marked as read by user ${userID}`,
+      count: tasks.length
+    });
+  } catch (err: any) {
+    console.error('Error marking all tasks as read:', err);
+    res.status(500).json({ message: 'Internal server error', error: err.message });
   }
 };

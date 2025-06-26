@@ -10,8 +10,9 @@ import {
   setCurrentGroupIDForApiService
 } from '../../../../service/apiServices';
 import { Task } from './task';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View, Pressable } from 'react-native';
 import { useAuth } from '@clerk/clerk-expo';
+import RateLimitError from '../../../../components/RateLimitError';
 
 const Dashboard = () => {
   const { isSignedIn, userId: clerkID } = useAuth();
@@ -19,6 +20,10 @@ const Dashboard = () => {
   const [userRole, setUserRole] = useState<string>('member');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [rateLimitError, setRateLimitError] = useState<{
+    message: string;
+    retryAfter?: number;
+  } | null>(null);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -28,8 +33,10 @@ const Dashboard = () => {
         return;
       }
 
-      try {
-        setLoading(true);
+    try {
+      setLoading(true);
+      setError(null);
+      setRateLimitError(null);
 
         console.log('Fetching data for Clerk ID:', clerkID);
         
