@@ -97,7 +97,7 @@ export const getAllUserGroups = async (req: Request, res: Response) => {
     
     // Format groups for the frontend
     const formattedGroups = groups.map((group: any) => ({
-      id: (group._id as string).toString(),
+      id: group._id.toString(),
       name: group.name
     }));
 
