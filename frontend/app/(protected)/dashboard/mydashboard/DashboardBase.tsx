@@ -377,7 +377,7 @@ useEffect(() => {
     });
   };
 
-  // Update the handleGroupChange function
+  // Update the handleGroupChange function to load tasks for the selected group
   const handleGroupChange = (groupName: string) => {
     setSelectedGroupName(groupName);
     setShowGroupSelector(false);
@@ -389,14 +389,71 @@ useEffect(() => {
       // Update the current group ID in API service
       setCurrentGroupIDForApiService(selectedGroup.id);
       
-      // Filter tasks by the selected group
-      const groupTasks = filterTasksByGroup(tasks, selectedGroup.id);
-      setLocalTasks(groupTasks);
-      
-      // Reset any other filters
+      // Reset filters
       setSelectedTaskAssignee([]);
       setTaskFilterLabel("All Tasks");
       setSelectedAssignedBy(null);
+      
+      // Show loading state
+      setLocalTasks([]); // Clear current tasks while loading
+      setGroupsLoading(true);
+      
+      // Fetch tasks for the newly selected group
+      loadTasksForGroup(selectedGroup.id);
+    }
+  };
+
+  // Create a helper function to load tasks for a specific group
+  const loadTasksForGroup = async (groupID: string) => {
+    try {
+      const groupTasks = await fetchTasksForDashboard(groupID);
+      setLocalTasks(groupTasks);
+      
+      // Apply any existing filters to the new tasks
+      let filteredTasks = groupTasks;
+      
+      // Apply date filter if needed
+      filteredTasks = filteredTasks.filter(isTaskForSelectedDate);
+      
+      // Apply assignedBy filter if one is selected
+      if (selectedAssignedBy) {
+        filteredTasks = filteredTasks.filter(task => {
+          const assignedById = typeof task.assignedBy === 'object' && task.assignedBy !== null 
+            ? (task.assignedBy._id || task.assignedBy.id) 
+            : task.assignedBy;
+          
+          return assignedById === selectedAssignedBy.id;
+        });
+      }
+      
+      // Apply task assignee filter if any are selected
+      if (selectedTaskAssignee && selectedTaskAssignee.length > 0) {
+        const assigneeIds = selectedTaskAssignee.map(assignee => assignee.id);
+        
+        filteredTasks = filteredTasks.filter(task => {
+          let assignedToId;
+          if (typeof task.assignedTo === 'object' && task.assignedTo !== null) {
+            if ('_id' in task.assignedTo && typeof (task.assignedTo as any)._id === 'string') {
+              assignedToId = (task.assignedTo as any)._id;
+            } else if ('id' in task.assignedTo && typeof (task.assignedTo as any).id === 'string') {
+              assignedToId = (task.assignedTo as any).id;
+            } else {
+              assignedToId = undefined;
+            }
+          } else {
+            assignedToId = task.assignedTo;
+          }
+            
+          return assigneeIds.includes(assignedToId as string);
+        });
+      }
+      
+      // Update the displayed tasks
+      setLocalTasks(filteredTasks);
+    } catch (error) {
+      console.error(`Error loading tasks for group ${groupID}:`, error);
+    } finally {
+      setGroupsLoading(false);
     }
   };
 
