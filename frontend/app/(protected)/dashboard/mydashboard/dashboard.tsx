@@ -10,9 +10,10 @@ import {
   setCurrentGroupIDForApiService
 } from '../../../../service/apiServices';
 import { Task } from './task';
-import { ActivityIndicator, Text, View, Pressable } from 'react-native';
+import { Text, View, Pressable } from 'react-native';
 import { useAuth } from '@clerk/clerk-expo';
 import RateLimitError from '../../../../components/RateLimitError';
+import FeedLoading from '~/components/ui/feed-loading';
 
 const Dashboard = () => {
   const { isSignedIn, userId: clerkID } = useAuth();
@@ -74,10 +75,10 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#FAE5CA" />
-        <Text className="mt-4 text-gray-600">Loading your dashboard...</Text>
-      </View>
+      <FeedLoading 
+        dataReady={false}
+        onFinish={() => setLoading(false)}
+      />
     );
   }
 

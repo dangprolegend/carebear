@@ -1,11 +1,12 @@
 //@ts-nocheck
 import  { useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Pressable, Image, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { fetchTaskById, updateTaskWithImage, fetchUserInfoById, deleteTask } from '../../../../../service/apiServices';
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import FeedLoading from '~/components/ui/feed-loading';
 
 const PRIORITY_FLAG = {
   high: { color: '#FF0000', icon: 'flag' },
@@ -148,10 +149,10 @@ const TaskInfoScreen = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#FAE5CA" />
-        <Text className="mt-2 text-gray-600">Loading task info...</Text>
-      </View>
+      <FeedLoading 
+        dataReady={false}
+        onFinish={() => setLoading(false)}
+      />
     );
   }
   if (error || !task) {

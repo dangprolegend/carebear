@@ -6,7 +6,6 @@ import {
   Pressable, 
   ScrollView, 
   Alert, 
-  ActivityIndicator, 
   Platform, 
   Modal,
   StyleSheet,
@@ -16,6 +15,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from 'expo-router';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import FeedLoading from '~/components/ui/feed-loading';
 import { 
   fetchTaskById, 
   updateTask, 
@@ -301,10 +301,10 @@ const EditTaskScreen = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#FAE5CA" />
-        <Text className="mt-2 text-gray-600">Loading task data...</Text>
-      </View>
+      <FeedLoading 
+        dataReady={false}
+        onFinish={() => setLoading(false)}
+      />
     );
   }
 
@@ -369,7 +369,7 @@ const EditTaskScreen = () => {
                   if (!selectedUser) {
                     return (
                       <View className="flex-row items-center">
-                        <ActivityIndicator size="small" color="#FAE5CA" style={{ marginRight: 8 }} />
+                        <View className="w-4 h-4 mr-2 animate-pulse bg-gray-300 rounded-full" />
                         <Text className="text-base text-gray-500">Loading user...</Text>
                       </View>
                     );

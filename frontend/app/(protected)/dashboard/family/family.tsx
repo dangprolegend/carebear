@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { View, Text, Pressable, ScrollView, Alert, ActivityIndicator, TouchableOpacity, Modal, Image, TextInput } from 'react-native';
+import { View, Text, Pressable, ScrollView, Alert, TouchableOpacity, Modal, Image, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from 'expo-router';
@@ -8,6 +8,7 @@ import { useAuth } from '@clerk/clerk-expo';
 import axios from 'axios';
 import PillIcon from '../../../../assets/icons/pill.png';
 import PillBotte from '../../../../assets/icons/pill-bottle.png';
+import FeedLoading from '~/components/ui/feed-loading';
 import Moon from '../../../../assets/icons/moon.png';
 import Scale from '../../../../assets/icons/scale.png';
 import Foot from '../../../../assets/icons/footprints.png';
@@ -668,10 +669,10 @@ const FamilyMemberCard = ({
   // Show loading screen while checking status
   if (isCheckingStatus) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#007AFF" />
-        <Text className="mt-4 text-gray-600">Loading...</Text>
-      </View>
+      <FeedLoading 
+        dataReady={false}
+        onFinish={() => setIsCheckingStatus(false)}
+      />
     );
   }
 
@@ -734,7 +735,7 @@ const FamilyMemberCard = ({
             {/* Family Members Cards */}
           {isLoadingFamily ? (
             <View className="flex-1 justify-center items-center py-8">
-              <ActivityIndicator size="large" color="#2A1800" />
+              <View className="w-8 h-8 mb-2 bg-gray-300 rounded-full animate-pulse" />
               <Text className="mt-4 text-gray-600">Loading family members...</Text>
             </View>
           ) : (
@@ -915,7 +916,7 @@ const FamilyMemberCard = ({
                     disabled={isSendingInvitation}
                   >
                     {isSendingInvitation ? (
-                      <ActivityIndicator size="small" color="white" />
+                      <View className="w-4 h-4 mr-1 bg-gray-300 rounded-full animate-pulse" />
                     ) : (
                       <Text className="text-white font-lato text-base font-medium">Send Invitation</Text>
                     )}
@@ -1003,7 +1004,7 @@ const FamilyMemberCard = ({
               disabled={!selectedMood || !selectedBodyFeeling || isSubmittingStatus}
             >
               {isSubmittingStatus ? (
-                <ActivityIndicator color="#fff" />
+                <View className="w-4 h-4 bg-white rounded-full animate-pulse" />
               ) : (
                 <Text className="text-white text-lg font-semibold">Done</Text>
               )}
