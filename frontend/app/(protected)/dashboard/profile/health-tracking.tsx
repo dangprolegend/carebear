@@ -9,7 +9,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useStrava } from '~/hooks/useStrava';
+import { useManualStrava } from '~/hooks/useManualStrava';
 
 const StravaHealthScreen = () => {
   const {
@@ -20,7 +20,7 @@ const StravaHealthScreen = () => {
     signOut,
     getHealthData,
     getWeeklySummary,
-  } = useStrava();
+  } = useManualStrava();
 
   const [healthData, setHealthData] = useState([]);
   const [weeklySummary, setWeeklySummary] = useState(null);
