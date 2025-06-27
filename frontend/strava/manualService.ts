@@ -9,23 +9,12 @@ class ManualStravaAuthService {
     this.clientId = process.env.EXPO_PUBLIC_STRAVA_CLIENT_ID;
     this.clientSecret = process.env.EXPO_PUBLIC_STRAVA_CLIENT_SECRET;
     
-    // Try different redirect URI formats for Strava compatibility
     if (__DEV__) {
-      // For development, try localhost
-      this.redirectUri = 'https://btaniemie.github.io/strava/';
-      this.stravaCallbackDomain = 'btaniemie.github.io';
+      this.redirectUri = 'http://172.20.10.2/auth/callback'; 
+      this.stravaCallbackDomain = '172.20.10.2';
     } else {
-      // For production, use custom scheme
       this.redirectUri = Linking.createURL('auth/callback');
     }
-    
-    console.log('=== STRAVA CONFIGURATION DEBUG ===');
-    console.log('Environment:', __DEV__ ? 'Development' : 'Production');
-    console.log('Redirect URI:', this.redirectUri);
-    console.log('Put in Strava Authorization Callback Domain:', 
-                __DEV__ ? 'localhost' : 'myapp');
-    console.log('Client ID:', this.clientId);
-    console.log('===================================');
   }
 
   // Manual OAuth flow using WebBrowser
