@@ -60,6 +60,7 @@ export interface ITask extends Document {
   completionNotes?: string;
   evidenceUrl?: string;
   escalated?: boolean;
+  readBy?: Types.ObjectId[] | string[]; // Array of User IDs who have read this task
   createdAt: Date;
   updatedAt: Date;
 }

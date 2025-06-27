@@ -4,7 +4,8 @@ import { Slot, useRouter, useSegments, useGlobalSearchParams } from 'expo-router
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'react-native';
-import { fetchUserNameByID } from '../../../service/apiServices'; // Import the function to fetch user name
+import { fetchUserNameByID, getCurrentGroupID, getBackendUserID, getUnreadTasksCount, markAllTasksAsRead } from '../../../service/apiServices';
+import { useAuth } from '@clerk/clerk-expo';
 
 const tabs = [
   { 
@@ -34,26 +35,84 @@ export default function DashboardLayout() {
   const segments = useSegments() as string[];
   const searchParams = useGlobalSearchParams(); 
   const [userName, setUserName] = useState<string | null>(null); 
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState<boolean>(false);
+  const [userID, setUserID] = useState<string | null>(null);
+  const [groupID, setGroupID] = useState<string | null>(null);
+  const { userId } = useAuth();
 
   // Fetch the user's name based on userID
   useEffect(() => {
-    const fetchUserName = async () => {
+    const fetchUserData = async () => {
       if (segments.includes('member-dashboard')) {
         const userID = searchParams.userID as string | undefined; 
         if (userID) {
           try {
             const name = await fetchUserNameByID(userID); 
             setUserName(name);
+            setUserID(userID);
           } catch (error) {
             console.error('Failed to fetch user name:', error);
             setUserName(null); 
           }
         }
+      } else if (userId) {
+        try {
+          // Get the current user ID and group ID
+          const backendUserID = await getBackendUserID(userId);
+          setUserID(backendUserID);
+          
+          // Get groupID directly from API instead of using the cache function
+          try {
+            const groupResponse = await fetch(`https://carebear-backend.onrender.com/api/users/${backendUserID}/group`);
+            const groupData = await groupResponse.json();
+            
+            if (groupData && groupData.groupID) {
+              console.log(`Successfully retrieved group ID from API: ${groupData.groupID}`);
+              setGroupID(groupData.groupID);
+            } else {
+              console.error('Failed to get valid group ID from API response', groupData);
+            }
+          } catch (groupError) {
+            console.error('Error fetching group ID from API:', groupError);
+          }
+        } catch (error) {
+          console.error('Failed to fetch user or group ID:', error);
+        }
       }
     };
 
-    fetchUserName();
-  }, [segments, searchParams]);
+    fetchUserData();
+  }, [segments, searchParams, userId]);
+
+  // Fetch unread notification count
+  useEffect(() => {
+    const fetchNotificationStatus = async () => {
+      try {
+        if (userID && groupID) {
+          console.log(`Checking unread notifications for user ${userID} in group ${groupID}`);
+          const count = await getUnreadTasksCount(userID, groupID);
+          console.log(`Unread notifications count: ${count}`);
+          setUnreadCount(count);
+          setHasUnreadNotifications(count > 0);
+          console.log(`hasUnreadNotifications set to: ${count > 0}`); // Debug log
+        }
+      } catch (error) {
+        console.error('Failed to fetch notification status:', error);
+      }
+    };
+
+    // Fetch unread notifications every 30 seconds
+    fetchNotificationStatus();
+    const interval = setInterval(fetchNotificationStatus, 30000);
+    
+    return () => clearInterval(interval);
+  }, [userID, groupID]);
+
+  // Debug effect to track state changes
+  useEffect(() => {
+    console.log(`[DEBUG] Component state: userID=${userID}, groupID=${groupID}, hasUnreadNotifications=${hasUnreadNotifications}, unreadCount=${unreadCount}`);
+  }, [userID, groupID, hasUnreadNotifications, unreadCount]);
 
   const getActiveTitle = () => {
     if (segments.includes('member-dashboard')) {
@@ -64,8 +123,6 @@ export default function DashboardLayout() {
   };
 
   const activeTitle = getActiveTitle();
-
-  const hasUnreadNotifications = false;
 
   const handleTabPress = (route: string) => {
     router.replace(route as any);
@@ -132,33 +189,65 @@ export default function DashboardLayout() {
 
           {/* Notification Button */}
             <Pressable
-            onPress={() => router.replace('../notification/notification')}
+            onPress={async () => {
+              // Mark tasks as read and navigate to the notification screen
+              if (userID && groupID) {
+                try {
+                  // Even if the unreadCount is 0, we'll try to mark tasks as read
+                  // This covers cases where the count hasn't loaded yet
+                  console.log(`Marking tasks as read for user ${userID} in group ${groupID}`);
+                  await markAllTasksAsRead(userID, groupID);
+                  
+                  // Update the notification count locally
+                  setUnreadCount(0);
+                  setHasUnreadNotifications(false);
+                  
+                  // Navigate to the notification screen
+                  router.push({
+                    pathname: '/dashboard/notification/notification',
+                    params: { userID, groupID }
+                  });
+                } catch (error) {
+                  console.error('Failed to mark tasks as read:', error);
+                  // Still navigate even if marking as read fails
+                  router.push({
+                    pathname: '/dashboard/notification/notification',
+                    params: { userID, groupID }
+                  });
+                }
+              } else {
+                router.replace('../notification/notification');
+              }
+            }}
             style={{
               position: 'relative',
               padding: 5,
+              marginRight: 10,
             }}
             >
-            <Image
-              source={require('../../../assets/icons/bell.png')}
-              style={{ width: 22, height: 22, borderRadius: 20 }}
-              resizeMode="contain"
-            />
-
-            {/* Only show badge if there are unread notifications */}
-            {hasUnreadNotifications && (
+            <MaterialIcons name="notifications" size={24} color="black" />
+            {/* Notification badge */}
+            {unreadCount > 0 && (
               <View
                 style={{
                   position: 'absolute',
-                  right: 1,
-                  top: 1,
-                  backgroundColor: '#FF3B30',
-                  width: 10,
-                  height: 10,
-                  borderRadius: 5,
+                  right: -3,
+                  top: -5,
+                  backgroundColor: 'red',
+                  width: 18,
+                  height: 18,
+                  borderRadius: 9,
                   borderWidth: 1.5,
                   borderColor: '#FFFFFF',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 10,
                 }}
-              />
+              >
+                <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Text>
+              </View>
             )}
           </Pressable>
         </View>

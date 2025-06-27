@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { getUser, provideAdditionalUserInfo, getUserIdByClerkId, getUserGroup, getUserInfo, getFamilyMembers, updateUser, checkUserAdminStatus, getCurrentUserFamilyRole, getAllGroups } from '../controllers/userController';
+import { getUser, provideAdditionalUserInfo, getUserIdByClerkId, getUserGroup, getUserInfo, getFamilyMembers, updateUser, checkUserAdminStatus, getCurrentUserFamilyRole, getAllGroups, getAllUserGroups } from '../controllers/userController';
 import { createGroup, joinGroup } from '../controllers/groupController';
 import { sendInvitation } from '../controllers/invitationController';
 
@@ -7,7 +7,7 @@ const router: Router = express.Router();
 
 router.get('/:userID', getUser);
 router.get('/:userID/group', getUserGroup);
-router.get('/:userID/allGroups', getAllGroups);
+router.get('/:userID/allGroups', getAllUserGroups);  // New endpoint to get all groups
 router.patch('/:userID/onboarding', provideAdditionalUserInfo);
 router.get('/clerk/:clerkID', getUserIdByClerkId);
 router.post('/:userID/createGroup', createGroup);

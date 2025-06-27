@@ -132,6 +132,59 @@ export const provideAdditionalUserInfo = async (req: any, res: any) => {
   } catch (error: any) {}
 }
 
+// Get all groups for a user (main + additional)
+export const getAllUserGroups = async (req: Request, res: Response) => {
+  try {
+    const { userID } = req.params;
+
+    // Find the user - first without populating to check structure
+    const user = await User.findById(userID);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Initialize result arrays to store IDs and formatted groups
+    const groupIDs: string[] = [];
+    
+    // First add the main groupID if it exists
+    if (user.groupID) {
+      groupIDs.push(user.groupID.toString());
+    }
+
+    // Then add any additional groups
+    if (user.additionalGroups && Array.isArray(user.additionalGroups)) {
+      for (const group of user.additionalGroups) {
+        if (group && group.groupID) {
+          groupIDs.push(group.groupID.toString());
+        }
+      }
+    }
+
+    // Fetch all group data in one query
+    const groups = await Group.find({ _id: { $in: groupIDs } });
+    
+    // Format groups for the frontend
+    const formattedGroups = groups.map((group: any) => ({
+      id: group._id.toString(),
+      name: group.name
+    }));
+
+    // Return a response with both the IDs and formatted group objects
+    return res.status(200).json({
+      groupIDs: groupIDs,
+      groups: formattedGroups
+    });
+    
+  } catch (error: any) {
+    console.error('Error fetching all user groups:', error);
+    return res.status(500).json({ 
+      message: 'Failed to fetch user groups',
+      error: error.message 
+    });
+  }
+};
+
 // Get the groupID of a specific user
 export const getUserGroup = async (req: Request, res: Response) => {
   try {

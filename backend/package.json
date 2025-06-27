@@ -4,6 +4,9 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc",
+    "start": "node dist/app.js",
     "dev": "nodemon app.ts"
   },
   "keywords": [],

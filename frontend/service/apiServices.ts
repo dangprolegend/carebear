@@ -289,15 +289,22 @@ export const getBackendUserID = async (clerkID: string): Promise<string> => {
   }, 2000); // Set a 2-second minimum interval between these requests
 };
 
+// Replace the existing getGroupID function with this improved version:
+
 export const getGroupID = async (userID: string): Promise<string> => {
-  return throttleRequest(`getGroupID:${userID}`, async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/users/${userID}/group`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+  try {
+    console.log('getGroupID - Starting with userID:', userID);
+    
+    if (!userID || userID === 'undefined') {
+      throw new Error('Invalid userID provided to getGroupID');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/users/${userID}/group`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
       if (!response.ok) {
         if (response.status === 429) {
@@ -308,24 +315,31 @@ export const getGroupID = async (userID: string): Promise<string> => {
             data
           );
         }
-        throw new Error(`Failed to fetch group for user: ${response.statusText}`);
+        const errorText = await response.text();
+      console.error('getGroupID - API Error:', response.status, errorText);
+      throw new Error(`Failed to fetch group for user: ${response.statusText}`);
       }
 
-      const group = await response.json();
-      return group._id || group.id;
-    } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-      console.error("Error fetching group ID:", error);
-      throw new Error("Unable to retrieve group ID");
+    const group = await response.json();
+    console.log('getGroupID - Group response:', group);
+    
+    const groupId = group.groupID || group._id || group.id;
+    
+    if (!groupId || groupId === 'undefined') {
+      throw new Error('No valid group ID found in response');
     }
-  }, 2000); // Set a 2-second minimum interval between these requests
+    
+    console.log('getGroupID - Final groupID:', groupId);
+    return groupId;
+  } catch (error) {
+    console.error("getGroupID - Error fetching group ID:", error);
+    throw new Error("Unable to retrieve group ID");
+  }
 };
 
 export const fetchTasksForDashboard = async (groupID: string): Promise<FrontendTaskType[]> => {
   try {
-    const url = `${API_BASE_URL}/api/groups/${groupID}/tasks`;
+    const url = `${API_BASE_URL}/api/tasks/group/${groupID}`;
     console.log(`Fetching tasks from: ${url}`);
     const response = await fetch(url, {
       method: 'GET',
@@ -465,7 +479,7 @@ export const fetchUsersInGroup = async (groupID: string): Promise<any[]> => {
   const response = await fetch(url, {
     method: 'GET',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json'
     },
   });
   const users = await handleApiResponse(response);
@@ -519,3 +533,213 @@ export const fetchUserNameByID = async (userID: string): Promise<string> => {
   }
 };
 
+export const markTaskAsRead = async (taskID: string, userID: string): Promise<void> => {
+  try {
+    const url = `${API_BASE_URL}/api/tasks/${taskID}/read`;
+    console.log(`Marking task ${taskID} as read by user ${userID}`);
+    
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userID }),
+    });
+  } catch (error) {
+    console.error(`Error marking task ${taskID} as read:`, error);
+  }
+};
+
+export const getUnreadTasksCount = async (userID: string, groupID: string): Promise<number> => {
+  try {
+    const url = `${API_BASE_URL}/api/tasks/user/${userID}/group/${groupID}/unread`;
+    console.log(`Fetching unread tasks count for user ${userID} in group ${groupID}`);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    const data = await handleApiResponse(response);
+    console.log('Unread tasks count:', data.count);
+    return data.count;
+  } catch (error) {
+    console.error(`Error fetching unread tasks count:`, error);
+    return 0; // Return 0 on error
+  }
+};
+
+export const markAllTasksAsRead = async (userID: string, groupID: string): Promise<void> => {
+  try {
+    // Use the dedicated endpoint to mark all tasks as read in one go
+    const url = `${API_BASE_URL}/api/tasks/user/${userID}/group/${groupID}/mark-all-read`;
+    console.log(`Marking all tasks as read for user ${userID} in group ${groupID}`);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      console.error(`Failed to mark all tasks as read: ${response.status}`);
+      
+      // Fallback to marking tasks one by one if the bulk endpoint fails
+      console.log('Fallback: marking tasks individually');
+      
+      // Get all tasks for the group
+      const groupTasksUrl = `${API_BASE_URL}/api/tasks/group/${groupID}`;
+      const groupTasksResponse = await fetch(groupTasksUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!groupTasksResponse.ok) {
+        console.error(`Failed to fetch group tasks: ${groupTasksResponse.status}`);
+        return;
+      }
+      
+      const groupTasksData = await groupTasksResponse.json();
+      const tasks = groupTasksData.tasks || [];
+      console.log(`Found ${tasks.length} tasks in group ${groupID}`);
+      
+      // Mark each task as read
+      const markReadPromises = tasks.map((task: any) => 
+        markTaskAsRead(task._id, userID)
+      );
+      
+      await Promise.all(markReadPromises);
+      console.log(`Marked ${tasks.length} tasks as read for user ${userID}`);
+    } else {
+      const data = await response.json();
+      console.log(`Successfully marked all tasks as read: ${data.message || 'Success'}`);
+    }
+  } catch (error) {
+    console.error(`Error marking all tasks as read:`, error);
+  }
+};
+
+
+
+
+// Add these interfaces and function at the end of the file
+
+interface GroupMember {
+  user: string; // ObjectId as string
+  role: 'admin' | 'caregiver' | 'carereceiver' | string;
+  _id: string;
+}
+
+interface GroupData {
+  _id: string;
+  name: string;
+  numberOfMembers: number;
+  members: GroupMember[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+
+// Replace the existing getUserRoleInGroup function with this improved version:
+
+export const getUserRoleInGroup = async (userID: string): Promise<string> => {
+  try {
+    console.log('getUserRoleInGroup - Starting with userID:', userID);
+    
+    if (!userID || userID === 'undefined') {
+      console.error('getUserRoleInGroup - Invalid userID:', userID);
+      return 'member';
+    }
+
+    const token = await getClerkToken();
+    
+    // First get the user's group
+    console.log('getUserRoleInGroup - Fetching group for userID:', userID);
+    const groupID = await getGroupID(userID);
+    console.log('getUserRoleInGroup - Received groupID:', groupID);
+    
+    if (!groupID || groupID === 'undefined' || groupID === undefined) {
+      console.error('getUserRoleInGroup - Invalid groupID received:', groupID);
+      return 'member';
+    }
+    
+    // Then fetch the group details to get the role
+    const url = `${API_BASE_URL}/api/groups/${groupID}`;
+    console.log(`getUserRoleInGroup - Fetching group data from: ${url}`);
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+    });
+    
+    if (!response.ok) {
+      console.error('getUserRoleInGroup - API response not ok:', response.status, response.statusText);
+      return 'member';
+    }
+    
+    const groupData: GroupData = await handleApiResponse(response);
+    console.log('getUserRoleInGroup - Group data received:', groupData);
+    
+    // Find the user's role in the members array
+    const userMember = groupData.members.find(member => {
+      console.log('Comparing member.user:', member.user, 'with userID:', userID);
+      return member.user === userID;
+    });
+    
+    const role = userMember?.role || 'member';
+    console.log('getUserRoleInGroup - Final role:', role);
+    
+    return role;
+  } catch (error) {
+    console.error("getUserRoleInGroup - Error fetching user role:", error);
+    return 'member'; // Default fallback
+  }
+};
+// Update task status (skip/complete)
+export const updateTaskStatus = async (taskID: string, status: 'pending' | 'in-progress' | 'done' | 'skipped'): Promise<FrontendTaskType> => {
+  const token = await getClerkToken();
+  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
+  
+  const url = `${API_BASE_URL}/api/tasks/${taskID}/status`;
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
+  });
+  
+  const updatedBackendTask: BackendTask = await handleApiResponse(response);
+  return mapBackendTaskToFrontend(updatedBackendTask);
+};
+
+// Complete task with completion method
+export const completeTaskWithMethod = async (taskID: string, method: 'manual' | 'photo' | 'input', notes?: string): Promise<FrontendTaskType> => {
+  const token = await getClerkToken();
+  if (!token) throw new ApiError("Authentication token not found. Please log in.", 401);
+  
+  const url = `${API_BASE_URL}/api/tasks/${taskID}/complete`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({ 
+      completionMethod: method,
+      notes: notes || ''
+    }),
+  });
+  
+  const updatedBackendTask: BackendTask = await handleApiResponse(response);
+  return mapBackendTaskToFrontend(updatedBackendTask);
+};
