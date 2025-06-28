@@ -635,6 +635,32 @@ useEffect(() => {
     );
   };
 
+  // Compare dates only (not time) to see if a date is today
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear();
+  };
+
+  // Is the selected date today?
+  const isSelectedDateToday = isToday(selectedDate);
+  
+  // Check if a task is in the past
+  const isTaskInPast = (taskDatetime: string) => {
+    try {
+      const taskDate = new Date(taskDatetime);
+      return taskDate < new Date();
+    } catch (e) {
+      console.error("Error comparing task datetime:", e);
+      return false;
+    }
+  };
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+  };
+
   // Add a helper function to filter tasks by multiple assignees
 const filterTasksByAssignee = (assignees: {id: string, name: string, avatar: string}[]) => {
   if (assignees.length === 0) {
@@ -1529,18 +1555,22 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                         {/* Task Group */}
                         <View className="flex-1 ml-4">
                           <Text className="text-sm font-semibold text-[#2A1800] mb-2">{group.time}</Text>
-                          {group.tasks.map((task, taskIndex) => (
-                            <View
-                              key={taskIndex}
-                              className="border border-[#FAE5CA] rounded-lg p-4 mb-4"
-                              style={{
-                                borderWidth: 1.5,
-                                borderColor: '#2A1800',
-                                borderRadius: 8,
-                                backgroundColor: '#FFFFFF',
-                                marginBottom: 16,
-                              }}
-                            >
+                          {group.tasks.map((task, taskIndex) => {
+                            // Check if task is in the past
+                            const isPastTask = isTaskInPast(task.datetime);
+                            
+                            return (
+                              <View
+                                key={taskIndex}
+                                className={`border border-[#FAE5CA] rounded-lg p-4 mb-4 ${isPastTask ? 'opacity-60' : ''}`}
+                                style={{
+                                  borderWidth: 1.5,
+                                  borderColor: '#2A1800',
+                                  borderRadius: 8,
+                                  backgroundColor: '#FFFFFF',
+                                  marginBottom: 16,
+                                }}
+                              >
                               <Pressable onPress={() => handleTaskPress(task)} className="flex-1">
                                 {/* Task content */}
                                 <View className="flex-row items-center justify-between mb-2">
@@ -1589,14 +1619,18 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                     onPress={() => console.log('Task completed:', task.title)}
                                     className="w-6 h-6 border border-[#2A1800] rounded-lg flex items-center justify-center"
                                   >
-                                    {task.checked && (
+                                    {task.checked ? (
                                       <MaterialIcons name="check" size={16} color="#2A1800" />
-                                    )}
+                                    ) : isPastTask ? (
+                                      // Show error icon for missed tasks
+                                      <MaterialIcons name="error-outline" size={16} color="#F44336" />
+                                    ) : null}
                                   </Pressable>
                                 </View>
                               </Pressable>
                             </View>
-                          ))}
+                            );
+                          })}
                         </View>
                       </View>
                     ))
