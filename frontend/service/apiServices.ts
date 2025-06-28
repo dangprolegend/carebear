@@ -109,6 +109,8 @@ interface BackendTask {
   updatedAt: string;
   type?: string;
   image?: string | null;
+  evidenceUrl?: string | null;
+  completionMethod?: 'manual' | 'photo' | 'input';
 }
 
 interface AiGenerateTasksPayload {
@@ -236,6 +238,7 @@ const mapBackendTaskToFrontend = (bt: BackendTask): FrontendTaskType => {
     assignedBy: bt.assignedBy,
     reminder: bt.reminder,
     image: bt.image,
+    evidenceUrl: bt.evidenceUrl,
   } as FrontendTaskType;
 };
 
@@ -399,16 +402,27 @@ export const updateTask = async (
 
 export const updateTaskWithImage = async (
   taskID: string,
-  payload: Partial<BackendTask> & { image?: string }
+  payload: Partial<BackendTask> & { image?: string, evidenceUrl?: string }
 ): Promise<FrontendTaskType> => {
   if (!taskID) throw new ApiError("Task ID is required to update a task.", 400);
+  
+  // Make sure we're sending both image fields for compatibility
+  const updatedPayload = { ...payload };
+  if (payload.image && !payload.evidenceUrl) {
+    updatedPayload.evidenceUrl = payload.image;
+  } else if (payload.evidenceUrl && !payload.image) {
+    updatedPayload.image = payload.evidenceUrl;
+  }
+  
+  console.log("Updating task with image, payload keys:", Object.keys(updatedPayload));
+  
   const url = `${API_BASE_URL}/api/tasks/${taskID}`;
   const response = await fetch(url, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(updatedPayload),
   });
   const updatedBackendTask: BackendTask = await handleApiResponse(response);
   return mapBackendTaskToFrontend(updatedBackendTask);
@@ -504,12 +518,14 @@ export const fetchTaskById = async (
   // Log the complete task data to help with debugging
   console.log("Backend task raw data:", JSON.stringify(backendTask, null, 2));
   
-  // Specifically log fields that might contain group info
-  if (backendTask.groupID) {
-    console.log("Task groupID field:", typeof backendTask.groupID === 'object' 
-      ? JSON.stringify(backendTask.groupID) 
-      : backendTask.groupID);
-  }
+  // Specifically log image-related fields
+  console.log("Task image fields:", {
+    hasImage: !!backendTask.image,
+    hasEvidenceUrl: !!backendTask.evidenceUrl,
+    imageType: backendTask.image ? typeof backendTask.image : null,
+    evidenceUrlType: backendTask.evidenceUrl ? typeof backendTask.evidenceUrl : null,
+    completionMethod: backendTask.completionMethod
+  });
   
   return mapBackendTaskToFrontend(backendTask);
 };

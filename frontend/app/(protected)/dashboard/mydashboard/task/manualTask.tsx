@@ -123,7 +123,7 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
       const reminderPayload: any = {};
       if (manualForm.startDateString) reminderPayload.start_date = manualForm.startDateString;
       if (manualForm.endDateString) reminderPayload.end_date = manualForm.endDateString;
-      if (manualForm.timesOfDayInput) reminderPayload.times_of_day = manualForm.timesOfDayInput.split(',').map(t => t.trim()).filter(t => t.match(/^\d{2}:\d{2}$/));
+      if (manualForm.timesOfDayInput) reminderPayload.times_of_day = manualForm.timesOfDayInput.split(',').map(t => t.trim()).filter(t => t.match(/^\d{2}:\d{2}:\d{2}$/));
       if (manualForm.recurrenceRule && manualForm.recurrenceRule !== 'NONE') reminderPayload.recurrence_rule = manualForm.recurrenceRule;
 
       // Fix assignedTo for backend: only send if present, and as { _id: string }
@@ -378,20 +378,23 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
               style={{ maxHeight: 240 }}
             >
               {Array.from({ length: 24 }).map((_, hour) => {
-                const label = hour.toString().padStart(2, '0') + ':00';
-                return (
-                  <Pressable
-                    key={label}
-                    className={`py-2 px-3 ${manualForm.timesOfDayInput === label ? 'bg-blue-100' : ''}`}
-                    onPress={() => {
-                      handleInputChange('timesOfDayInput', label);
-                      setShowTimesDropdown(false);
-                    }}
-                  >
-                    <Text className={`text-base ${manualForm.timesOfDayInput === label ? 'font-bold text-blue-700' : 'text-black'}`}>{label}</Text>
-                  </Pressable>
-                );
-              })}
+                return Array.from({ length: 4 }).map((_, minuteIndex) => {
+                  const minutes = minuteIndex * 15;
+                  const label = `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+                  return (
+                    <Pressable
+                      key={label}
+                      className={`py-2 px-3 ${manualForm.timesOfDayInput === label ? 'bg-blue-100' : ''}`}
+                      onPress={() => {
+                        handleInputChange('timesOfDayInput', label);
+                        setShowTimesDropdown(false);
+                      }}
+                    >
+                      <Text className={`text-base ${manualForm.timesOfDayInput === label ? 'font-bold text-blue-700' : 'text-black'}`}>{label}</Text>
+                    </Pressable>
+                  );
+                });
+              }).flat()}
             </ScrollView>
           </View>
         )}

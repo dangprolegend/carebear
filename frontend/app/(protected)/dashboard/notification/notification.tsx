@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Image, ActivityIndicator, Pressable, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Image, Pressable, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { fetchTasksForDashboard, getCurrentGroupID, fetchUserInfoById, getBackendUserID } from '../../../../service/apiServices';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
 import axios from 'axios';
+import FeedLoading from '~/components/ui/feed-loading';
 
 // Helper function to check if a date is today (more accurate comparison)
 function isToday(date: Date): boolean {
@@ -306,10 +307,10 @@ const NotificationScreen = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#FAE5CA" />
-        <Text className="mt-2 text-gray-600">Loading notifications...</Text>
-      </View>
+      <FeedLoading 
+        dataReady={false}
+        onFinish={() => setLoading(false)}
+      />
     );
   }
   if (error) {
