@@ -5,7 +5,6 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  StyleSheet,
   Alert,
   ActivityIndicator,
 } from 'react-native';
@@ -69,30 +68,30 @@ const StravaHealthScreen = () => {
   };
 
   const renderActivity = ({ item }) => (
-    <View style={styles.activityCard}>
-      <View style={styles.activityHeader}>
-        <Text style={styles.activityName}>{item.name}</Text>
-        <Text style={styles.activityType}>{item.type}</Text>
+    <View className="bg-white mx-5 mb-2.5 rounded-lg p-4 shadow-md shadow-black/20 flex flex-col">
+      <View className="flex-row justify-between items-center mb-2.5">
+        <Text className="text-base font-bold flex-1">{item.name}</Text>
+        <Text className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">{item.type}</Text>
       </View>
-      <View style={styles.activityStats}>
-        <View style={styles.statItem}>
-          <Text style={styles.statLabel}>Distance</Text>
-          <Text style={styles.statValue}>{formatDistance(item.distance)}</Text>
+      <View className="flex-row justify-between">
+        <View className="items-center">
+          <Text className="text-xs text-gray-500 mb-0.5">Distance</Text>
+          <Text className="text-sm font-bold">{formatDistance(item.distance)}</Text>
         </View>
-        <View style={styles.statItem}>
-          <Text style={styles.statLabel}>Duration</Text>
-          <Text style={styles.statValue}>{formatDuration(item.duration)}</Text>
+        <View className="items-center">
+          <Text className="text-xs text-gray-500 mb-0.5">Duration</Text>
+          <Text className="text-sm font-bold">{formatDuration(item.duration)}</Text>
         </View>
         {item.calories && (
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Calories</Text>
-            <Text style={styles.statValue}>{Math.round(item.calories)}</Text>
+          <View className="items-center">
+            <Text className="text-xs text-gray-500 mb-0.5">Calories</Text>
+            <Text className="text-sm font-bold">{Math.round(item.calories)}</Text>
           </View>
         )}
         {item.averageHeartRate && (
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Avg HR</Text>
-            <Text style={styles.statValue}>{Math.round(item.averageHeartRate)} bpm</Text>
+          <View className="items-center">
+            <Text className="text-xs text-gray-500 mb-0.5">Avg HR</Text>
+            <Text className="text-sm font-bold">{Math.round(item.averageHeartRate)} bpm</Text>
           </View>
         )}
       </View>
@@ -101,7 +100,7 @@ const StravaHealthScreen = () => {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
+      <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#FC4C02" />
         <Text>Loading...</Text>
       </View>
@@ -110,14 +109,14 @@ const StravaHealthScreen = () => {
 
   if (!isAuthenticated) {
     return (
-      <View style={styles.container}>
-        <View style={styles.authContainer}>
-          <Text style={styles.title}>Connect with Strava</Text>
-          <Text style={styles.subtitle}>
+      <View className="flex-1 bg-gray-100">
+        <View className="flex-1 justify-center items-center p-5">
+          <Text className="text-2xl font-bold mb-2 text-center">Connect with Strava</Text>
+          <Text className="text-base text-gray-500 text-center mb-7 leading-6">
             Connect your Strava account to automatically track your activities and health data.
           </Text>
-          <TouchableOpacity style={styles.stravaButton} onPress={handleAuthenticate}>
-            <Text style={styles.buttonText}>Connect to Strava</Text>
+          <TouchableOpacity className="bg-[#FC4C02] px-8 py-4 rounded-lg" onPress={handleAuthenticate}>
+            <Text className="text-white text-base font-bold">Connect to Strava</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -125,43 +124,42 @@ const StravaHealthScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View className="flex-1 bg-gray-100">
+      <View className="flex-row justify-between items-center p-5 bg-white">
         <View>
-          <Text style={styles.welcomeText}>Welcome, {athlete?.firstname}!</Text>
+          <Text className="text-lg font-bold">Welcome, {athlete?.firstname}!</Text>
           {weeklySummary && (
-            <Text style={styles.summaryText}>
+            <Text className="text-sm text-gray-500 mt-1">
               This week: {weeklySummary.thisWeek.activities} activities, {' '}
               {formatDistance(weeklySummary.thisWeek.distance)}
             </Text>
           )}
         </View>
-        <TouchableOpacity onPress={signOut} style={styles.signOutButton}>
-          <Text style={styles.signOutText}>Sign Out</Text>
+        <TouchableOpacity onPress={signOut} className="p-2">
+          <Text className="text-[#FC4C02] text-sm">Sign Out</Text>
         </TouchableOpacity>
       </View>
 
       {loadingData ? (
-        <View style={styles.centered}>
+        <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color="#FC4C02" />
           <Text>Loading activities...</Text>
         </View>
       ) : (
         <>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Activities</Text>
+          <View className="flex-row justify-between items-center px-5 py-3.5">
+            <Text className="text-lg font-bold">Recent Activities</Text>
             <TouchableOpacity onPress={loadHealthData}>
-              <Text style={styles.refreshText}>Refresh</Text>
+              <Text className="text-[#FC4C02] text-sm">Refresh</Text>
             </TouchableOpacity>
           </View>
-          
           <FlatList
             data={healthData}
             renderItem={renderActivity}
             keyExtractor={(item) => item.id.toString()}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={
-              <Text style={styles.emptyText}>No recent activities found</Text>
+              <Text className="text-center text-gray-500 text-base mt-12">No recent activities found</Text>
             }
           />
         </>
@@ -169,138 +167,5 @@ const StravaHealthScreen = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  authContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 30,
-    lineHeight: 22,
-  },
-  stravaButton: {
-    backgroundColor: '#FC4C02',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 8,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: 'white',
-  },
-  welcomeText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  summaryText: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  signOutButton: {
-    padding: 8,
-  },
-  signOutText: {
-    color: '#FC4C02',
-    fontSize: 14,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  refreshText: {
-    color: '#FC4C02',
-    fontSize: 14,
-  },
-  activityCard: {
-    backgroundColor: 'white',
-    marginHorizontal: 20,
-    marginBottom: 10,
-    borderRadius: 8,
-    padding: 15,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  activityHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  activityName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    flex: 1,
-  },
-  activityType: {
-    fontSize: 12,
-    color: '#666',
-    backgroundColor: '#f0f0f0',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  activityStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  statItem: {
-    alignItems: 'center',
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 2,
-  },
-  statValue: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: '#666',
-    fontSize: 16,
-    marginTop: 50,
-  },
-});
 
 export default StravaHealthScreen;
