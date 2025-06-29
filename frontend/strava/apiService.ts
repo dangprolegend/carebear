@@ -1,9 +1,9 @@
 //@ts-nocheck
-import StravaAuthService from "./authService";
+import ManualStravaAuthService from "./manualService";
 
 class StravaApiService {
   constructor() {
-    this.authService = new StravaAuthService();
+    this.authService = new ManualStravaAuthService();
     this.baseUrl = 'https://www.strava.com/api/v3';
   }
 

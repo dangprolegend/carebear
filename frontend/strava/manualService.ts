@@ -10,8 +10,7 @@ class ManualStravaAuthService {
     this.clientSecret = process.env.EXPO_PUBLIC_STRAVA_CLIENT_SECRET;
     
     if (__DEV__) {
-      this.redirectUri = 'http://172.20.10.2/auth/callback'; 
-      this.stravaCallbackDomain = '172.20.10.2';
+      this.redirectUri = 'http://localhost/auth/callback';
     } else {
       this.redirectUri = Linking.createURL('auth/callback');
     }
