@@ -1,13 +1,14 @@
 //@ts-nocheck
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, Pressable, Image, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, Image, ScrollView } from 'react-native';
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import axios from 'axios';
 import CalendarStrip from '~/components/CalendarStrip';
 import CircularProgress from '~/components/CircularProgress';
 import Settings from '../../../../assets/icons/settings.png';
 import Heart from '../../../../assets/icons/heart.png';
+import FeedLoading from '~/components/ui/feed-loading';
 
 export default function Profile() {
   const router = useRouter();
@@ -288,10 +289,10 @@ export default function Profile() {
   // Show loading screen while checking status
     if (isCheckingStatus) {
       return (
-        <View className="flex-1 justify-center items-center bg-gray-50">
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text className="mt-4 text-gray-600">Loading...</Text>
-        </View>
+        <FeedLoading 
+          dataReady={false}
+          onFinish={() => setIsCheckingStatus(false)}
+        />
       );
     }
 
@@ -344,7 +345,7 @@ export default function Profile() {
           <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">Diary</Text>
           <View className="flex-row items-center">
             {isLoadingDaysWithHearts ? (
-              <ActivityIndicator size="small" color="#198AE9" />
+              <View className="w-5 h-5 rounded-full bg-gray-300 animate-pulse" />
             ) : (
               <Text className="text-black font-lato text-[24px] font-extrabold leading-[32px] tracking-[0.3px]">{daysWithHearts}</Text>
             )}

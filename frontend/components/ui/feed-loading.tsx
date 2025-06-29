@@ -4,11 +4,16 @@ import { View, Text, Image } from 'react-native';
 interface FeedLoadingProps {
   dataReady?: boolean;
   onFinish?: () => void;
+  fastTransition?: boolean; // New prop to control transition speed
 }
 
-const FeedLoading: React.FC<FeedLoadingProps> = ({ dataReady = false, onFinish }) => {
+const FeedLoading: React.FC<FeedLoadingProps> = ({ 
+  dataReady = false, 
+  onFinish,
+  fastTransition = true // Default to fast transitions
+}) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const intervalRef = useRef<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   
   const images = [
     require('../../assets/images/1.png'),
@@ -20,24 +25,24 @@ const FeedLoading: React.FC<FeedLoadingProps> = ({ dataReady = false, onFinish }
   ];
 
   useEffect(() => {
-    if (dataReady && currentImageIndex !== images.length - 1) {
-      setCurrentImageIndex(images.length - 1);
-      setTimeout(() => {
-        onFinish?.();
-      }, 800); // Show carebear for 800ms then finish
-      
-      return;
-    }
+    // Use different timings based on fastTransition setting
+    const transitionDelay = fastTransition ? 150 : 800;
+    const intervalDelay = fastTransition ? 100 : 800;
     
-    if (dataReady && currentImageIndex === images.length - 1) {
+    // Skip to the end immediately if data is ready and fastTransition is true
+    if (dataReady) {
+      if (currentImageIndex !== images.length - 1) {
+        setCurrentImageIndex(images.length - 1);
+      }
+      
       setTimeout(() => {
         onFinish?.();
-      }, 800);
+      }, transitionDelay);
       
       return;
     }
 
-    // Normal cycling through images
+    // Normal cycling through images - faster transitions
     intervalRef.current = setInterval(() => {
       setCurrentImageIndex((prev) => {
         if (prev === images.length - 1) {
@@ -45,14 +50,14 @@ const FeedLoading: React.FC<FeedLoadingProps> = ({ dataReady = false, onFinish }
         }
         return (prev + 1) % images.length;
       });
-    }, 800);
+    }, intervalDelay);
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [dataReady, currentImageIndex, onFinish]);
+  }, [dataReady, currentImageIndex, onFinish, fastTransition, images.length]);
 
   return (
     <View className="flex-1 justify-center items-center bg-white">
@@ -60,11 +65,12 @@ const FeedLoading: React.FC<FeedLoadingProps> = ({ dataReady = false, onFinish }
         <Image 
           source={images[currentImageIndex]} 
           className="w-40 h-40"
+          style={{ opacity: 1 }}
           resizeMode="contain"
         />
         
         <Text className="text-[#623405] text-lg mt-4 font-medium">
-          Loading your feed...
+          Loading...
         </Text>
       </View>
     </View>
