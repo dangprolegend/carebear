@@ -53,7 +53,7 @@ const StravaHealthScreen = () => {
   const handleAuthenticate = async () => {
     const result = await authenticate();
     if (!result.success) {
-      Alert.alert('Authentication Failed', result.error);
+      // Alert.alert('Authentication Failed', result.error);
     }
   };
 
