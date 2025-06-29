@@ -6,7 +6,7 @@
     "owner": "vtmp-group-4",
     "orientation": "portrait",
     "icon": "./assets/icons/icon.png",
-    "scheme": "myapp",
+    "scheme": "carebearapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
