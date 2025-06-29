@@ -9,11 +9,7 @@ class ManualStravaAuthService {
     this.clientId = process.env.EXPO_PUBLIC_STRAVA_CLIENT_ID;
     this.clientSecret = process.env.EXPO_PUBLIC_STRAVA_CLIENT_SECRET;
     
-    if (__DEV__) {
-      this.redirectUri = 'http://localhost/auth/callback';
-    } else {
-      this.redirectUri = Linking.createURL('auth/callback');
-    }
+    this.redirectUri = Linking.createURL('auth/callback');
   }
 
   // Manual OAuth flow using WebBrowser
