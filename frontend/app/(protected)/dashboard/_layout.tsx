@@ -225,7 +225,11 @@ export default function DashboardLayout() {
               marginRight: 10,
             }}
             >
-            <MaterialIcons name="notifications" size={24} color="black" />
+            <Image
+              source={require('../../../assets/icons/bell-icon.png')}
+              style={{ width: 24, height: 24 }}
+              resizeMode="contain"
+            />
             {/* Notification badge */}
             {unreadCount > 0 && (
               <View
