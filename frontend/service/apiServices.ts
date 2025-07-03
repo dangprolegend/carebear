@@ -489,13 +489,21 @@ export const createManualTaskAPI = async (
 
 export const fetchUsersInGroup = async (groupID: string): Promise<any[]> => {
   if (!groupID) throw new ApiError("Group ID is required to fetch users.", 400);
-  const url = `${API_BASE_URL}/api/groups/${groupID}/users`;
+  
+  // Get the current user ID
+  const userID = getCurrentUserID();
+  if (!userID) throw new ApiError("User ID is required to fetch family members.", 400);
+  
+  // Use the familyMembers endpoint instead of the groups endpoint
+  const url = `${API_BASE_URL}/api/users/${userID}/familyMembers?groupID=${groupID}`;
+  
   const response = await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'
     },
   });
+  
   const users = await handleApiResponse(response);
   return users;
 };

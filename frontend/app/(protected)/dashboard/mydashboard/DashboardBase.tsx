@@ -747,14 +747,14 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
         }
         
         const members = await fetchUsersInGroup(groupID);
+        console.log(members);
         
-        // Map the API response to our format
+        // Map the API response to our format based on the new structure
         const mappedMembers = members.map(member => ({
-          id: member._id,
-          name: member.firstName && member.lastName 
-            ? `${member.firstName} ${member.lastName}`
-            : member.firstName || member.email || 'Unknown User',
-          avatar: member.imageURL || 'https://via.placeholder.com/40'
+          id: member.userID,  // Use userID instead of _id
+          name: member.fullName || 'Unknown User',  // Use fullName instead of firstName/lastName
+          avatar: member.imageURL || 'https://via.placeholder.com/40',
+          role: member.role
         }));
         
         setFamilyMembers(mappedMembers);
