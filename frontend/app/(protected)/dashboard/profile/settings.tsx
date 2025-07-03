@@ -262,7 +262,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       console.log('Uploading image for user:', userID);
 
       const response = await axios.post(
-        `https://carebear-backend.onrender.com/api/users/${userID}/upload-image`,
+        `https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/upload-image`,
         formData,
         {
           headers: {
@@ -390,7 +390,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       console.log('Updating profile with data:', updateData);
       
       const response = await axios.patch(
-        `https://carebear-backend.onrender.com/api/users/${userID}/update`,
+        `https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/update`,
         updateData,
         {
           headers: {
@@ -474,11 +474,11 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
     const getUserInfo = async () => {
       if (isSignedIn && userId) {
         try {
-          const userResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/clerk/${userId}`);
+          const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
           const fetchedUserID = userResponse.data.userID;
           setUserID(fetchedUserID);
 
-          const res = await axios.get(`https://carebear-backend.onrender.com/api/users/${fetchedUserID}/info`);
+          const res = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${fetchedUserID}/info`);
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
         } catch (error) {
