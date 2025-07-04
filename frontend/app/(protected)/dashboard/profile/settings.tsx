@@ -16,6 +16,7 @@ import Help from '../../../../assets/icons/circle-help.png';
 import Google from '../../../../assets/images/google.png';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -108,23 +109,35 @@ const ToggleSetting = ({
   title, 
   description, 
   value, 
-  onValueChange 
+  onValueChange,
+  disabled = false
 }: { 
   title: string; 
   description?: string; 
   value: boolean; 
-  onValueChange: (value: boolean) => void; 
+  onValueChange: (value: boolean) => void;
+  disabled?: boolean;
 }) => (
-  <View className="flex-row items-center justify-between">
+  <View className="flex-row items-center justify-between w-full">
     <View className="flex-1 mr-4">
-      <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">{title}</Text>
+      <Text 
+        className={`font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px] ${disabled ? 'text-gray-400' : 'text-black'}`}
+      >
+        {title}
+      </Text>
+      {description && (
+        <Text className={`text-xs mt-1 ${disabled ? 'text-gray-400' : 'text-gray-500'}`}>
+          {description}
+        </Text>
+      )}
     </View>    
     <Switch
       value={value}
       onValueChange={onValueChange}
-      trackColor={{ false: '#FAE5CA', true: '#2A1800' }}
+      trackColor={{ false: '#2A1800', true: '#FAE5CA' }}
       thumbColor="#ffffff"
       ios_backgroundColor="#f59e0b"
+      disabled={disabled}
     />
   </View>
 );
@@ -157,7 +170,8 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
   const [isNotificationsExpanded, setIsNotificationsExpanded] = useState(false);
   const [isProfileDetailsExpanded, setIsProfileDetailsExpanded] = useState(false);
   const [isAccountExpanded, setIsAccountExpanded] = useState(false);
-
+  const [isSavingPreferences, setIsSavingPreferences] = useState(false);
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(false);
   // Profile Details
   const [open, setOpen] = useState(false);
   const [unitSystem, setUnitSystem] = useState<'metric' | 'imperial'>('metric');
@@ -218,7 +232,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
     }
 
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -231,7 +245,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
 
   const openImageLibrary = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -292,6 +306,154 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       Alert.alert('Error', errorMessage);
     } finally {
       setIsUploadingImage(false);
+    }
+  };
+
+  const fetchNotificationPreferences = async () => {
+    if (!userID) return;
+    
+    try {
+      setIsLoadingPreferences(true);
+      const response = await axios.get(
+        `https://mature-catfish-cheaply.ngrok-free.app/api/users/${userID}/notification-preferences`
+      );
+      
+      if (response.status === 200) {
+        const prefs = response.data;
+        setDoNotDisturb(prefs.doNotDisturb);
+        setNewFeed(prefs.newFeed);
+        setNewActivity(prefs.newActivity);
+        setInvites(prefs.invites);
+      }
+    } catch (error) {
+      console.error('Error fetching notification preferences:', error);
+    } finally {
+      setIsLoadingPreferences(false);
+    }
+  };
+
+  const updatePushNotificationSettings = async (preferences) => {
+    try {
+      // Store preferences in AsyncStorage
+      await AsyncStorage.setItem('notificationPreferences', JSON.stringify(preferences));
+      
+      // Trigger a notification update in the notification system
+      await axios.post(
+        `https://mature-catfish-cheaply.ngrok-free.app/api/notifications/refresh-settings`,
+        { userID }
+      );
+    } catch (error) {
+      console.error('Error updating push notification settings:', error);
+    }
+  };
+
+  const saveNotificationPreferences = async (
+    updatedPrefs: { 
+      doNotDisturb?: boolean;
+      newFeed?: boolean;
+      newActivity?: boolean;
+      invites?: boolean;
+    }
+  ) => {
+    if (!userID) {
+      Alert.alert('Error', 'User ID not found. Please try again.');
+      return;
+    }
+
+    try {
+      setIsSavingPreferences(true);
+      
+      // Create the preferences object with current state plus any updates
+      const preferences = {
+        doNotDisturb: 'doNotDisturb' in updatedPrefs ? updatedPrefs.doNotDisturb : doNotDisturb,
+        newFeed: 'newFeed' in updatedPrefs ? updatedPrefs.newFeed : newFeed,
+        newActivity: 'newActivity' in updatedPrefs ? updatedPrefs.newActivity : newActivity,
+        invites: 'invites' in updatedPrefs ? updatedPrefs.invites : invites
+      };
+      
+      const response = await axios.patch(
+        `https://mature-catfish-cheaply.ngrok-free.app/api/users/${userID}/notification-preferences`,
+        preferences
+      );
+
+      if (response.status === 200) {
+        // Update local state with the server response to ensure consistency
+        const prefs = response.data.preferences;
+        setDoNotDisturb(prefs.doNotDisturb);
+        setNewFeed(prefs.newFeed);
+        setNewActivity(prefs.newActivity);
+        setInvites(prefs.invites);
+        
+        // Store in AsyncStorage for access across the app
+        await AsyncStorage.setItem('notificationPreferences', JSON.stringify(prefs));
+        
+        // Connect with push notification system
+        await updatePushNotificationSettings(preferences);
+      }
+    } catch (error) {
+      console.error('Error updating notification preferences:', error);
+      
+      let errorMessage = 'Failed to update preferences. Please try again.';
+      if (error.response) {
+        errorMessage = error.response.data?.message || errorMessage;
+      } else if (error.request) {
+        errorMessage = 'Network error. Please check your connection.';
+      }
+      
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setIsSavingPreferences(false);
+    }
+  };
+
+  const handleToggleDoNotDisturb = async (value: boolean) => {
+    setDoNotDisturb(value);
+    await saveNotificationPreferences({ doNotDisturb: value });
+    
+    // If Do Not Disturb is turned on, disable all other notifications
+    if (value) {
+      setNewFeed(false);
+      setNewActivity(false);
+      setInvites(false);
+      await saveNotificationPreferences({ 
+        doNotDisturb: true,
+        newFeed: false, 
+        newActivity: false, 
+        invites: false 
+      });
+    }
+  };
+
+  const handleToggleNewFeed = async (value: boolean) => {
+    setNewFeed(value);
+    await saveNotificationPreferences({ newFeed: value });
+    
+    // If enabling any notification, turn off Do Not Disturb
+    if (value && doNotDisturb) {
+      setDoNotDisturb(false);
+      await saveNotificationPreferences({ doNotDisturb: false, newFeed: value });
+    }
+  };
+
+  const handleToggleNewActivity = async (value: boolean) => {
+    setNewActivity(value);
+    await saveNotificationPreferences({ newActivity: value });
+    
+    // If enabling any notification, turn off Do Not Disturb
+    if (value && doNotDisturb) {
+      setDoNotDisturb(false);
+      await saveNotificationPreferences({ doNotDisturb: false, newActivity: value });
+    }
+  };
+
+  const handleToggleInvites = async (value: boolean) => {
+    setInvites(value);
+    await saveNotificationPreferences({ invites: value });
+    
+    // If enabling any notification, turn off Do Not Disturb
+    if (value && doNotDisturb) {
+      setDoNotDisturb(false);
+      await saveNotificationPreferences({ doNotDisturb: false, invites: value });
     }
   };
 
@@ -477,7 +639,11 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
           const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
           const fetchedUserID = userResponse.data.userID;
           setUserID(fetchedUserID);
-
+          
+          if (fetchedUserID) {
+            fetchNotificationPreferences();
+          }
+          
           const res = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${fetchedUserID}/info`);
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
@@ -738,53 +904,51 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
           <View className="border border-[#623405] px-0.5 py-0.5 rounded-lg">
             <View className="bg-white rounded-lg">
               <DropdownSettingItem
-                icon={Bell}
-                title="Notifications"
-                iconColor="#78350f"
-                isExpanded={isNotificationsExpanded}
-                onToggleExpanded={() => setIsNotificationsExpanded(!isNotificationsExpanded)}
-              >
-                <View className="flex flex-col items-start gap-4 px-6 py-0 self-stretch">
-                <ToggleSetting
-                  title="Do Not Disturb"
-                  value={doNotDisturb}
-                  onValueChange={setDoNotDisturb}
-                />
-                <ToggleSetting
-                  title="New Feed"
-                  value={newFeed}
-                  onValueChange={setNewFeed}
-                />
-                <ToggleSetting
-                  title="New Activity"
-                  value={newActivity}
-                  onValueChange={setNewActivity}
-                />
-                <ToggleSetting
-                  title="Invites"
-                  value={invites}
-                  onValueChange={setInvites}
-                />
-                 </View>
-              </DropdownSettingItem>
-
-              <View className="bg-[#FAE5CA] mx-2 h-px" />    
-              
-              <DropdownSettingItem
-                icon={Privacy}
-                title="Privacy"
-                iconColor="#78350f"
-                isExpanded={isPrivacyExpanded}
-                onToggleExpanded={() => setIsPrivacyExpanded(!isPrivacyExpanded)}
-              >
-                <View className="flex flex-col items-start gap-4 px-6 py-0 self-stretch">
-                  <ToggleSetting
-                    title="Show Online Status"
-                    value={showOnlineStatus}
-                    onValueChange={setShowOnlineStatus}
-                  />
-                </View>
-              </DropdownSettingItem>
+                  icon={Bell}
+                  title="Notifications"
+                  iconColor="#78350f"
+                  isExpanded={isNotificationsExpanded}
+                  onToggleExpanded={() => setIsNotificationsExpanded(!isNotificationsExpanded)}
+                >
+                  <View className="flex flex-col items-start gap-4 px-6 py-0 self-stretch">
+                    {/* Do Not Disturb - Special handling */}
+                    <ToggleSetting
+                      title="Do Not Disturb"
+                      value={doNotDisturb}
+                      onValueChange={handleToggleDoNotDisturb}
+                      description="Disable all notifications"
+                    />
+                    
+                    {/* Individual notification types - disabled when Do Not Disturb is on */}
+                    <ToggleSetting
+                      title="New Feed"
+                      value={newFeed}
+                      onValueChange={handleToggleNewFeed}
+                      disabled={doNotDisturb}
+                      description="Receive notifications about feed"
+                    />
+                    <ToggleSetting
+                      title="New Activity"
+                      value={newActivity}
+                      onValueChange={handleToggleNewActivity}
+                      disabled={doNotDisturb}
+                      description="Receive notifications about activity updates"
+                    />
+                    <ToggleSetting
+                      title="Invites"
+                      value={invites}
+                      onValueChange={handleToggleInvites}
+                      disabled={doNotDisturb}
+                      description="Receive notifications about new invitations"
+                    />
+                    
+                    {isSavingPreferences && (
+                      <View className="w-full items-center py-2">
+                        <ActivityIndicator size="small" color="#2A1800" />
+                      </View>
+                    )}
+                  </View>
+                </DropdownSettingItem>
 
               <View className="bg-[#FAE5CA] mx-2 h-px" />
 
