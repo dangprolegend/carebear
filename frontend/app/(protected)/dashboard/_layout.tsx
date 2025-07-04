@@ -130,8 +130,14 @@ export default function DashboardLayout() {
 
   const renderIcon = (icon: any, isActive: boolean) => {
     return (
-      <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
-        {/* Background shade for active tab */}
+      <View style={{ 
+        position: 'relative', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        width: 64,  // Fixed width for all tabs
+        height: 40  // Fixed height for all tabs
+      }}>
+      {/* Background shade for active tab */}
         {isActive && (
           <View
             style={{
