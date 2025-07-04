@@ -13,7 +13,7 @@ export type Task = {
   subDetail?: string | null;  
   checked?: boolean;         
   priority?: 'low' | 'medium' | 'high' | null; 
-  status?: 'pending' | 'in-progress' | 'done';   
+  status?: 'skipped' | 'pending' | 'in-progress' | 'done';   
   assignedTo?: string | null; 
 
   onPress?: (task: Task) => void;

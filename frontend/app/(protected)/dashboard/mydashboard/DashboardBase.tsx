@@ -854,6 +854,20 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
     })();
   }, [selectedDate]);
 
+  // Restore a skipped task to pending status
+  async function handleRestoreTask(task: Task): Promise<void> {
+    try {
+      setRefreshing(true);
+      await updateTaskStatus(task._id, 'pending');
+      console.log('Task restored:', task.title);
+      refreshTasks();
+    } catch (error) {
+      console.error('Error restoring task:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
   return (
     <>
       <ScrollView className="flex-1 bg-white">
@@ -1005,7 +1019,9 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                         borderWidth: 1.5,
                         borderColor: '#2A1800',
                         borderRadius: 12,
-                        backgroundColor: '#FFFFFF'
+                        backgroundColor: '#FFFFFF',
+                        // Apply blur effect based on task status
+                        opacity: task.status === 'skipped' || task.status === 'done' ? 0.6 : 1,
                       }}
                     >
                       {/* Task Title and Flag */}
@@ -1076,22 +1092,38 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                         />
                       </View>
 
-                      {/* Action Buttons */}
-                      <View className="flex-row justify-between mt-2">
-                        <Pressable
-                          onPress={() => handleSkipTask(task)}
-                          className="py-2 px-6 rounded-full border border-[#2A1800]"
-                        >
-                          <Text className="text-[#2A1800]">Skip</Text>
-                        </Pressable>
+                      {/* Action Buttons - Show based on task status */}
+                      {task.status === 'pending' || task.status === 'in-progress' ? (
+                        // Regular buttons for active tasks
+                        <View className="flex-row justify-between mt-2">
+                          <Pressable
+                            onPress={() => handleSkipTask(task)}
+                            className="py-2 px-6 rounded-full border border-[#2A1800]"
+                          >
+                            <Text className="text-[#2A1800]">Skip</Text>
+                          </Pressable>
 
-                        <Pressable
-                          onPress={() => handleTakeTask(task)}
-                          className="py-2 px-8 rounded-full bg-[#2A1800]"
-                        >
-                          <Text className="text-white">Take</Text>
-                        </Pressable>
-                      </View>
+                          <Pressable
+                            onPress={() => handleTakeTask(task)}
+                            className="py-2 px-8 rounded-full bg-[#2A1800]"
+                          >
+                            <Text className="text-white">Take</Text>
+                          </Pressable>
+                        </View>
+                      ) : task.status === 'skipped' ? (
+                        // Only show Restore button for skipped tasks
+                        <View className="flex-row justify-center mt-2">
+                          <Pressable
+                            onPress={() => handleRestoreTask(task)}
+                            className="py-2 px-6 rounded-full border border-[#2A1800]"
+                          >
+                            <Text className="text-[#2A1800]">Restore Task</Text>
+                          </Pressable>
+                        </View>
+                      ) : (
+                        // No buttons for completed tasks
+                        <View />
+                      )}
                     </View>
                   ))
                 )}
