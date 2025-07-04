@@ -21,6 +21,41 @@ import { canManageTasks, hasTaskPermission, isAdmin, canManageSpecificTask } fro
 const router: Router = express.Router();
 
 
+
+/**
+ * @swagger
+ * /api/tasks/{taskID}/complete:
+ *   post:
+ *     summary: Complete a task with specified completion method
+ *     tags: [Tasks]
+ *     parameters:
+ *       - in: path
+ *         name: taskID
+ *         required: true
+ *         description: The ID of the task to complete
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               completionMethod:
+ *                 type: string
+ *                 enum: [manual, photo, input]
+ *               notes:
+ *                 type: string
+ *               evidenceUrl:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Task completed successfully
+ */
+router.post('/:taskID/complete', completeTask);
+
+
 /**
  * @swagger
  * /api/tasks:

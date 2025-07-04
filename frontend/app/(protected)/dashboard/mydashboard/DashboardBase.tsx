@@ -1082,14 +1082,14 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                           onPress={() => handleSkipTask(task)}
                           className="py-2 px-6 rounded-full border border-[#2A1800]"
                         >
-                          <Text className="text-[#2A1800]">Skipped</Text>
+                          <Text className="text-[#2A1800]">Skip</Text>
                         </Pressable>
 
                         <Pressable
                           onPress={() => handleTakeTask(task)}
                           className="py-2 px-8 rounded-full bg-[#2A1800]"
                         >
-                          <Text className="text-white">Taken</Text>
+                          <Text className="text-white">Take</Text>
                         </Pressable>
                       </View>
                     </View>

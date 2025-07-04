@@ -226,9 +226,13 @@ const mapBackendTaskToFrontend = (bt: BackendTask): FrontendTaskType => {
     description: bt.description,
     datetime: taskDatetime,
     groupID: bt.groupID,
+    // Add this fix to apiServices.ts, in the mapBackendTaskToFrontend function
     type: bt.type ||
-      (bt.title.toLowerCase().includes("appointment") ? "appointment" :
-        bt.title.toLowerCase().includes("medication") || bt.title.toLowerCase().includes("pill") || bt.title.toLowerCase().includes("tablet") ? "medication" : undefined),
+      (bt.title && bt.title.toLowerCase().includes("appointment") ? "appointment" :
+      bt.title && (bt.title.toLowerCase().includes("medication") || 
+                    bt.title.toLowerCase().includes("pill") || 
+                    bt.title.toLowerCase().includes("tablet")) ? "medication" : 
+      undefined),
     detail: taskDetail,
     subDetail: taskSubDetail,
     checked: bt.status === 'done',
