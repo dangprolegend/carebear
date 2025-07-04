@@ -1405,19 +1405,19 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                             width: 153
                           }}
                         >
-                          <Text className="text-sm text-[#333]">Assigned by</Text>
-                          <Image
-                            source={{ 
-                              uri: selectedAssignedBy?.avatar || 
-                                  'https://via.placeholder.com/24?text=🧑' 
-                            }}
-                            style={{ 
-                              width: 24, 
-                              height: 24, 
-                              borderRadius: 12,
-                              backgroundColor: selectedAssignedBy ? 'transparent' : '#E0E0E0'
-                            }}
-                          />
+                          {selectedAssignedBy ? (
+                            <>
+                              <Text className="text-sm text-[#333]" numberOfLines={1}>Assigned by</Text>
+                              <Image
+                                source={{ uri: selectedAssignedBy.avatar || 'https://via.placeholder.com/24?text=🧑' }}
+                                style={{ width: 24, height: 24, borderRadius: 12 }}
+                              />
+                            </>
+                          ) : (
+                            <Text className="text-sm text-[#333]" numberOfLines={1}>
+                              By Everyone
+                            </Text>
+                          )}
                         </Pressable>
                         
                         {/* Assigned by dropdown */}
