@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { getUser, provideAdditionalUserInfo, getUserIdByClerkId, getUserGroup, getUserInfo, getFamilyMembers, updateUser, checkUserAdminStatus, getCurrentUserFamilyRole, getAllGroups, getAllUserGroups } from '../controllers/userController';
+import { getUser, provideAdditionalUserInfo, getUserIdByClerkId, getUserGroup, getUserInfo, getFamilyMembers, updateUser, checkUserAdminStatus, getCurrentUserFamilyRole, getAllGroups, getAllUserGroups, updateNotificationPreferences, getNotificationPreferences } from '../controllers/userController';
 import { createGroup, joinGroup } from '../controllers/groupController';
 import { sendInvitation } from '../controllers/invitationController';
 
@@ -7,7 +7,7 @@ const router: Router = express.Router();
 
 router.get('/:userID', getUser);
 router.get('/:userID/group', getUserGroup);
-router.get('/:userID/allGroups', getAllUserGroups);  // New endpoint to get all groups
+router.get('/:userID/allGroups', getAllUserGroups);  
 router.patch('/:userID/onboarding', provideAdditionalUserInfo);
 router.get('/clerk/:clerkID', getUserIdByClerkId);
 router.post('/:userID/createGroup', createGroup);
@@ -18,5 +18,7 @@ router.post('/:userID/invite', sendInvitation);
 router.patch('/:userID/update', updateUser);
 router.get('/:userID/groups/:groupID/admin-status', checkUserAdminStatus);
 router.get('/:userID/role', getCurrentUserFamilyRole);
+router.get('/:userID/notification-preferences', getNotificationPreferences);
+router.patch('/:userID/notification-preferences', updateNotificationPreferences);
 
 export default router;
