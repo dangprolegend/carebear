@@ -62,11 +62,11 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
         const users = await fetchUsersInGroup(currentGroupID);
         setAssigneeOptions(
           users.map((user: any) => ({
-            label: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email,
-            value: user._id,
-            imageURL: user.imageURL || user.profilePicture || null,
-            firstName: user.firstName,
-            lastName: user.lastName
+            label: user.fullName || user.email || 'Unknown User',
+            value: user.userID, // Changed from user._id to user.userID
+            imageURL: user.imageURL || null,
+            firstName: user.fullName?.split(' ')[0] || '',
+            lastName: user.fullName?.split(' ')[1] || ''
           }))
         );
       } catch (e) {
