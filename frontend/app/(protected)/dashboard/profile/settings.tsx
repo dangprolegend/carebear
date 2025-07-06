@@ -315,7 +315,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
     try {
       setIsLoadingPreferences(true);
       const response = await axios.get(
-        `https://mature-catfish-cheaply.ngrok-free.app/api/users/${userID}/notification-preferences`
+        `https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/notification-preferences`
       );
       
       if (response.status === 200) {
@@ -339,7 +339,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       
       // Trigger a notification update in the notification system
       await axios.post(
-        `https://mature-catfish-cheaply.ngrok-free.app/api/notifications/refresh-settings`,
+        `https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/notifications/refresh-settings`,
         { userID }
       );
     } catch (error) {
@@ -372,7 +372,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       };
       
       const response = await axios.patch(
-        `https://mature-catfish-cheaply.ngrok-free.app/api/users/${userID}/notification-preferences`,
+        `https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/notification-preferences`,
         preferences
       );
 
