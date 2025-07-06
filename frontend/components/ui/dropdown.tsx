@@ -38,11 +38,11 @@ export function Dropdown({ options, value, onValueChange, placeholder = "Select 
     <View className={cn("relative", className)}>
       <Pressable
         onPress={() => setIsOpen(true)}
-        className="flex-row items-center justify-between bg-white border border-amber-700 rounded-md px-4 py-1.5"
+        className="flex-row items-center justify-between bg-white border border-[#2A1800] rounded-md px-4 py-1.5"
       >       
         <Text 
           className={cn(
-            "text-sm flex-1",
+            "text-sm flex-1 font-bold",
             selectedOption ? "text-gray-800" : "text-gray-500"
           )}
           numberOfLines={1}
