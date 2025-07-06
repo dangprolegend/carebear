@@ -64,7 +64,7 @@ export default function DashboardLayout() {
           
           // Get groupID directly from API instead of using the cache function
           try {
-            const groupResponse = await fetch(`https://carebear-backend.onrender.com/api/users/${backendUserID}/group`);
+            const groupResponse = await fetch(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${backendUserID}/group`);
             const groupData = await groupResponse.json();
             
             if (groupData && groupData.groupID) {
