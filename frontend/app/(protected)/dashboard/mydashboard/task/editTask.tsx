@@ -280,6 +280,7 @@ const EditTaskScreen = () => {
         reminder: {
           start_date: taskForm.datetime ? new Date(taskForm.datetime).toISOString() : undefined,
           end_date: taskForm.endDate ? new Date(taskForm.endDate).toISOString() : undefined,
+          times_of_day: taskForm.detail ? [taskForm.detail] : [],
         }
       };
 

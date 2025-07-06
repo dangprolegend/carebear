@@ -27,7 +27,7 @@ const CircularProgress = ({ percentage, size = 24 }: { percentage: number; size?
                   cy={centerY}
                   r={radius}
                   fill="#198AE9"
-                  opacity={0.8}
+                  opacity={0.4}
                 />
               </Svg>
             </View>

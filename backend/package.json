@@ -2,12 +2,13 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/app.js",
+  "main": "./app.ts",
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc",
     "start": "node dist/app.js",
-    "dev": "nodemon app.ts"
+    "vercel-build": "npm run build",
+    "dev": "nodemon --exec ts-node app.ts"
   },
   "keywords": [],
   "author": "",

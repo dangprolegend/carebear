@@ -19,11 +19,11 @@ export default function CreateFamilyGroupScreen() {
         alert('User is not authenticated.');
         return;
       }
-      const userResponse = await axios.get(`https://carebear-backend.onrender.com/api/users/clerk/${userId}`);
+      const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
       const userID = userResponse.data.userID;
       console.log('Fetching userID for clerkID:', userID);
       const data = { name: groupName };
-      await axios.post(`https://carebear-backend.onrender.com/api/users/${userID}/createGroup`, data);
+      await axios.post(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/createGroup`, data);
       router.push('/(protected)/dashboard/family/congrats');
     } catch (error) {
       console.error('Error creating group:', error);
