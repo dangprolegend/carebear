@@ -4,7 +4,8 @@ import {
   getUserNotifications, 
   deleteNotification,
   updateNotification,
-  getNotificationByID
+  getNotificationByID,
+  refreshNotificationSettings
 } from '../controllers/notificationController';
 
 const router: Router = express.Router();
@@ -14,5 +15,6 @@ router.get('/user/:userID', getUserNotifications); // Done migrated
 router.delete('/:notificationID', deleteNotification); // Done migrated
 router.put('/:notificationID', updateNotification)
 router.get('/:notificationID', getNotificationByID)
+router.post('/refresh-settings', refreshNotificationSettings) // Refresh notification settings
 
 export default router;
