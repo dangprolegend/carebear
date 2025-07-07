@@ -28,7 +28,7 @@ export default function CreateFamilyGroupScreen() {
       const data = { name: groupName };
 
       await axios.post(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/createGroup`, data);
-      router.push('/setup/congrats');
+      router.push('/setup/roles-info');
     } catch (error) {
       console.error('Error creating group:', error);
       alert('Failed to create group');
@@ -66,7 +66,7 @@ export default function CreateFamilyGroupScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+          className="bg-[#2A1800] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
           onPress={handleCreate}
         >
           <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Next</Text>

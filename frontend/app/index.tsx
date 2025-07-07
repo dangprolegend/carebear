@@ -1,7 +1,8 @@
 import { View, Text, TouchableOpacity, Image, SafeAreaView, Platform, ActivityIndicator } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
-import Welcome from '../assets/images/welcome.png';
+import Welcome from '../assets/images/Content Container.png';
+import SmallBear from '../assets/images/Bear Letter.png';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { setupAndroidAuthHelpers } from '../utils/androidAuthHelpers';
@@ -76,13 +77,13 @@ export default function WelcomeScreen() {
     checkUserGroup();
   }, [isLoaded, isSignedIn, userId, router]);
 
-  // Show loading state while checking user status or while Clerk is loading
-  if (!isLoaded || (isLoaded && isSignedIn) || isLoading) {
+  // Show loading state while Clerk is loading or while checking user status (only if signed in)
+  if (!isLoaded || (isLoaded && isSignedIn && isLoading)) {
     console.log('Showing loading state');
     return (
       <SafeAreaView>
-        <View className="items-center justify-center h-screen bg-white">
-          <ActivityIndicator size="large" color="#0F172A" />
+        <View className="items-center justify-center h-screen bg-[#FAE5CA]">
+          <ActivityIndicator size="large" color="#FAE5CA" />
           <Text className="text-black font-lato text-lg mt-4">
             {error ? `Error: ${error}` : 'Loading...'}
           </Text>
@@ -93,22 +94,27 @@ export default function WelcomeScreen() {
 
   return (
     <SafeAreaView>
-      <View className="items-center justify-center h-screen bg-white">
+      <View className="items-center justify-center h-screen bg-[#FAE5CA]">
         <View className='flex flex-col items-center gap-20 w-[246px]'>
-          <Text className='font-montserrat-alt-black text-black text-center text-[40px] font-extrabold leading-[40px] tracking-[1.16px]'>
-            CareBear
-          </Text>
-          <Image source={Welcome} className="h-[269px] self-stretch aspect-[246/269]"/>
+          <Image
+          source={Welcome}
+          className="h-[500px] w-[300px] self-stretch]"
+          resizeMode="contain"
+        />
 
-          <Text className="text-black text-center font-lato-black text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">
-            For you and the ones you love
-        </Text>
         </View>
         <TouchableOpacity
-          className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full mt-[68px]"
+          className="bg-[#2A1800] flex-row min-w-[200px] w-[260px] py-2 px-8 justify-center items-center gap-2 rounded-full mt-6"
           onPress={() => router.replace('/(auth)/sign-in')}
         >
-          <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Let's Start</Text>
+          <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">
+            Let's Start
+          </Text>
+          <Image
+            source={SmallBear}
+            className="h-[40px] w-[25px] ml-2"
+            resizeMode="contain"
+          />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
