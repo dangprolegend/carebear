@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native';
 import { useManualStrava } from '~/hooks/useManualStrava';
+import Strava from '~/assets/icons/strava.png'; 
 
 
 interface StravaConnectSectionProps {
@@ -104,23 +105,21 @@ const StravaConnectSection: React.FC<StravaConnectSectionProps> = ({ onConnectio
           Automatic Tracking
         </Text>
         
-        <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px] mb-6">
+        <Text className="text-black font-lato text-[16px] font-[300px] leading-[24px] tracking-[-0.1px] mb-5">
           Connect Strava to sync your activities and health data automatically.
         </Text>
         
         <Pressable
           onPress={handleConnect}
           disabled={isConnecting}
-          className="bg-[#FC4C02] rounded-lg py-3 px-6 flex-row items-center justify-center"
+          className="flex-row min-w-[80px] px-6 py-3 justify-center items-center gap-2 self-stretch rounded-full bg-[#2A1800]"
         >
           {isConnecting ? (
             <ActivityIndicator size="small" color="white" />
           ) : (
             <>
-              <View className="w-6 h-6 bg-white rounded mr-3 flex items-center justify-center">
-                <Text className="text-[#FC4C02] font-bold text-xs">S</Text>
-              </View>
-              <Text className="text-white font-lato text-[16px] font-extrabold">
+              <Image source={Strava} className="w-6 h-6 mr-2" />
+              <Text className="text-white font-lato text-[14px] font-[900px]">
                 Connect to Strava
               </Text>
             </>

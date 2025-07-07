@@ -107,13 +107,13 @@ const StravaActivities: React.FC = () => {
         <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">
           Recent Activities
         </Text>
-        <Pressable onPress={() => setShowAllActivities(!showAllActivities)}>
+        {/* <Pressable onPress={() => setShowAllActivities(!showAllActivities)}>
           <View className="bg-white border border-gray-300 rounded-lg px-3 py-1">
             <Text className="text-black font-lato text-[14px] font-medium">
               {showAllActivities ? 'Show Less' : 'Activities >'}
             </Text>
           </View>
-        </Pressable>
+        </Pressable> */}
       </View>
 
       {isLoading ? (
@@ -123,7 +123,7 @@ const StravaActivities: React.FC = () => {
       ) : (
         <>
           {/* Weekly Summary */}
-          {weeklySummary && (
+          {/* {weeklySummary && (
             <View className="bg-[#FAE5CA] rounded-lg p-4 mb-4">
               <Text className="text-[#2A1800] font-lato text-[16px] font-extrabold mb-2">
                 This week
@@ -163,7 +163,7 @@ const StravaActivities: React.FC = () => {
                 </View>
               </View>
             </View>
-          )}
+          )} */}
 
           {/* Activities List */}
           <View className="space-y-3">

@@ -100,7 +100,7 @@ export default function Profile() {
 
   const fetchNumGroups = async (userID: string) => {
       try {
-        const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/allGroups`);
+        const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/allGroups`);
         const numGroups = response.data.totalGroups || 0;
         setNumFamilies(numGroups);
         return numGroups;

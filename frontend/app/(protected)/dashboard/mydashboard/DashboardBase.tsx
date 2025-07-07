@@ -20,6 +20,7 @@ import {
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { setClerkAuthTokenForApiService } from '../../../../service/apiServices';
 import axios from 'axios';
+import StravaActivities from '~/components/StravaActivities';
 
 type DashboardBaseProps = {
   tasks: Task[];
@@ -1670,6 +1671,8 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                 </View>
               </View>
             </View>
+
+              <StravaActivities />
           </>
         )}
       </ScrollView>
