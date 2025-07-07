@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { getUser, provideAdditionalUserInfo, getUserIdByClerkId, getUserGroup, getUserInfo, getFamilyMembers, updateUser, checkUserAdminStatus, getCurrentUserFamilyRole, getAllGroups, getAllUserGroups, updateNotificationPreferences, getNotificationPreferences } from '../controllers/userController';
+import { getUser, provideAdditionalUserInfo, getUserIdByClerkId, getUserGroup, getUserInfo, getFamilyMembers, updateUser, checkUserAdminStatus, getCurrentUserFamilyRole, getAllGroups, getAllUserGroups, updateNotificationPreferences, getNotificationPreferences, updateUserRole } from '../controllers/userController';
 import { createGroup, joinGroup } from '../controllers/groupController';
 import { sendInvitation } from '../controllers/invitationController';
 
@@ -18,6 +18,7 @@ router.post('/:userID/invite', sendInvitation);
 router.patch('/:userID/update', updateUser);
 router.get('/:userID/groups/:groupID/admin-status', checkUserAdminStatus);
 router.get('/:userID/role', getCurrentUserFamilyRole);
+router.patch('/:userID/update-role/:targetUserID', updateUserRole);
 router.get('/:userID/notification-preferences', getNotificationPreferences);
 router.patch('/:userID/notification-preferences', updateNotificationPreferences);
 

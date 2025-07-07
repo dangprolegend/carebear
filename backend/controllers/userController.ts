@@ -478,6 +478,76 @@ export const getCurrentUserFamilyRole = async (req: Request, res: Response): Pro
   }
 };
 
+// Update user role in a specific group (admin only)
+export const updateUserRole = async (req: Request, res: Response) => {
+  try {
+    const { userID, targetUserID } = req.params;
+    const { role, groupID } = req.body;
+
+    if (!userID || !targetUserID || !role || !groupID) {
+      return res.status(400).json({ 
+        message: 'User ID, target user ID, role, and group ID are required' 
+      });
+    }
+
+    const validRoles = ['admin', 'caregiver', 'carereceiver'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ 
+        message: 'Invalid role. Must be admin, caregiver, or carereceiver' 
+      });
+    }
+
+    const isAdmin = await isUserAdminOfGroup(userID, groupID);
+    if (!isAdmin) {
+      return res.status(403).json({ 
+        message: 'Only group admins can update user roles' 
+      });
+    }
+
+    const group = await Group.findById(groupID);
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    // Find the target user in the group
+    const targetMemberIndex = group.members.findIndex(
+      (member) => member.user.toString() === targetUserID
+    );
+
+    if (targetMemberIndex === -1) {
+      return res.status(404).json({ 
+        message: 'Target user is not a member of this group' 
+      });
+    }
+
+    if (userID === targetUserID) {
+      return res.status(400).json({ 
+        message: 'Cannot change your own role' 
+      });
+    }
+
+    // Update the role
+    group.members[targetMemberIndex].role = role;
+    await group.save();
+
+    return res.status(200).json({ 
+      message: 'User role updated successfully',
+      updatedMember: {
+        userID: targetUserID,
+        role: role,
+        groupID: groupID
+      }
+    });
+
+  } catch (error: any) {
+    console.error('Error updating user role:', error);
+    return res.status(500).json({ 
+      message: 'Internal server error',
+      error: error.message 
+    });
+  }
+};
+
 // Get dashboard metrics for a user
 // export const getUserMetrics = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
 //   try {
