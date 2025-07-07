@@ -91,7 +91,7 @@ export default function Profile() {
 
   const fetchNumGroups = async (userID: string) => {
       try {
-        const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/allGroups`);
+        const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/allGroups`);
         const numGroups = response.data.totalGroups || 0;
         setNumFamilies(numGroups);
         return numGroups;
@@ -103,7 +103,7 @@ export default function Profile() {
   
   const fetchTaskCompletion = async (userID: string, groupID: string) => {
       try {
-        const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`);
+        const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`);
         const percentage = response.data.completionPercentage || 0;
         setTaskCompletion(percentage);
         return percentage;
@@ -116,7 +116,7 @@ export default function Profile() {
   // Fetch user created date
   const fetchUserCreatedDate = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}`);
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}`);
       const createdDate = new Date(response.data.createdAt);
       setUserCreatedDate(createdDate);
       
@@ -143,7 +143,7 @@ export default function Profile() {
   // Fetch today's daily status
   const fetchTodayStatus = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/daily/today/${userID}`);
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/daily/today/${userID}`);
       if (response.data && response.data.mood && response.data.body) {
         setTodayMoodValue(response.data.mood);
         setTodayBodyValue(response.data.body);
@@ -166,7 +166,7 @@ export default function Profile() {
 
   const fetchPrimaryGroupId = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
       setPrimaryGroupId(response.data.groupID);
       return response.data.groupID;
     } catch (error) {
@@ -186,7 +186,7 @@ export default function Profile() {
   const fetchTaskCompletionForDate = async (userID: string, groupID: string, date: Date) => {
     try {
       const dateKey = formatDateForAPI(date); // Use helper function for consistent formatting
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`, {
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`, {
         params: {
           date: dateKey 
         }
@@ -236,11 +236,11 @@ export default function Profile() {
     const getUserInfo = async () => {
       if (isSignedIn && userId) {
         try {
-          const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+          const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
           const fetchedUserID = userResponse.data.userID;
           setUserID(fetchedUserID);
 
-          const res = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${fetchedUserID}/info`);
+          const res = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${fetchedUserID}/info`);
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
 
@@ -264,12 +264,12 @@ export default function Profile() {
         setIsCheckingStatus(true);
         try {
           // Step 1: Fetch userID using clerkID
-          const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+          const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
           const fetchedUserID = userResponse.data.userID;
           setUserID(fetchedUserID);
 
           // Step 2: Check if user has submitted today
-          const statusResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/daily/check/${fetchedUserID}`);
+          const statusResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/daily/check/${fetchedUserID}`);
           
           // If user has submitted today, fetch their status to display emojis
           if (statusResponse.data.hasSubmittedToday) {

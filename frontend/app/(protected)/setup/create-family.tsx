@@ -19,7 +19,7 @@ export default function CreateFamilyGroupScreen() {
       }
 
       // Step 1: Fetch userID using clerkID
-      const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+      const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
       const userID = userResponse.data.userID;
       console.log('Fetching userID for clerkID:', userID);
       
@@ -27,7 +27,7 @@ export default function CreateFamilyGroupScreen() {
       // Step 2: Create the family group
       const data = { name: groupName };
 
-      await axios.post(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/createGroup`, data);
+      await axios.post(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/createGroup`, data);
       router.push('/setup/congrats');
     } catch (error) {
       console.error('Error creating group:', error);

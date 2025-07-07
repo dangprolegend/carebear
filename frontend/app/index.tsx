@@ -33,13 +33,13 @@ export default function WelcomeScreen() {
         try {
           // Step 1: Fetch userID using clerkID
           console.log('Fetching userID for clerkID:', userId);
-          const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+          const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
           const userID = userResponse.data.userID;
           console.log('Received userID:', userID);
 
           // Step 2: Get the user's groupID
           console.log('Fetching groupID for userID:', userID);
-          const groupResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
+          const groupResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
           const { groupID } = groupResponse.data;
           console.log('Received groupID:', groupID);
 

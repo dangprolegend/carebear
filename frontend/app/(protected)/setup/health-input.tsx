@@ -38,7 +38,7 @@ export default function HealthInputScreen() {
       }
 
       // Step 1: Fetch userID using clerkID
-      const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+      const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
       const userID = userResponse.data.userID;
       console.log('Fetching userID for clerkID:', userID);
       
@@ -53,7 +53,7 @@ export default function HealthInputScreen() {
         lastName,
       };
 
-      await axios.patch(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/onboarding`, updateData);
+      await axios.patch(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/onboarding`, updateData);
       router.push('/setup/join-family');
     } catch (error) {
       console.error('Error updating user information:', error);

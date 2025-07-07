@@ -64,7 +64,7 @@ export default function DashboardLayout() {
           
           // Get groupID directly from API instead of using the cache function
           try {
-            const groupResponse = await fetch(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${backendUserID}/group`);
+            const groupResponse = await fetch(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${backendUserID}/group`);
             const groupData = await groupResponse.json();
             
             if (groupData && groupData.groupID) {
@@ -199,8 +199,6 @@ export default function DashboardLayout() {
               // Mark tasks as read and navigate to the notification screen
               if (userID && groupID) {
                 try {
-                  // Even if the unreadCount is 0, we'll try to mark tasks as read
-                  // This covers cases where the count hasn't loaded yet
                   console.log(`Marking tasks as read for user ${userID} in group ${groupID}`);
                   await markAllTasksAsRead(userID, groupID);
                   
@@ -215,7 +213,6 @@ export default function DashboardLayout() {
                   });
                 } catch (error) {
                   console.error('Failed to mark tasks as read:', error);
-                  // Still navigate even if marking as read fails
                   router.push({
                     pathname: '/dashboard/notification/notification',
                     params: { userID, groupID }
@@ -232,8 +229,8 @@ export default function DashboardLayout() {
             }}
             >
             <Image
-              source={require('../../../assets/icons/bell-icon.png')}
-              style={{ width: 24, height: 24 }}
+              source={require('../../../assets/icons/bell.png')}
+              style={{ width: 24, height: 24}}
               resizeMode="contain"
             />
             {/* Notification badge */}

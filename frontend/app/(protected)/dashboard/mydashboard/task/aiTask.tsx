@@ -209,7 +209,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
 
 
   return (
-    <View className="mt-4 pt-4">
+    <View className="pb-3">
       <View className="flex-row border-b border-slate-200">
         {[...Array(NUM_TABS)].map((_, idx) => (
           <Pressable
@@ -229,7 +229,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <Text className="font-semibold mb-2">Task Name</Text>
+        <Text className="font-semibold mt-8 mb-2">Task Name</Text>
         <TextInput
           className="border rounded-lg px-3 py-3 mb-8"
           placeholder="Task Name"
