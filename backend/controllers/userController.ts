@@ -500,3 +500,81 @@ export const getCurrentUserFamilyRole = async (req: Request, res: Response): Pro
 //     res.status(500).json({ error: err.message });
 //   }
 // };
+
+export const updateNotificationPreferences = async(req: Request, res: Response): Promise<void> => {
+  try {
+    const {userID} = req.params;
+    const { doNotDisturb, newFeed, newActivity, invites } = req.body;
+    if (typeof doNotDisturb !== 'boolean' || 
+        typeof newFeed !== 'boolean' || 
+        typeof newActivity !== 'boolean' || 
+        typeof invites !== 'boolean') {
+      res.status(400).json({ 
+        message: 'Invalid preferences format. All preference values must be boolean.' 
+      });
+      return;
+    }
+
+    // Find user and update notification preferences
+    const updatedUser = await User.findByIdAndUpdate(
+      userID,
+      { 
+        $set: { 
+          notificationPreferences: { 
+            doNotDisturb, 
+            newFeed, 
+            newActivity, 
+            invites 
+          } 
+        } 
+      },
+      { new: true, runValidators: true }
+    );
+    
+    if (!updatedUser) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    
+    res.status(200).json({ 
+      message: 'Notification preferences updated successfully',
+      preferences: updatedUser.notificationPreferences 
+    });
+  } catch (error: any) {
+    console.error('Error updating notification preferences:', error);
+    res.status(500).json({ 
+      message: 'Failed to update notification preferences',
+      error: error.message 
+    });
+  }
+};
+
+// Add another function to get notification preferences
+export const getNotificationPreferences = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userID } = req.params;
+    
+    const user = await User.findById(userID).select('notificationPreferences');
+    
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    
+    // If user doesn't have notification preferences yet, return defaults
+    const preferences = user.notificationPreferences || {
+      doNotDisturb: false,
+      newFeed: true,
+      newActivity: true,
+      invites: true
+    };
+    
+    res.status(200).json(preferences);
+  } catch (error: any) {
+    console.error('Error fetching notification preferences:', error);
+    res.status(500).json({ 
+      message: 'Failed to fetch notification preferences',
+      error: error.message 
+    });
+  }
+};
