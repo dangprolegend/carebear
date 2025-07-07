@@ -547,7 +547,7 @@ useEffect(() => {
       // Create a reminder time
       // Adjust the time ahead as needed
       const reminderTime = new Date(taskDate);
-      const timeAhead = 0
+      const timeAhead = 13; // Set a default time ahead of 10 minutes
       reminderTime.setMinutes(reminderTime.getMinutes() - timeAhead);
       
       // Only schedule if in the future
@@ -773,14 +773,14 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
         }
         
         const members = await fetchUsersInGroup(groupID);
+        console.log(members);
         
-        // Map the API response to our format
+        // Map the API response to our format based on the new structure
         const mappedMembers = members.map(member => ({
-          id: member._id,
-          name: member.firstName && member.lastName 
-            ? `${member.firstName} ${member.lastName}`
-            : member.firstName || member.email || 'Unknown User',
-          avatar: member.imageURL || 'https://via.placeholder.com/40'
+          id: member.userID,  // Use userID instead of _id
+          name: member.fullName || 'Unknown User',  // Use fullName instead of firstName/lastName
+          avatar: member.imageURL || 'https://via.placeholder.com/40',
+          role: member.role
         }));
         
         setFamilyMembers(mappedMembers);
@@ -879,6 +879,20 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
       }
     })();
   }, [selectedDate]);
+
+  // Restore a skipped task to pending status
+  async function handleRestoreTask(task: Task): Promise<void> {
+    try {
+      setRefreshing(true);
+      await updateTaskStatus(task._id, 'pending');
+      console.log('Task restored:', task.title);
+      refreshTasks();
+    } catch (error) {
+      console.error('Error restoring task:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }
 
   return (
     <>
@@ -1031,7 +1045,9 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                         borderWidth: 1.5,
                         borderColor: '#2A1800',
                         borderRadius: 12,
-                        backgroundColor: '#FFFFFF'
+                        backgroundColor: '#FFFFFF',
+                        // Apply blur effect based on task status
+                        opacity: task.status === 'skipped' || task.status === 'done' ? 0.6 : 1,
                       }}
                     >
                       {/* Task Title and Flag */}
@@ -1102,22 +1118,38 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                         />
                       </View>
 
-                      {/* Action Buttons */}
-                      <View className="flex-row justify-between mt-2">
-                        <Pressable
-                          onPress={() => handleSkipTask(task)}
-                          className="py-2 px-6 rounded-full border border-[#2A1800]"
-                        >
-                          <Text className="text-[#2A1800]">Skipped</Text>
-                        </Pressable>
+                      {/* Action Buttons - Show based on task status */}
+                      {task.status === 'pending' || task.status === 'in-progress' ? (
+                        // Regular buttons for active tasks
+                        <View className="flex-row justify-between mt-2">
+                          <Pressable
+                            onPress={() => handleSkipTask(task)}
+                            className="py-2 px-6 rounded-full border border-[#2A1800]"
+                          >
+                            <Text className="text-[#2A1800]">Skip</Text>
+                          </Pressable>
 
-                        <Pressable
-                          onPress={() => handleTakeTask(task)}
-                          className="py-2 px-8 rounded-full bg-[#2A1800]"
-                        >
-                          <Text className="text-white">Taken</Text>
-                        </Pressable>
-                      </View>
+                          <Pressable
+                            onPress={() => handleTakeTask(task)}
+                            className="py-2 px-8 rounded-full bg-[#2A1800]"
+                          >
+                            <Text className="text-white">Take</Text>
+                          </Pressable>
+                        </View>
+                      ) : task.status === 'skipped' ? (
+                        // Only show Restore button for skipped tasks
+                        <View className="flex-row justify-center mt-2">
+                          <Pressable
+                            onPress={() => handleRestoreTask(task)}
+                            className="py-2 px-6 rounded-full border border-[#2A1800]"
+                          >
+                            <Text className="text-[#2A1800]">Restore Task</Text>
+                          </Pressable>
+                        </View>
+                      ) : (
+                        // No buttons for completed tasks
+                        <View />
+                      )}
                     </View>
                   ))
                 )}
@@ -1431,19 +1463,19 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                             width: 153
                           }}
                         >
-                          <Text className="text-sm text-[#333]">Assigned by</Text>
-                          <Image
-                            source={{ 
-                              uri: selectedAssignedBy?.avatar || 
-                                  'https://via.placeholder.com/24?text=🧑' 
-                            }}
-                            style={{ 
-                              width: 24, 
-                              height: 24, 
-                              borderRadius: 12,
-                              backgroundColor: selectedAssignedBy ? 'transparent' : '#E0E0E0'
-                            }}
-                          />
+                          {selectedAssignedBy ? (
+                            <>
+                              <Text className="text-sm text-[#333]" numberOfLines={1}>Assigned by</Text>
+                              <Image
+                                source={{ uri: selectedAssignedBy.avatar || 'https://via.placeholder.com/24?text=🧑' }}
+                                style={{ width: 24, height: 24, borderRadius: 12 }}
+                              />
+                            </>
+                          ) : (
+                            <Text className="text-sm text-[#333]" numberOfLines={1}>
+                              By Everyone
+                            </Text>
+                          )}
                         </Pressable>
                         
                         {/* Assigned by dropdown */}

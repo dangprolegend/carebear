@@ -478,6 +478,76 @@ export const getCurrentUserFamilyRole = async (req: Request, res: Response): Pro
   }
 };
 
+// Update user role in a specific group (admin only)
+export const updateUserRole = async (req: Request, res: Response) => {
+  try {
+    const { userID, targetUserID } = req.params;
+    const { role, groupID } = req.body;
+
+    if (!userID || !targetUserID || !role || !groupID) {
+      return res.status(400).json({ 
+        message: 'User ID, target user ID, role, and group ID are required' 
+      });
+    }
+
+    const validRoles = ['admin', 'caregiver', 'carereceiver'];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ 
+        message: 'Invalid role. Must be admin, caregiver, or carereceiver' 
+      });
+    }
+
+    const isAdmin = await isUserAdminOfGroup(userID, groupID);
+    if (!isAdmin) {
+      return res.status(403).json({ 
+        message: 'Only group admins can update user roles' 
+      });
+    }
+
+    const group = await Group.findById(groupID);
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    // Find the target user in the group
+    const targetMemberIndex = group.members.findIndex(
+      (member) => member.user.toString() === targetUserID
+    );
+
+    if (targetMemberIndex === -1) {
+      return res.status(404).json({ 
+        message: 'Target user is not a member of this group' 
+      });
+    }
+
+    if (userID === targetUserID) {
+      return res.status(400).json({ 
+        message: 'Cannot change your own role' 
+      });
+    }
+
+    // Update the role
+    group.members[targetMemberIndex].role = role;
+    await group.save();
+
+    return res.status(200).json({ 
+      message: 'User role updated successfully',
+      updatedMember: {
+        userID: targetUserID,
+        role: role,
+        groupID: groupID
+      }
+    });
+
+  } catch (error: any) {
+    console.error('Error updating user role:', error);
+    return res.status(500).json({ 
+      message: 'Internal server error',
+      error: error.message 
+    });
+  }
+};
+
 // Get dashboard metrics for a user
 // export const getUserMetrics = async (req: TypedRequest<any, { id: string }>, res: Response): Promise<void> => {
 //   try {
@@ -500,3 +570,81 @@ export const getCurrentUserFamilyRole = async (req: Request, res: Response): Pro
 //     res.status(500).json({ error: err.message });
 //   }
 // };
+
+export const updateNotificationPreferences = async(req: Request, res: Response): Promise<void> => {
+  try {
+    const {userID} = req.params;
+    const { doNotDisturb, newFeed, newActivity, invites } = req.body;
+    if (typeof doNotDisturb !== 'boolean' || 
+        typeof newFeed !== 'boolean' || 
+        typeof newActivity !== 'boolean' || 
+        typeof invites !== 'boolean') {
+      res.status(400).json({ 
+        message: 'Invalid preferences format. All preference values must be boolean.' 
+      });
+      return;
+    }
+
+    // Find user and update notification preferences
+    const updatedUser = await User.findByIdAndUpdate(
+      userID,
+      { 
+        $set: { 
+          notificationPreferences: { 
+            doNotDisturb, 
+            newFeed, 
+            newActivity, 
+            invites 
+          } 
+        } 
+      },
+      { new: true, runValidators: true }
+    );
+    
+    if (!updatedUser) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    
+    res.status(200).json({ 
+      message: 'Notification preferences updated successfully',
+      preferences: updatedUser.notificationPreferences 
+    });
+  } catch (error: any) {
+    console.error('Error updating notification preferences:', error);
+    res.status(500).json({ 
+      message: 'Failed to update notification preferences',
+      error: error.message 
+    });
+  }
+};
+
+// Add another function to get notification preferences
+export const getNotificationPreferences = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userID } = req.params;
+    
+    const user = await User.findById(userID).select('notificationPreferences');
+    
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+    
+    // If user doesn't have notification preferences yet, return defaults
+    const preferences = user.notificationPreferences || {
+      doNotDisturb: false,
+      newFeed: true,
+      newActivity: true,
+      invites: true
+    };
+    
+    res.status(200).json(preferences);
+  } catch (error: any) {
+    console.error('Error fetching notification preferences:', error);
+    res.status(500).json({ 
+      message: 'Failed to fetch notification preferences',
+      error: error.message 
+    });
+  }
+};

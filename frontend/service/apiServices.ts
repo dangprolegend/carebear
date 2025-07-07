@@ -70,7 +70,7 @@ const throttleRequest = async <T>(
   }
 };
 
-const API_BASE_URL = "https://mature-catfish-cheaply.ngrok-free.app";
+const API_BASE_URL = "https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app";
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);
@@ -226,9 +226,13 @@ const mapBackendTaskToFrontend = (bt: BackendTask): FrontendTaskType => {
     description: bt.description,
     datetime: taskDatetime,
     groupID: bt.groupID,
+    // Add this fix to apiServices.ts, in the mapBackendTaskToFrontend function
     type: bt.type ||
-      (bt.title.toLowerCase().includes("appointment") ? "appointment" :
-        bt.title.toLowerCase().includes("medication") || bt.title.toLowerCase().includes("pill") || bt.title.toLowerCase().includes("tablet") ? "medication" : undefined),
+      (bt.title && bt.title.toLowerCase().includes("appointment") ? "appointment" :
+      bt.title && (bt.title.toLowerCase().includes("medication") || 
+                    bt.title.toLowerCase().includes("pill") || 
+                    bt.title.toLowerCase().includes("tablet")) ? "medication" : 
+      undefined),
     detail: taskDetail,
     subDetail: taskSubDetail,
     checked: bt.status === 'done',
@@ -489,13 +493,21 @@ export const createManualTaskAPI = async (
 
 export const fetchUsersInGroup = async (groupID: string): Promise<any[]> => {
   if (!groupID) throw new ApiError("Group ID is required to fetch users.", 400);
-  const url = `${API_BASE_URL}/api/groups/${groupID}/users`;
+  
+  // Get the current user ID
+  const userID = getCurrentUserID();
+  if (!userID) throw new ApiError("User ID is required to fetch family members.", 400);
+  
+  // Use the familyMembers endpoint instead of the groups endpoint
+  const url = `${API_BASE_URL}/api/users/${userID}/familyMembers?groupID=${groupID}`;
+  
   const response = await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'
     },
   });
+  
   const users = await handleApiResponse(response);
   return users;
 };

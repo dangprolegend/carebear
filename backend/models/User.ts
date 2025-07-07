@@ -38,6 +38,12 @@ const UserSchema: Schema = new Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Group',
   },
+  notificationPreferences: {
+    doNotDisturb: { type: Boolean, default: false },
+    newFeed: { type: Boolean, default: true },
+    newActivity: { type: Boolean, default: true },
+    invites: { type: Boolean, default: true }
+  },
   additionalGroups: [{
     groupID: {
       type: mongoose.Schema.Types.ObjectId,

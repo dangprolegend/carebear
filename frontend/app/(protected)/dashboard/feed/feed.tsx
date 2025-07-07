@@ -113,7 +113,7 @@ export default function Feed() {
           
           setClerkAuthTokenForFeedService(token);
 
-          const userResponse = await axios.get(`https://carebear-backend-e1z6.onrender.com/api/users/clerk/${userId}`, {
+          const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
@@ -124,7 +124,7 @@ export default function Feed() {
           const userGroups = await fetchUserGroups(backendUserID);
           setAvailableGroups(userGroups);
 
-          const groupResponse = await axios.get(`https://carebear-backend-e1z6.onrender.com/api/users/${backendUserID}/group`, {
+          const groupResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${backendUserID}/group`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
@@ -140,7 +140,7 @@ export default function Feed() {
               setCurrentGroupName(primaryGroup.name || 'Family Group');
             } else {
               try {
-                const groupDetailsResponse = await axios.get(`https://carebear-backend-e1z6.onrender.com/api/groups/${primaryGroupID}`, {
+                const groupDetailsResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/groups/${primaryGroupID}`, {
                   headers: {
                     'Authorization': `Bearer ${token}`,
                   },

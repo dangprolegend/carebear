@@ -62,11 +62,11 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
         const users = await fetchUsersInGroup(currentGroupID);
         setAssigneeOptions(
           users.map((user: any) => ({
-            label: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email,
-            value: user._id,
-            imageURL: user.imageURL || user.profilePicture || null,
-            firstName: user.firstName,
-            lastName: user.lastName
+            label: user.fullName || user.email || 'Unknown User',
+            value: user.userID, // Changed from user._id to user.userID
+            imageURL: user.imageURL || null,
+            firstName: user.fullName?.split(' ')[0] || '',
+            lastName: user.fullName?.split(' ')[1] || ''
           }))
         );
       } catch (e) {
@@ -81,79 +81,138 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
   };
 
   const handleSaveManualTask = async () => {
-    // Validate all required fields
-    if (!manualForm.title.trim()) {
-      Alert.alert("Required", "Task title is required.");
-      return;
-    }
-    if (!manualForm.description || !manualForm.description.trim()) {
-      Alert.alert("Required", "Description is required.");
-      return;
-    }
-    if (!manualForm.startDateString || !manualForm.startDateString.trim()) {
-      Alert.alert("Required", "Start date is required.");
-      return;
-    }
-    if (!manualForm.endDateString || !manualForm.endDateString.trim()) {
-      Alert.alert("Required", "End date is required.");
-      return;
-    }
-    if (!manualForm.timesOfDayInput || !manualForm.timesOfDayInput.trim()) {
-      Alert.alert("Required", "Times of day is required.");
-      return;
-    }
-    if (!manualForm.recurrenceRule || !manualForm.recurrenceRule.trim()) {
-      Alert.alert("Required", "Recurrence is required.");
-      return;
-    }
-    if (!manualForm.priority || !manualForm.priority.trim()) {
-      Alert.alert("Required", "Priority is required.");
-      return;
-    }
-    if (!manualForm.assignedToId || !manualForm.assignedToId.trim()) {
-      Alert.alert("Required", "Assigned To (User ID) is required.");
-      return;
-    }
-    if (!currentGroupID || !currentUserID) {
-      Alert.alert("Error", "User or Group information is missing. Cannot create task.");
-      return;
-    }
-    setIsLoading(true);
+  // Validate all required fields
+  if (!manualForm.title.trim()) {
+    Alert.alert("Required", "Task title is required.");
+    return;
+  }
+  if (!manualForm.description || !manualForm.description.trim()) {
+    Alert.alert("Required", "Description is required.");
+    return;
+  }
+  if (!manualForm.startDateString || !manualForm.startDateString.trim()) {
+    Alert.alert("Required", "Start date is required.");
+    return;
+  }
+  if (!manualForm.endDateString || !manualForm.endDateString.trim()) {
+    Alert.alert("Required", "End date is required.");
+    return;
+  }
+  if (!manualForm.timesOfDayInput || !manualForm.timesOfDayInput.trim()) {
+    Alert.alert("Required", "Times of day is required.");
+    return;
+  }
+  if (!manualForm.recurrenceRule || !manualForm.recurrenceRule.trim()) {
+    Alert.alert("Required", "Recurrence is required.");
+    return;
+  }
+  if (!manualForm.priority || !manualForm.priority.trim()) {
+    Alert.alert("Required", "Priority is required.");
+    return;
+  }
+  if (!manualForm.assignedToId || !manualForm.assignedToId.trim()) {
+    Alert.alert("Required", "Assigned To (User ID) is required.");
+    return;
+  }
+  if (!currentGroupID || !currentUserID) {
+    Alert.alert("Error", "User or Group information is missing. Cannot create task.");
+    return;
+  }
+
+  // Parse dates and calculate date range
+  const startDate = new Date(manualForm.startDateString);
+  const endDate = new Date(manualForm.endDateString);
+  
+  // Validate date range
+  if (endDate < startDate) {
+    Alert.alert("Invalid Dates", "End date cannot be before start date.");
+    return;
+  }
+  
+  // Calculate number of days between start and end date (inclusive)
+  const dayDifference = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  
+  setIsLoading(true);
     try {
-      const reminderPayload: any = {};
-      if (manualForm.startDateString) reminderPayload.start_date = manualForm.startDateString;
-      if (manualForm.endDateString) reminderPayload.end_date = manualForm.endDateString;
-      if (manualForm.timesOfDayInput) reminderPayload.times_of_day = manualForm.timesOfDayInput.split(',').map(t => t.trim()).filter(t => t.match(/^\d{2}:\d{2}:\d{2}$/));
-      if (manualForm.recurrenceRule && manualForm.recurrenceRule !== 'NONE') reminderPayload.recurrence_rule = manualForm.recurrenceRule;
-
-      // Fix assignedTo for backend: only send if present, and as { _id: string }
-      let assignedToPayload: any = undefined;
-      if (manualForm.assignedToId && manualForm.assignedToId !== '') {
-        assignedToPayload = { _id: manualForm.assignedToId };
-      }
-      // Add assignedBy for backend
-      let assignedByPayload: any = undefined;
-      if (currentUserID) {
-        assignedByPayload = { _id: currentUserID };
-      }
-      const taskToCreateForBackend = {
-        title: manualForm.title,
-        description: manualForm.description ?? undefined,
-        groupID: currentGroupID,
-        assignedTo: assignedToPayload,
-        assignedBy: assignedByPayload,
-        priority: manualForm.priority || 'medium',
-        reminder: Object.keys(reminderPayload).length > 0 ? reminderPayload : undefined,
-      };
-
-      const createdTask = await createManualTaskAPI(taskToCreateForBackend);
-      Alert.alert("Success", `Task \"${createdTask.title}\" created!`, [{
-        text: "OK",
-        onPress: () => {
-          setManualForm({ title: '', description: '', startDateString: '', endDateString: '', timesOfDayInput: '', recurrenceRule: 'NONE', priority: 'medium', assignedToId: null });
-          if (onTaskCreated) onTaskCreated();
+      // Track successfully created tasks
+      let tasksCreated = 0;
+      
+      // Create a task for each day in the range
+      for (let i = 0; i < dayDifference; i++) {
+        // Create a new date for this day
+        const currentDate = new Date(startDate);
+        currentDate.setDate(startDate.getDate() + i);
+        
+        // Format as ISO date string (YYYY-MM-DD)
+        const currentDateString = currentDate.toISOString().slice(0, 10);
+        
+        // Create reminder payload for this day (keep same structure as original)
+        const reminderPayload: any = {};
+        reminderPayload.start_date = currentDateString;
+        reminderPayload.end_date = currentDateString;
+        
+        // Keep the time_of_day format the same
+        if (manualForm.timesOfDayInput) {
+          reminderPayload.times_of_day = [manualForm.timesOfDayInput];
         }
-      }]);
+        
+        // Add recurrence if applicable
+        if (manualForm.recurrenceRule && manualForm.recurrenceRule !== 'NONE') {
+          reminderPayload.recurrence_rule = manualForm.recurrenceRule;
+        }
+
+        // Fix assignedTo for backend: only send if present
+        let assignedToPayload: any = undefined;
+        if (manualForm.assignedToId && manualForm.assignedToId !== '') {
+          assignedToPayload = { _id: manualForm.assignedToId };
+        }
+        
+        // Add assignedBy for backend
+        let assignedByPayload: any = undefined;
+        if (currentUserID) {
+          assignedByPayload = { _id: currentUserID };
+        }
+        
+        // Create task with the day-specific data
+        const taskToCreateForBackend = {
+          title: dayDifference > 1 ? `${manualForm.title} (Day ${i+1})` : manualForm.title,
+          description: manualForm.description ?? undefined,
+          groupID: currentGroupID,
+          assignedTo: assignedToPayload,
+          assignedBy: assignedByPayload,
+          priority: manualForm.priority || 'medium',
+          reminder: Object.keys(reminderPayload).length > 0 ? reminderPayload : undefined,
+          datetime: currentDateString // Add the specific date for this task
+        };
+
+        // Create this day's task
+        await createManualTaskAPI(taskToCreateForBackend);
+        tasksCreated++;
+      }
+
+      // Show success message
+      Alert.alert(
+        "Success", 
+        tasksCreated > 1 
+          ? `Created ${tasksCreated} tasks from ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}` 
+          : `Task "${manualForm.title}" created!`, 
+        [{
+          text: "OK",
+          onPress: () => {
+            setManualForm({ 
+              title: '', 
+              description: '', 
+              startDateString: '', 
+              endDateString: '', 
+              timesOfDayInput: '', 
+              recurrenceRule: 'NONE', 
+              priority: 'medium', 
+              assignedToId: null 
+            });
+            if (onTaskCreated) onTaskCreated();
+          }
+        }]
+      );
     } catch (error: any) {
       Alert.alert("Manual Creation Error", error?.message || "Failed to create task manually.");
     } finally {

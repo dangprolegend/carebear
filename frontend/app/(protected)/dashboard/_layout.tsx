@@ -64,7 +64,7 @@ export default function DashboardLayout() {
           
           // Get groupID directly from API instead of using the cache function
           try {
-            const groupResponse = await fetch(`https://carebear-backend.onrender.com/api/users/${backendUserID}/group`);
+            const groupResponse = await fetch(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${backendUserID}/group`);
             const groupData = await groupResponse.json();
             
             if (groupData && groupData.groupID) {
@@ -130,8 +130,14 @@ export default function DashboardLayout() {
 
   const renderIcon = (icon: any, isActive: boolean) => {
     return (
-      <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center', marginBottom: 4 }}>
-        {/* Background shade for active tab */}
+      <View style={{ 
+        position: 'relative', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        width: 64,  // Fixed width for all tabs
+        height: 40  // Fixed height for all tabs
+      }}>
+      {/* Background shade for active tab */}
         {isActive && (
           <View
             style={{
@@ -258,36 +264,42 @@ export default function DashboardLayout() {
 
         <View className="flex-1">
           {/* Main Content */}
-          <View className="flex-1 mb-16">
+          <View className="flex-1">
             <Slot />
           </View>
 
-          {/* Tab Navigation - Fixed at bottom */}
-          <View className="absolute bottom-0 left-0 right-0 bg-white shadow-lg">
-            <View className="flex-row justify-around items-center py-3 px-2">
-              {tabs.map((tab) => {
-                const isActive = segments.join('/').includes(tab.route); // Check active tab
-                return (
-                  <Pressable
-                    key={tab.name}
-                    onPress={() => handleTabPress(tab.route)}
-                    className={`items-center py-2 px-4 ${isActive ? 'rounded-lg bg-transparent overflow-hidden' : ''}`}
-                  >
-                    {/* Icon */}
-                    {renderIcon(tab.icon, isActive)}
-
-                    {/* Tab Name */}
-                    <Text
-                      className={`text-xs mt-1 font-['Lato'] tracking-[0.3px] z-10 ${
-                        isActive ? 'font-bold text-[#1A0933]' : 'text-gray-500'
-                      }`}
+          {/* Tab Navigation - Fixed at bottom with proper spacing */}
+          <View className="bg-white">
+            {/* Horizontal separator line */}
+            <View style={{ height: 1, backgroundColor: '#2A1800' }} />
+            <SafeAreaView edges={['bottom']}>
+              <View className="flex-row justify-around items-center py-3 px-2 min-h-[70px]">
+                {tabs.map((tab) => {
+                  const isActive = segments.join('/').includes(tab.route); // Check active tab
+                  return (
+                    <Pressable
+                      key={tab.name}
+                      onPress={() => handleTabPress(tab.route)}
+                      className={`items-center py-2 px-3 flex-1 max-w-[90px] ${isActive ? 'rounded-lg bg-transparent overflow-hidden' : ''}`}
                     >
-                      {tab.name}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+                      {/* Icon */}
+                      {renderIcon(tab.icon, isActive)}
+
+                      {/* Tab Name */}
+                      <Text
+                        className={`text-xs mt-1 font-['Lato'] tracking-[0.3px] z-10 text-center ${
+                          isActive ? 'font-bold text-[#1A0933]' : 'text-gray-500'
+                        }`}
+                        numberOfLines={1}
+                        adjustsFontSizeToFit
+                      >
+                        {tab.name}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </SafeAreaView>
           </View>
         </View>
       </SafeAreaView>
