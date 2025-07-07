@@ -119,16 +119,60 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
   };
 
   const sanitizeTaskForBackend = (task: FrontendTaskType) => {
-    const { description, assignedTo, _id, datetime, type, title, detail, subDetail, checked, priority, status } = task;
+    const { description, assignedTo, _id, datetime, type, title, detail, subDetail, checked, priority, status, endDate } = task;
     const payload: any = {
       title,
       description: description ?? undefined,
       priority: priority ?? undefined,
       status: status ?? undefined,
     };
+    
     if (typeof assignedTo === 'string') {
       payload.assignedTo = assignedTo;
     }
+    
+    // Map frontend fields to backend reminder structure
+    const reminderData: any = {};
+    let hasReminderData = false;
+    
+    if (datetime) {
+      reminderData.start_date = datetime;
+      hasReminderData = true;
+    }
+    
+    if (endDate) {
+      reminderData.end_date = endDate;
+      hasReminderData = true;
+    }
+    
+    if (detail) {
+      // Convert single time string to array format expected by backend
+      reminderData.times_of_day = [detail];
+      hasReminderData = true;
+    }
+    
+    if (subDetail && subDetail !== 'NONE') {
+      // Convert frontend recurrence format to backend format
+      switch (subDetail) {
+        case 'DAILY':
+          reminderData.recurrence_rule = 'FREQ=DAILY;INTERVAL=1';
+          break;
+        case 'WEEKLY':
+          reminderData.recurrence_rule = 'FREQ=WEEKLY;INTERVAL=1';
+          break;
+        case 'MONTHLY':
+          reminderData.recurrence_rule = 'FREQ=MONTHLY;INTERVAL=1';
+          break;
+        default:
+          reminderData.recurrence_rule = undefined;
+      }
+      hasReminderData = true;
+    }
+    
+    if (hasReminderData) {
+      payload.reminder = reminderData;
+    }
+    
     return payload;
   };
 
