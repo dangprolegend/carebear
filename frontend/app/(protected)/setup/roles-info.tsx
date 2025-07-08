@@ -82,7 +82,7 @@ export default function RolesInfo() {
         {/* Navigation Buttons */}
         <View className="flex-row gap-12 mt-12">
           <TouchableOpacity
-            className="flex-1 py-4 px-3 bg-white border-2 border-[#2A1800] rounded-full items-center justify-center"
+            className="flex-1 py-4 px-3 bg-white border border-[#DDD] rounded-full items-center justify-center"
             onPress={handleBack}
           >
             <Text className="text-[#2A1800] font-lato text-[16px] font-semibold">Back</Text>
