@@ -1212,18 +1212,28 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                     contentContainerStyle={{ 
                       paddingHorizontal: 16, 
                       paddingVertical: 8,
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: 16 // Ensure consistent gap between cards
+                      minWidth: '100%', // Make sure the content container takes full width
                     }}
                   >
                     {filteredTasks.filter(task => task.priority === 'high').length === 0 ? (
-                      <View className="items-center justify-center py-8 px-4 w-64">
-                        <Text className="text-gray-500 text-center">
-                          You have no assigned task.{'\n'}Add task and set priority
-                        </Text>
-                      </View>
-                    ) : (
+                    <View style={{ 
+                      flex: 1,
+                      width: '100%', 
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingVertical: 24,
+                      paddingHorizontal: 16
+                    }}>
+                      <Text style={{ 
+                        color: '#808080', 
+                        textAlign: 'center',
+                        fontSize: 14,
+                        lineHeight: 20
+                      }}>
+                        You have no assigned task.{'\n'}Add task and set priority
+                      </Text>
+                    </View>
+                  ) : (
                       filteredTasks.filter(task => task.priority === 'high').map((task, index) => {
                         // Format the time from datetime or detail
                         const taskTime = task.detail || 
