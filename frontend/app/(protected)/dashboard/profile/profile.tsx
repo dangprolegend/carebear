@@ -6,6 +6,7 @@ import { useAuth, useUser } from '@clerk/clerk-expo';
 import axios from 'axios';
 import CalendarStrip from '~/components/CalendarStrip';
 import CircularProgress from '~/components/CircularProgress';
+import StravaConnectSection from '~/components/StravaConnectButton'; 
 import Settings from '../../../../assets/icons/settings.png';
 import Heart from '../../../../assets/icons/heart.png';
 import FeedLoading from '~/components/ui/feed-loading';
@@ -36,6 +37,9 @@ export default function Profile() {
 
   const [taskCompletion, setTaskCompletion] = useState<number>(0);
   const [numFamilies, setNumFamilies] = useState<number>(0);
+
+  // Add state for Strava connection status
+  const [isStravaConnected, setIsStravaConnected] = useState<boolean>(false);
 
   const moods = [
     { id: 'happy', emoji: '😊', label: 'Happy', value: 'happy' },
@@ -89,9 +93,14 @@ export default function Profile() {
     return Math.max(0, daysDifference); 
   };
 
+  // Add handler for Strava connection changes
+  const handleStravaConnectionChange = (isConnected: boolean) => {
+    setIsStravaConnected(isConnected);
+  };
+
   const fetchNumGroups = async (userID: string) => {
       try {
-        const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/allGroups`);
+        const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/allGroups`);
         const numGroups = response.data.totalGroups || 0;
         setNumFamilies(numGroups);
         return numGroups;
@@ -356,15 +365,8 @@ export default function Profile() {
           <CalendarStrip selectedDate={selectedDate} setSelectedDate={setSelectedDate} userID={userID} />
       </View>
 
-        <View className="flex flex-col items-start gap-[8px] p-4 rounded-lg bg-[#FAE5CA] mt-10 w-5/6 self-center">
-          <View className="flex flex-row items-center gap-2">
-            <View className="flex w-6 h-6 p-0.5 justify-center items-center gap-2 aspect-square rounded-full border border-[#2A1800] bg-[#198AE9]">
-              <Image source={Heart} className='w-4 h-4'/>
-            </View>
-            <Text className='text-[#2A1800] font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]'>{daysHealthy}</Text>
-        </View>
-          <Text className='text-[#2A1800] font-lato text-[16px] font-light leading-[24px] tracking-[-0.1px]'>{getDayText(daysHealthy)} Healthy</Text>
-        </View>
+      {/* Strava Connect */}
+      <StravaConnectSection onConnectionChange={handleStravaConnectionChange} />
 
     </ScrollView>
   );
