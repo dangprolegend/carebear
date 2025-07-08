@@ -38,7 +38,7 @@ export default function HealthInputScreen() {
       }
 
       // Step 1: Fetch userID using clerkID
-      const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+      const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
       const userID = userResponse.data.userID;
       console.log('Fetching userID for clerkID:', userID);
       
@@ -53,7 +53,7 @@ export default function HealthInputScreen() {
         lastName,
       };
 
-      await axios.patch(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/onboarding`, updateData);
+      await axios.patch(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/onboarding`, updateData);
       router.push('/setup/join-family');
     } catch (error) {
       console.error('Error updating user information:', error);
@@ -209,7 +209,7 @@ export default function HealthInputScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+            className="bg-[#2A1800] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
             onPress={handleSubmit}
           >
             <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Next</Text>

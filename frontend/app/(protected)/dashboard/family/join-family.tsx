@@ -21,12 +21,12 @@ export default function JoinFamilyScreen() {
         return;
       }
       // Step 1: Fetch userID using clerkID
-      const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+      const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
       const userID = userResponse.data.userID;
       console.log('Fetching userID for clerkID:', userID);
       // Step 2: Join group with provided group ID
       const updateData = { groupID: groupId };
-      await axios.patch(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/joinGroup`, updateData);
+      await axios.patch(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/joinGroup`, updateData);
       router.push('/(protected)/dashboard/family/congrats');
     } catch (error) {
       console.error('Error joining group:', error);

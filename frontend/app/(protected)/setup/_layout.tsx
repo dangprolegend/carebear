@@ -8,6 +8,7 @@ const setupSteps = [
   'health-input',
   'join-family',
   'create-family' ,
+  'roles-info',
   'congrats'
 ];
 
@@ -32,7 +33,7 @@ function SetupProgressIndicator({ currentStepIndex }: SetupProgressIndicatorProp
       {Array.from({ length: totalVisibleDots }).map((_, index) => {
         const isActive = index === activeVisibleDotIndex;
         const widthClass = isActive ? 'w-8' : 'w-4';
-        const bgClass = isActive ? 'bg-primary dark:bg-primary' : 'bg-gray-300 dark:bg-gray-200';
+        const bgClass = isActive ? 'bg-primary dark:bg-primary' : 'bg-[#2A1800] dark:bg-[#2A1800]';
 
         return (
           <View

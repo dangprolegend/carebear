@@ -81,7 +81,7 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
   const { getToken } = useAuth();
 
   // API base URL - use the same as your other API calls
-  const API_BASE_URL = "https://mature-catfish-cheaply.ngrok-free.app";
+  const API_BASE_URL = "https://carebear-carebearvtmps-projects.vercel.app";
   
   // Function to get emoji for mood
   const getMoodEmoji = (mood: string): string => {
