@@ -758,65 +758,91 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
   ? getTasksForCareReceiver(localTasks).filter(isTaskForSelectedDate)
   : localTasks.filter(isTaskForSelectedDate);
 
-  // Add this effect to load family members and set up both filters
-  useEffect(() => {
-    const loadFamilyMembers = async () => {
-      if (isCareReceiver) return;
-      
-      try {
-        setLoadingMembers(true);
-        const groupID = getCurrentGroupID();
+  // Replace the loadFamilyMembers function inside useEffect around line ~800
+    useEffect(() => {
+      const loadFamilyMembers = async () => {
+        if (isCareReceiver) return;
         
-        if (!groupID) {
-          console.error("No group ID available to load family members");
-          return;
-        }
-        
-        const members = await fetchUsersInGroup(groupID);
-        console.log(members);
-        
-        // Map the API response to our format based on the new structure
-        const mappedMembers = members.map(member => ({
-          id: member.userID,  // Use userID instead of _id
-          name: member.fullName || 'Unknown User',  // Use fullName instead of firstName/lastName
-          avatar: member.imageURL || 'https://via.placeholder.com/40',
-          role: member.role
-        }));
-        
-        setFamilyMembers(mappedMembers);
-
-        // Find myself in the members list and set as default for who assigned tasks
-        if (user) {
-          const currentUserId = user.id;
-          // Look for a member with matching clerkID
-          const myself = members.find(member => member.clerkID === currentUserId);
+        try {
+          setLoadingMembers(true);
+          const groupID = getCurrentGroupID();
           
-          if (myself) {
-            const myMemberInfo = {
-              id: myself._id,
-              name: myself.firstName && myself.lastName 
-                ? `${myself.firstName} ${myself.lastName}`
-                : myself.firstName || myself.email || 'Me',
-              avatar: myself.imageURL || 'https://via.placeholder.com/40'
-            };
-            
-            // Set myself as default for "Assigned by" filter
-            setSelectedAssignedBy(myMemberInfo);
-            
-            // Also set myself as default for "Whose Task" filter
-            // setSelectedTaskAssignee(myMemberInfo);
-            // setTaskFilterLabel(`${myMemberInfo.name}'s Tasks`);
+          if (!groupID) {
+            console.error("No group ID available to load family members");
+            return;
           }
+          
+          const members = await fetchUsersInGroup(groupID);
+          console.log("Raw members data:", members);
+          
+          // Map the API response to our format - FIXED to include all needed fields
+          const mappedMembers = members.map(member => ({
+            id: member._id || member.userID, // Use _id first, then fallback to userID
+            name: member.fullName || 
+                  (member.firstName && member.lastName ? `${member.firstName} ${member.lastName}` : 
+                  member.firstName || member.email || 'Unknown User'),
+            avatar: member.imageURL || 'https://via.placeholder.com/40',
+            role: member.role,
+            clerkID: member.clerkID // Keep this for matching current user
+          }));
+          
+          console.log("Mapped members:", mappedMembers);
+          setFamilyMembers(mappedMembers);
+
+          // Find myself in the members list using clerkID
+          if (user) {
+            const currentUserId = user.id;
+            // Look for a member with matching clerkID
+            const myself = mappedMembers.find(member => member.clerkID === currentUserId);
+            
+            if (myself) {
+              console.log("Found myself in members:", myself);
+              // Set myself as default for "Assigned by" filter - USING THE MAPPED OBJECT
+              setSelectedAssignedBy(myself);
+            } else {
+              console.log("Could not find myself in members list");
+              console.log("Current user ID:", currentUserId);
+              console.log("Available clerkIDs:", mappedMembers.map(m => m.clerkID));
+              
+              // If no match by clerkID, try to find by name or email matching the user's info
+              const currentUserName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+              const currentUserEmail = user.emailAddresses?.[0]?.emailAddress;
+              
+              const possibleMatch = mappedMembers.find(m => 
+                m.name.includes(currentUserName) || 
+                (currentUserEmail && m.name.includes(currentUserEmail))
+              );
+              
+              if (possibleMatch) {
+                console.log("Found possible match by name/email:", possibleMatch);
+                setSelectedAssignedBy(possibleMatch);
+              } else {
+                // Last resort: create a "Me" entry if user isn't found in the group
+                const meEntry = {
+                  id: currentUserId, // Use the clerk ID as fallback
+                  name: currentUserName || currentUserEmail || "Me",
+                  avatar: user.imageUrl || 'https://via.placeholder.com/40',
+                  role: 'member',
+                  clerkID: currentUserId
+                };
+                
+                // Add this entry to family members
+                const updatedMembers = [meEntry, ...mappedMembers];
+                setFamilyMembers(updatedMembers);
+                setSelectedAssignedBy(meEntry);
+                console.log("Created Me entry:", meEntry);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error loading family members:', error);
+        } finally {
+          setLoadingMembers(false);
         }
-      } catch (error) {
-        console.error('Error loading family members:', error);
-      } finally {
-        setLoadingMembers(false);
-      }
-    };
-    
-    loadFamilyMembers();
-  }, [selectedGroupName, isCareReceiver, user]);
+      };
+      
+      loadFamilyMembers();
+    }, [selectedGroupName, isCareReceiver, user]);
 
   // Add this useEffect to load tasks when the default group is selected
   useEffect(() => {
@@ -896,6 +922,10 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
 
   // State for filter modal visibility
   const [showFilterModal, setShowFilterModal] = useState(false);
+
+  // Add these new state variables for controlling the dropdown sections
+  const [showAssignedToDropdown, setShowAssignedToDropdown] = useState(false);
+  const [showAssignedByDropdown, setShowAssignedByDropdown] = useState(false);
 
   return (
     <>
@@ -1356,6 +1386,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                     <View 
                       style={{
                         width: '90%',
+                        maxHeight: '80%',
                         backgroundColor: 'white',
                         borderRadius: 8,
                         padding: 16,
@@ -1369,50 +1400,224 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                         </Pressable>
                       </View>
                       
-                      <View 
-                        style={{
-                          borderWidth: 1,
-                          borderColor: '#DBC3A0',
-                          borderRadius: 8,
-                          overflow: 'hidden'
-                        }}
-                      >
-                        {/* Assigned to option */}
-                        <Pressable
+                      <ScrollView style={{ maxHeight: 500 }}>
+                        <View 
                           style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: 16,
-                            borderBottomWidth: 1,
-                            borderBottomColor: '#DBC3A0',
-                          }}
-                          onPress={() => {
-                            setShowFilterModal(false);
-                            setShowWhoseTaskFilter(true);
+                            borderWidth: 1,
+                            borderColor: '#DBC3A0',
+                            borderRadius: 8,
+                            overflow: 'hidden'
                           }}
                         >
-                          <Text style={{ fontSize: 16, color: '#2A1800' }}>Assigned to</Text>
-                          <MaterialIcons name="chevron-right" size={24} color="#2A1800" />
-                        </Pressable>
-                        
-                        {/* Assigned by option */}
-                        <Pressable
-                          style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: 16,
-                          }}
-                          onPress={() => {
-                            setShowFilterModal(false);
-                            setShowAssignedByFilter(true);
-                          }}
-                        >
-                          <Text style={{ fontSize: 16, color: '#2A1800' }}>Assigned by</Text>
-                          <MaterialIcons name="chevron-right" size={24} color="#2A1800" />
-                        </Pressable>
-                      </View>
+                          {/* Assigned to section */}
+                          <View>
+                            <Pressable
+                              style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: 16,
+                                borderBottomWidth: 1,
+                                borderBottomColor: '#DBC3A0',
+                              }}
+                              onPress={() => setShowAssignedToDropdown(!showAssignedToDropdown)}
+                            >
+                              <Text style={{ fontSize: 16, color: '#2A1800' }}>Assigned to</Text>
+                              <MaterialIcons 
+                                name={showAssignedToDropdown ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
+                                size={24} 
+                                color="#2A1800" 
+                              />
+                            </Pressable>
+                            
+                            {/* Assigned to dropdown content */}
+                            {showAssignedToDropdown && (
+                              <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                                {/* All option */}
+                                <Pressable
+                                  style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    paddingVertical: 8,
+                                  }}
+                                  onPress={() => handleTaskAssigneeChange(null)}
+                                >
+                                  <View className="flex-row items-center">
+                                    <View 
+                                      style={{
+                                        width: 20,
+                                        height: 20,
+                                        borderRadius: 4,
+                                        borderWidth: 2,
+                                        borderColor: '#2A1800',
+                                        marginRight: 12,
+                                        backgroundColor: selectedTaskAssignee.length === 0 ? '#2A1800' : 'transparent',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                      }}
+                                    >
+                                      {selectedTaskAssignee.length === 0 && (
+                                        <MaterialIcons name="check" size={12} color="white" />
+                                      )}
+                                    </View>
+                                    <Text style={{ fontSize: 14, color: '#2A1800' }}>All</Text>
+                                  </View>
+                                </Pressable>
+                                
+                                {/* Family members list */}
+                                {familyMembers.map((member, index) => {
+                                  const isSelected = selectedTaskAssignee.some(selected => selected.id === member.id);
+                                  
+                                  return (
+                                    <Pressable
+                                      key={member.id}
+                                      style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        paddingVertical: 8,
+                                      }}
+                                      onPress={() => handleTaskAssigneeChange(member)}
+                                    >
+                                      <View className="flex-row items-center">
+                                        <View 
+                                          style={{
+                                            width: 20,
+                                            height: 20,
+                                            borderRadius: 4,
+                                            borderWidth: 2,
+                                            borderColor: '#2A1800',
+                                            marginRight: 12,
+                                            backgroundColor: isSelected ? '#2A1800' : 'transparent',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                          }}
+                                        >
+                                          {isSelected && (
+                                            <MaterialIcons name="check" size={12} color="white" />
+                                          )}
+                                        </View>
+                                        <Text style={{ fontSize: 14, color: '#2A1800', marginRight: 8 }}>
+                                          {member.name}
+                                        </Text>
+                                      </View>
+                                      <Image
+                                        source={{ uri: member.avatar }}
+                                        style={{ width: 24, height: 24, borderRadius: 12 }}
+                                      />
+                                    </Pressable>
+                                  );
+                                })}
+                              </View>
+                            )}
+                          </View>
+                          
+                          {/* Assigned by section */}
+                          <View>
+                            <Pressable
+                              style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                padding: 16,
+                                borderBottomWidth: showAssignedByDropdown ? 1 : 0,
+                                borderBottomColor: '#DBC3A0',
+                              }}
+                              onPress={() => setShowAssignedByDropdown(!showAssignedByDropdown)}
+                            >
+                              <Text style={{ fontSize: 16, color: '#2A1800' }}>Assigned by</Text>
+                              <MaterialIcons 
+                                name={showAssignedByDropdown ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
+                                size={24} 
+                                color="#2A1800" 
+                              />
+                            </Pressable>
+                            
+                            {/* Assigned by dropdown content */}
+                            {showAssignedByDropdown && (
+                              <View style={{ paddingHorizontal: 16, paddingBottom: 16 }}>
+                                {/* All option */}
+                                <Pressable
+                                  style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    paddingVertical: 8,
+                                  }}
+                                  onPress={() => handleAssignedByChange(null)}
+                                >
+                                  <View className="flex-row items-center">
+                                    <View 
+                                      style={{
+                                        width: 20,
+                                        height: 20,
+                                        borderRadius: 4,
+                                        borderWidth: 2,
+                                        borderColor: '#2A1800',
+                                        marginRight: 12,
+                                        backgroundColor: !selectedAssignedBy ? '#2A1800' : 'transparent',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                      }}
+                                    >
+                                      {!selectedAssignedBy && (
+                                        <MaterialIcons name="check" size={12} color="white" />
+                                      )}
+                                    </View>
+                                    <Text style={{ fontSize: 14, color: '#2A1800' }}>All</Text>
+                                  </View>
+                                </Pressable>
+                                
+                                {/* Family members list */}
+                                {familyMembers.map((member, index) => {
+                                  const isSelected = selectedAssignedBy?.id === member.id;
+                                  
+                                  return (
+                                    <Pressable
+                                      key={member.id}
+                                      style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        paddingVertical: 8,
+                                      }}
+                                      onPress={() => handleAssignedByChange(member)}
+                                    >
+                                      <View className="flex-row items-center">
+                                        <View 
+                                          style={{
+                                            width: 20,
+                                            height: 20,
+                                            borderRadius: 4,
+                                            borderWidth: 2,
+                                            borderColor: '#2A1800',
+                                            marginRight: 12,
+                                            backgroundColor: isSelected ? '#2A1800' : 'transparent',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                          }}
+                                        >
+                                          {isSelected && (
+                                            <MaterialIcons name="check" size={12} color="white" />
+                                          )}
+                                        </View>
+                                        <Text style={{ fontSize: 14, color: '#2A1800', marginRight: 8 }}>
+                                          {member.name}
+                                        </Text>
+                                      </View>
+                                      <Image
+                                        source={{ uri: member.avatar }}
+                                        style={{ width: 24, height: 24, borderRadius: 12 }}
+                                      />
+                                    </Pressable>
+                                  );
+                                })}
+                              </View>
+                            )}
+                          </View>
+                        </View>
+                      </ScrollView>
                     </View>
                   </Pressable>
                 </Modal>
