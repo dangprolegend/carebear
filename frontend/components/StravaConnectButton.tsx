@@ -135,10 +135,10 @@ const StravaConnectSection: React.FC<StravaConnectSectionProps> = ({ onConnectio
         <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">
           Automatic Tracking
         </Text>
-        <Pressable onPress={refreshAuthStatus}>
-          <View className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-            <Text className="text-gray-600 text-xs">↻</Text>
-          </View>
+        <Pressable onPress={handleDisconnect}>
+          <Text className="text-[#2A1800] font-lato text-[14px] font-medium underline">
+            Disconnect
+          </Text>
         </Pressable>
       </View>
 
@@ -151,7 +151,7 @@ const StravaConnectSection: React.FC<StravaConnectSectionProps> = ({ onConnectio
       </View>
 
       {/* Weekly Summary */}
-      {isLoadingSummary ? (
+      {/* {isLoadingSummary ? (
         <View className="bg-[#FAE5CA] rounded-lg p-4 mb-4 items-center">
           <ActivityIndicator size="small" color="#2A1800" />
         </View>
@@ -201,7 +201,7 @@ const StravaConnectSection: React.FC<StravaConnectSectionProps> = ({ onConnectio
             </Pressable>
           </View>
         </View>
-      ) : null}
+      ) : null} */}
     </View>
   );
 };
