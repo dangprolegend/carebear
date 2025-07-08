@@ -1213,6 +1213,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                       paddingHorizontal: 16, 
                       paddingVertical: 8,
                       minWidth: '100%', // Make sure the content container takes full width
+                      gap: 16,
                     }}
                   >
                     {filteredTasks.filter(task => task.priority === 'high').length === 0 ? (
