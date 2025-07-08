@@ -57,13 +57,13 @@ const AiTaskInputScreen = () => {
         setClerkAuthTokenForApiService(token);
 
         // Get backend userID from Clerk ID
-        const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+        const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
         const backendUserID = userResponse.data.userID;
         setCurrentUserID(backendUserID);
         setCurrentUserIDForApiService(backendUserID);
 
         // Get groupID from backend userID
-        const groupResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${backendUserID}/group`);
+        const groupResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${backendUserID}/group`);
         setCurrentGroupID(groupResponse.data.groupID);
         setCurrentGroupIDForApiService(groupResponse.data.groupID);
       }

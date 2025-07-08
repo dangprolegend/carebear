@@ -70,7 +70,7 @@ const throttleRequest = async <T>(
   }
 };
 
-const API_BASE_URL = "https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app";
+const API_BASE_URL = "https://carebear-carebearvtmps-projects.vercel.app";
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);

@@ -119,16 +119,60 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
   };
 
   const sanitizeTaskForBackend = (task: FrontendTaskType) => {
-    const { description, assignedTo, _id, datetime, type, title, detail, subDetail, checked, priority, status } = task;
+    const { description, assignedTo, _id, datetime, type, title, detail, subDetail, checked, priority, status, endDate } = task;
     const payload: any = {
       title,
       description: description ?? undefined,
       priority: priority ?? undefined,
       status: status ?? undefined,
     };
+    
     if (typeof assignedTo === 'string') {
       payload.assignedTo = assignedTo;
     }
+    
+    // Map frontend fields to backend reminder structure
+    const reminderData: any = {};
+    let hasReminderData = false;
+    
+    if (datetime) {
+      reminderData.start_date = datetime;
+      hasReminderData = true;
+    }
+    
+    if (endDate) {
+      reminderData.end_date = endDate;
+      hasReminderData = true;
+    }
+    
+    if (detail) {
+      // Convert single time string to array format expected by backend
+      reminderData.times_of_day = [detail];
+      hasReminderData = true;
+    }
+    
+    if (subDetail && subDetail !== 'NONE') {
+      // Convert frontend recurrence format to backend format
+      switch (subDetail) {
+        case 'DAILY':
+          reminderData.recurrence_rule = 'FREQ=DAILY;INTERVAL=1';
+          break;
+        case 'WEEKLY':
+          reminderData.recurrence_rule = 'FREQ=WEEKLY;INTERVAL=1';
+          break;
+        case 'MONTHLY':
+          reminderData.recurrence_rule = 'FREQ=MONTHLY;INTERVAL=1';
+          break;
+        default:
+          reminderData.recurrence_rule = undefined;
+      }
+      hasReminderData = true;
+    }
+    
+    if (hasReminderData) {
+      payload.reminder = reminderData;
+    }
+    
     return payload;
   };
 
@@ -209,7 +253,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
 
 
   return (
-    <View className="mt-4 pt-4">
+    <View className="pb-3">
       <View className="flex-row border-b border-slate-200">
         {[...Array(NUM_TABS)].map((_, idx) => (
           <Pressable
@@ -229,7 +273,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <Text className="font-semibold mb-2">Task Name</Text>
+        <Text className="font-semibold mt-8 mb-2">Task Name</Text>
         <TextInput
           className="border rounded-lg px-3 py-3 mb-8"
           placeholder="Task Name"
