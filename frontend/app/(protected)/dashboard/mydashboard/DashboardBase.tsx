@@ -1163,33 +1163,84 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
             {showHighPrioritySection && (
               <View className="mb-0 pt-7">
                 <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
-                  <Text className="text-lg font-semibold">High Priority Today</Text>
+                  <Text className="text-lg font-semibold text-[#2A1800]">High Priority Today</Text>
                   <Link href="/dashboard/mydashboard/task/createTask" asChild>
                     <Pressable
-                      className="absolute right-6 w-10 h-10 items-center justify-center bg-black rounded-full"
+                      className="w-10 h-10 items-center justify-center bg-black rounded-full"
                     >
                       <MaterialIcons name="add" size={18} color="white" />
                     </Pressable>
                   </Link>
                 </View>
-                <View className="px-4">
-                  {filteredTasks.filter(task => task.priority === 'high').length === 0 ? (
-                    <View className="items-center justify-center py-8">
-                      <Text className="text-gray-500 text-center">
-                        You have no assigned task.{'\n'}Add task and set priority
-                      </Text>
-                    </View>
-                  ) : (
-                    filteredTasks.filter(task => task.priority === 'high').map((task, index) => (
-                      <View
-                        key={index}
-                        className="border border-[#FAE5CA] rounded-lg p-4 mb-4 bg-white"
-                      >
-                        <Text className="text-sm font-semibold text-[#2A1800]">{task.title}</Text>
-                        <Text className="text-xs text-[#666]">{task.description}</Text>
+                <View>
+                  <ScrollView 
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ 
+                      paddingHorizontal: 16, 
+                      paddingVertical: 8,
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 16 // Ensure consistent gap between cards
+                    }}
+                  >
+                    {filteredTasks.filter(task => task.priority === 'high').length === 0 ? (
+                      <View className="items-center justify-center py-8 px-4 w-64">
+                        <Text className="text-gray-500 text-center">
+                          You have no assigned task.{'\n'}Add task and set priority
+                        </Text>
                       </View>
-                    ))
-                  )}
+                    ) : (
+                      filteredTasks.filter(task => task.priority === 'high').map((task, index) => {
+                        // Format the time from datetime or detail
+                        const taskTime = task.detail || 
+                          (task.datetime ? new Date(task.datetime).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                          }) : '');
+                          
+                        return (
+                          <Pressable
+                            key={index}
+                            onPress={() => handleTaskPress(task)}
+                            style={({ pressed }) => [
+                              {
+                                opacity: pressed ? 0.9 : 1,
+                                marginRight: 12,
+                                minWidth: 165,
+                              }
+                            ]}
+                          >
+                            <View 
+                              className="border border-[#2A1800] bg-white p-4"
+                              style={{
+                                borderWidth: 1.5,
+                                borderRadius: 8,
+                                display: 'flex',
+                                alignItems: 'flex-start', // Changed from center to flex-start
+                                gap: 16, // Changed from 24 to 16
+                              }}
+                            >
+                              <Text 
+                                className="text-[#2A1800] font-semibold"
+                                style={{ fontSize: 16 }}
+                                numberOfLines={1}
+                              >
+                                {task.title}
+                              </Text>
+                              <Text 
+                                className="text-[#666]"
+                                style={{ fontSize: 14 }}
+                              >
+                                {taskTime}
+                              </Text>
+                            </View>
+                          </Pressable>
+                        );
+                      })
+                    )}
+                  </ScrollView>
                 </View>
               </View>
             )}
@@ -1576,13 +1627,13 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                     groupTasksByTimeAndType(filteredTasks).map((group, index) => (
                       <View key={index} className="flex-row">
                         {/* Timeline Marker */}
-                        <View className="flex-row items-stretch">                 
+                        {/* <View className="flex-row items-stretch">                 
                           <DashboardTimelineMarker
                             time={group.time}
                             isFirst={index === 0}
                             isLast={index === groupTasksByTimeAndType(filteredTasks).length - 1}
                           />
-                        </View>
+                        </View> */}
 
                         {/* Task Group */}
                         <View className="flex-1 ml-4">
