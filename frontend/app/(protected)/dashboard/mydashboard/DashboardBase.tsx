@@ -894,6 +894,9 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
     }
   }
 
+  // State for filter modal visibility
+  const [showFilterModal, setShowFilterModal] = useState(false);
+
   return (
     <>
       <ScrollView className="flex-1 bg-white">
@@ -1250,374 +1253,169 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
               <View className="mb-0">
                 <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
                   <Text className="text-lg font-semibold text-[#2A1800]">Today Schedule</Text>
-
-                  {/* Group Selector Dropdown */}
-                  {!isCareReceiver && (
-                    <View style = {{paddingTop: 16}}>
-                      <Pressable 
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          setShowTaskFilter(false);
-                          setShowGroupSelector(!showGroupSelector);
-                        }}
-                        style={{
-                          display: 'flex',
-                          width: 153,
-                          height: 44,
-                          padding: 8,
-                          paddingLeft: 12,
-                          paddingRight: 8,
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          flexShrink: 0,
-                          borderRadius: 4, // Assuming var(--radius) is 4px
-                          borderWidth: 1,
-                          borderColor: '#FAE5CA',
-                          backgroundColor: '#FFF',
-                          flexDirection: 'row'
-                        }}
-                      >
-                        <Text className="text-sm mr-2">{selectedGroupName}</Text>
-                        <MaterialIcons 
-                          name={showGroupSelector ? "arrow-drop-up" : "arrow-drop-down"} 
-                          size={20} color="#333" 
-                        />
-                      </Pressable>
-                      
-                      {/* Dropdown menu */}
-                      {showGroupSelector && (
-                        <View
-                          className="absolute top-12 right-0 bg-white rounded-md border border-gray-300 z-10 w-40"
-                          style={{ 
-                            position: 'absolute',
-                            top: 44 + 16, // Height of selector (44) + paddingTop (16)
-                            right: 0,
-                            backgroundColor: 'white',
-                            borderRadius: 4,
-                            borderWidth: 1,
-                            borderColor: '#FAE5CA',
-                            zIndex: 10,
-                            width: 153, // Same width as selector
-                            elevation: 5,
-                          }}
-                        >
-                          {userGroups.map((group, index) => (
-                            <Pressable
-                              key={index}
-                              style={{
-                                paddingVertical: 8,
-                                paddingHorizontal: 12,
-                                borderBottomWidth: index < userGroups.length - 1 ? 1 : 0,
-                                borderBottomColor: '#FAE5CA',
-                              }}
-                              onPress={(e) => {
-                                e.stopPropagation();
-                                handleGroupChange(group.name);
-                              }}
-                            >
-                              <Text
-                                style={{ 
-                                  color: '#2A1800',
-                                  fontWeight: selectedGroupName === group.name ? 'bold' : 'normal'
-                                }}
-                              >
-                                {group.name}
-                              </Text>
-                            </Pressable>
-                          ))}
-                        </View>
-                      )}
-                    </View>
-                  )}
                 </View>
 
-                {/* Filter Options */}
+                {/* Group Selector - Moved below the header */}
                 {!isCareReceiver && (
-                  <View style={{ marginTop: 16 }} className="px-6 pb-4">
-                    <View className="flex-row justify-between w-full">
-                      {/* Task Assignment Filter with updated CSS */}
-                      <View>
-                        <Pressable 
-                          onPress={(e) => {
-                            e.stopPropagation();
-                            setShowGroupSelector(false);
-                            setShowAssignedByFilter(false);
-                            setShowWhoseTaskFilter(!showWhoseTaskFilter);
-                          }}
-                          style={{
-                            display: 'flex',
-                            height: 44,
-                            padding: 8,
-                            paddingLeft: 12,
-                            paddingRight: 8,
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            flexShrink: 0,
-                            alignSelf: 'stretch',
-                            borderRadius: 4,
-                            borderWidth: 1,
-                            borderColor: '#FAE5CA',
-                            backgroundColor: '#FFF',
-                            flexDirection: 'row',
-                            width: 153
-                          }}
-                        >
-                          <Text className="text-sm text-[#333]" numberOfLines={1}>{taskFilterLabel}</Text>
-                          <MaterialIcons 
-                            name={showWhoseTaskFilter ? "arrow-drop-up" : "arrow-drop-down"} 
-                            size={20} color="#333" 
-                          />
-                        </Pressable>
-                        
-                        {showWhoseTaskFilter && (
-                          <View
-                            style={{ 
-                              position: 'absolute',
-                              top: 44,
-                              left: 0,
-                              backgroundColor: 'white',
-                              borderRadius: 4,
-                              borderWidth: 1,
-                              borderColor: '#FAE5CA',
-                              zIndex: 1000,
-                              width: 153,
-                              elevation: 10,
+                  <View className="px-6 mt-3 mb-2 flex-row justify-between items-center">
+                    <Pressable 
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        setShowFilterModal(false);
+                        setShowGroupSelector(!showGroupSelector);
+                      }}
+                      style={{
+                        display: 'flex',
+                        width: 180,
+                        height: 44,
+                        padding: 8,
+                        paddingLeft: 12,
+                        paddingRight: 8,
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: '#2A1800',
+                        backgroundColor: '#FFF',
+                        flexDirection: 'row'
+                      }}
+                    >
+                      <Text className="text-sm mr-2">{selectedGroupName}</Text>
+                      <MaterialIcons 
+                        name={showGroupSelector ? "arrow-drop-up" : "arrow-drop-down"} 
+                        size={20} color="#333" 
+                      />
+                    </Pressable>
+
+                    {/* Filter Button (circular) */}
+                    <Pressable 
+                      onPress={() => setShowFilterModal(true)}
+                      className="w-10 h-10 items-center justify-center border border-black bg-white rounded-full"
+                    >
+                      <MaterialIcons name="filter-list" size={20} color="#2A1800" />
+                    </Pressable>
+                    
+                    {/* Group dropdown menu */}
+                    {showGroupSelector && (
+                      <View
+                        style={{ 
+                          position: 'absolute',
+                          top: 47, // Positioned below the selector
+                          left: 24,
+                          backgroundColor: 'white',
+                          borderRadius: 4,
+                          borderWidth: 1,
+                          borderColor: '#FAE5CA',
+                          zIndex: 10,
+                          width: 180,
+                          elevation: 5,
+                        }}
+                      >
+                        {userGroups.map((group, index) => (
+                          <Pressable
+                            key={index}
+                            style={{
                               paddingVertical: 8,
+                              paddingHorizontal: 12,
+                              borderBottomWidth: index < userGroups.length - 1 ? 1 : 0,
+                              borderBottomColor: '#FAE5CA',
                             }}
+                            onPress={() => handleGroupChange(group.name)}
                           >
-                            {loadingMembers ? (
-                              <View style={{ padding: 12, alignItems: 'center' }}>
-                                <ActivityIndicator size="small" color="#2A1800" />
-                              </View>
-                            ) : (
-                              <>
-                                {/* Option for All Tasks */}
-                                <Pressable
-                                  style={{
-                                    paddingVertical: 8,
-                                    paddingHorizontal: 12,
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                  }}
-                                  onPress={() => handleTaskAssigneeChange(null)}
-                                >
-                                  <View 
-                                    style={{
-                                      width: 20,
-                                      height: 20,
-                                      borderWidth: 1,
-                                      borderColor: '#2A1800',
-                                      borderRadius: 2,
-                                      marginRight: 8,
-                                      justifyContent: 'center',
-                                      alignItems: 'center',
-                                      backgroundColor: selectedTaskAssignee.length === 0 ? '#2A1800' : 'transparent'
-                                    }}
-                                  >
-                                    {selectedTaskAssignee.length === 0 && (
-                                      <MaterialIcons name="check" size={16} color="white" />
-                                    )}
-                                  </View>
-                                  <Text style={{ color: '#2A1800', fontSize: 14 }}>All</Text>
-                                </Pressable>
-                                
-                                {/* Individual family members with square checkboxes */}
-                                {familyMembers.map((member, index) => (
-                                  <Pressable
-                                    key={index}
-                                    style={{
-                                      paddingVertical: 8,
-                                      paddingHorizontal: 12,
-                                      flexDirection: 'row',
-                                      alignItems: 'center',
-                                      justifyContent: 'space-between'
-                                    }}
-                                    onPress={() => handleTaskAssigneeChange(member)}
-                                  >
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                      <View 
-                                        style={{
-                                          width: 20,
-                                          height: 20,
-                                          borderWidth: 1,
-                                          borderColor: '#2A1800',
-                                          borderRadius: 2,
-                                          marginRight: 8,
-                                          justifyContent: 'center',
-                                          alignItems: 'center',
-                                          backgroundColor: selectedTaskAssignee.some(selected => selected.id === member.id) ? '#2A1800' : 'transparent'
-                                        }}
-                                      >
-                                        {selectedTaskAssignee.some(selected => selected.id === member.id) && (
-                                          <MaterialIcons name="check" size={16} color="white" />
-                                        )}
-                                      </View>
-                                      <Text 
-                                        style={{ 
-                                          color: '#2A1800',
-                                          fontSize: 14
-                                        }}
-                                        numberOfLines={1}
-                                      >
-                                        {member.name.split(' ')[0]}
-                                      </Text>
-                                    </View>
-                                    
-                                    <Image
-                                      source={{ uri: member.avatar }}
-                                      style={{ 
-                                        width: 24, 
-                                        height: 24, 
-                                        borderRadius: 12,
-                                        borderWidth: 1,
-                                        borderColor: '#FAE5CA', 
-                                      }}
-                                    />
-                                  </Pressable>
-                                ))}
-                                
-                                {/* No Apply button needed - matches Figma design */}
-                                
-                                {familyMembers.length === 0 && (
-                                  <View style={{ padding: 12, alignItems: 'center' }}>
-                                    <Text style={{ color: '#666' }}>No members found</Text>
-                                  </View>
-                                )}
-                              </>
-                            )}
-                          </View>
-                        )}
-                      </View>
-                      
-                      
-                      {/* Assigned By Filter */}
-                      <View>
-                        <Pressable 
-                          onPress={() => {
-                            setShowGroupSelector(false);
-                            setShowTaskFilter(false);
-                            setShowAssignedByFilter(!showAssignedByFilter);
-                          }}
-                          style={{
-                            display: 'flex',
-                            height: 44,
-                            padding: 8,
-                            paddingLeft: 12,
-                            paddingRight: 8,
-                            alignItems: 'center',
-                            gap: 16,
-                            flexDirection: 'row',
-                            borderRadius: 4,
-                            borderWidth: 1,
-                            borderColor: '#FAE5CA',
-                            backgroundColor: '#FFF',
-                            width: 153
-                          }}
-                        >
-                          {selectedAssignedBy ? (
-                            <>
-                              <Text className="text-sm text-[#333]" numberOfLines={1}>Assigned by</Text>
-                              <Image
-                                source={{ uri: selectedAssignedBy.avatar || 'https://via.placeholder.com/24?text=🧑' }}
-                                style={{ width: 24, height: 24, borderRadius: 12 }}
-                              />
-                            </>
-                          ) : (
-                            <Text className="text-sm text-[#333]" numberOfLines={1}>
-                              By Everyone
+                            <Text
+                              style={{ 
+                                color: '#2A1800',
+                                fontWeight: selectedGroupName === group.name ? 'bold' : 'normal'
+                              }}
+                            >
+                              {group.name}
                             </Text>
-                          )}
-                        </Pressable>
-                        
-                        {/* Assigned by dropdown */}
-                        {showAssignedByFilter && (
-                          <View
-                            style={{ 
-                              position: 'absolute',
-                              top: 44,
-                              right: 0,
-                              backgroundColor: 'white',
-                              borderRadius: 4,
-                              borderWidth: 1,
-                              borderColor: '#FAE5CA',
-                              zIndex: 10,
-                              width: 153,
-                              elevation: 5,
-                            }}
-                          >
-                            {loadingMembers ? (
-                              <View style={{ padding: 12, alignItems: 'center' }}>
-                                <ActivityIndicator size="small" color="#2A1800" />
-                              </View>
-                            ) : (
-                              <>
-                                {/* Option for All Members */}
-                                <Pressable
-                                  style={{
-                                    paddingVertical: 8,
-                                    paddingHorizontal: 12,
-                                    borderBottomWidth: 1,
-                                    borderBottomColor: '#FAE5CA',
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between'
-                                  }}
-                                  onPress={() => handleAssignedByChange(null)}
-                                >
-                                  <Text 
-                                    style={{ 
-                                      color: '#2A1800',
-                                      fontWeight: selectedAssignedBy === null ? 'bold' : 'normal'
-                                    }}
-                                  >
-                                    All Members
-                                  </Text>
-                                </Pressable>
-                                
-                                {/* Individual family members */}
-                                {familyMembers.map((member, index) => (
-                                  <Pressable
-                                    key={index}
-                                    style={{
-                                      paddingVertical: 8,
-                                      paddingHorizontal: 12,
-                                      borderBottomWidth: index < familyMembers.length - 1 ? 1 : 0,
-                                      borderBottomColor: '#FAE5CA',
-                                      flexDirection: 'row',
-                                      alignItems: 'center',
-                                      justifyContent: 'space-between'
-                                    }}
-                                    onPress={() => handleAssignedByChange(member)}
-                                  >
-                                    <Text 
-                                      style={{ 
-                                        color: '#2A1800',
-                                        fontWeight: selectedAssignedBy?.id === member.id ? 'bold' : 'normal'
-                                      }}
-                                      numberOfLines={1}
-                                    >
-                                      {member.name}
-                                    </Text>
-                                    <Image
-                                      source={{ uri: member.avatar }}
-                                      style={{ width: 20, height: 20, borderRadius: 10 }}
-                                    />
-                                  </Pressable>
-                                ))}
-                                
-                                {familyMembers.length === 0 && (
-                                  <View style={{ padding: 12, alignItems: 'center' }}>
-                                    <Text style={{ color: '#666' }}>No members found</Text>
-                                  </View>
-                                )}
-                              </>
-                            )}
-                          </View>
-                        )}
+                          </Pressable>
+                        ))}
                       </View>
-                    </View>
+                    )}
                   </View>
                 )}
+
+                {/* Filter Modal */}
+                <Modal
+                  visible={showFilterModal}
+                  transparent={true}
+                  animationType="fade"
+                  onRequestClose={() => setShowFilterModal(false)}
+                >
+                  <Pressable 
+                    style={{
+                      flex: 1,
+                      backgroundColor: 'rgba(0,0,0,0.5)',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                    onPress={() => setShowFilterModal(false)}
+                  >
+                    <View 
+                      style={{
+                        width: '90%',
+                        backgroundColor: 'white',
+                        borderRadius: 8,
+                        padding: 16,
+                        elevation: 5,
+                      }}
+                    >
+                      <View className="flex-row justify-between items-center mb-4">
+                        <Text className="text-lg font-bold">Filter</Text>
+                        <Pressable onPress={() => setShowFilterModal(false)}>
+                          <MaterialIcons name="close" size={24} color="#2A1800" />
+                        </Pressable>
+                      </View>
+                      
+                      <View 
+                        style={{
+                          borderWidth: 1,
+                          borderColor: '#DBC3A0',
+                          borderRadius: 8,
+                          overflow: 'hidden'
+                        }}
+                      >
+                        {/* Assigned to option */}
+                        <Pressable
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: 16,
+                            borderBottomWidth: 1,
+                            borderBottomColor: '#DBC3A0',
+                          }}
+                          onPress={() => {
+                            setShowFilterModal(false);
+                            setShowWhoseTaskFilter(true);
+                          }}
+                        >
+                          <Text style={{ fontSize: 16, color: '#2A1800' }}>Assigned to</Text>
+                          <MaterialIcons name="chevron-right" size={24} color="#2A1800" />
+                        </Pressable>
+                        
+                        {/* Assigned by option */}
+                        <Pressable
+                          style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: 16,
+                          }}
+                          onPress={() => {
+                            setShowFilterModal(false);
+                            setShowAssignedByFilter(true);
+                          }}
+                        >
+                          <Text style={{ fontSize: 16, color: '#2A1800' }}>Assigned by</Text>
+                          <MaterialIcons name="chevron-right" size={24} color="#2A1800" />
+                        </Pressable>
+                      </View>
+                    </View>
+                  </Pressable>
+                </Modal>
                 <View className="bg-white rounded-xl p-4">
                   {filteredTasks.length === 0 ? (
                     <View className="items-center justify-center py-12">
@@ -1636,7 +1434,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                         </View> */}
 
                         {/* Task Group */}
-                        <View className="flex-1 ml-4">
+                        <View className="flex-1 ml-2">
                           <Text className="text-sm font-semibold text-[#2A1800] mb-2">{group.time}</Text>
                           {group.tasks.map((task, taskIndex) => {
                             // Check if task is in the past
