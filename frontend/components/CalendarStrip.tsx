@@ -22,7 +22,7 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
 
   const fetchUserCreatedDate = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}`);
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}`);
       const createdDate = new Date(response.data.createdAt);
       setUserCreatedDate(createdDate);
       return createdDate;
@@ -34,7 +34,7 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
 
   const fetchPrimaryGroupId = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
       setPrimaryGroupId(response.data.groupID);
       return response.data.groupID;
     } catch (error) {
@@ -54,7 +54,7 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
   const fetchTaskCompletionForDate = async (userID: string, groupID: string, date: Date) => {
     try {
       const dateKey = formatDateForAPI(date); // Use helper function for consistent formatting
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`, {
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`, {
         params: {
           date: dateKey 
         }

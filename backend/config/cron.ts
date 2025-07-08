@@ -5,7 +5,7 @@ import https from "https";
 // this is a workaround for the free plan of Render, which puts the app to sleep after 15 minutes of inactivity
 const job = new CronJob("*/14 * * * *", function () {
     https
-    .get("https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app", (res: any) => {
+    .get("https://carebear-carebearvtmps-projects.vercel.app", (res: any) => {
         if (res.statusCode === 200) console.log("GET request sent successfully");
         else console.log("GET request failed", res.statusCode);
     })
