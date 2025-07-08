@@ -1307,9 +1307,9 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                       }}
                       style={{
                         display: 'flex',
-                        width: 180,
+                        width: 153,
                         height: 44,
-                        padding: 8,
+                        padding: 0,
                         paddingLeft: 12,
                         paddingRight: 8,
                         justifyContent: 'space-between',
@@ -1342,13 +1342,13 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                         style={{ 
                           position: 'absolute',
                           top: 47, // Positioned below the selector
-                          left: 24,
+                          left: 20,
                           backgroundColor: 'white',
                           borderRadius: 4,
                           borderWidth: 1,
                           borderColor: '#FAE5CA',
                           zIndex: 10,
-                          width: 180,
+                          width: 153,
                           elevation: 5,
                         }}
                       >
