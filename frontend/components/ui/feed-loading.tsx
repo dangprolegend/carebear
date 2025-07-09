@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     zIndex: 9999,
-    backgroundColor: '#AF9D86', 
+    backgroundColor: 'rgba(175, 157, 134, 0.95)', // Increased opacity (was #AF9D86)
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: 'rgba(255,255,255,0.98)', // Increased opacity for modal background
     borderRadius: 20,
     borderColor: 'black', 
     borderWidth: 1, // Increased border line to 1px
