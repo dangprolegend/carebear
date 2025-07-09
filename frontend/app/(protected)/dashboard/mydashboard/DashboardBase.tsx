@@ -1382,8 +1382,30 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                   ) : (
                       filteredTasks.filter(task => task.priority === 'high').map((task, index) => {
                         // Format the time from datetime or detail
-                        const taskTime = task.detail || 
-                          (task.datetime ? new Date(task.datetime).toLocaleTimeString('en-US', {
+                        // Solution: Format time properly regardless of the source
+                        const taskTime = task.detail ? 
+                          // If task.detail contains a time string, parse and format it
+                          (() => {
+                            try {
+                              // Check if detail is in time format (HH:MM or HH:MM:SS)
+                              const timeRegex = /^\d{1,2}:\d{2}(:\d{2})?$/;
+                              if (timeRegex.test(task.detail)) {
+                                // If it's just a time (no date), create today's date with this time
+                                const [hours, minutes] = task.detail.split(':').map(Number);
+                                const date = new Date();
+                                date.setHours(hours, minutes, 0);
+                                return date.toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                  hour12: true
+                                });
+                              }
+                              return task.detail;
+                            } catch (e) {
+                              return task.detail; // If parsing fails, return the original string
+                            }
+                          })() 
+                          : (task.datetime ? new Date(task.datetime).toLocaleTimeString('en-US', {
                             hour: 'numeric',
                             minute: '2-digit',
                             hour12: true
@@ -1851,7 +1873,8 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                       {new Date(task.datetime).toLocaleTimeString('en-US', {
                                         hour: 'numeric',
                                         minute: '2-digit',
-                                        hour12: true
+                                        hour12: true,
+                                        hourCycle: 'h12'
                                       })}
                                     </Text>
                                     
