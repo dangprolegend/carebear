@@ -69,7 +69,7 @@ export default function CreateFamilyGroupScreen() {
         
         <TouchableOpacity
           onPress={() => router.push('/(protected)/dashboard/family/join-family')}
-          className="py-4 px-12 justify-center items-center rounded-full border border-[#DDD]"
+          className="py-4 px-12 justify-center items-center rounded-full border border-[#2A1800]"
         >
           <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
             Join
