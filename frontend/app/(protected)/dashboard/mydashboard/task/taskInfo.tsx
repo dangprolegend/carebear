@@ -7,11 +7,14 @@ import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import FeedLoading from '~/components/ui/feed-loading';
+import redFlag from '~/assets/icons/redflag.png';
+import yellowFlag from '~/assets/icons/yellowflag.png';
+import blueFlag from '~/assets/icons/blueflag.png';
 
 const PRIORITY_FLAG = {
-  high: { color: '#FF0000', icon: 'flag' },
-  medium: { color: '#FFD700', icon: 'flag' },
-  low: { color: '#0000FF', icon: 'flag' },
+  high: { icon: redFlag },
+  medium: { icon: yellowFlag },
+  low: { icon: blueFlag },
 };
 
 const TaskInfoScreen = () => {
@@ -183,7 +186,10 @@ const TaskInfoScreen = () => {
     <View className="flex-1 bg-transparent">
       {/* Header */}
       <View className="flex-row items-center justify-between px-4 pt-8 pb-2 border-b border-black bg-white">
-        <MaterialIcons name="flag" size={22} color={flagColor} />
+        <Image 
+          source={PRIORITY_FLAG[task.priority]?.icon} 
+          style={{ width: 18, height: 18, marginRight: 8 }} 
+        />
         <Text className="text-lg font-bold text-black flex-1 text-center" numberOfLines={1}>{task.title}</Text>
         <Pressable onPress={() => router.back()} className="p-1">
           <MaterialIcons name="close" size={26} color="black" />

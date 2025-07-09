@@ -23,6 +23,9 @@ import {
   fetchUserInfoById
 } from '../../../../../service/apiServices';
 import { Avatar } from '../../../../../components/ui/avatar';
+import redFlagIcon from '~/assets/icons/redflag.png';
+import yellowFlagIcon from '~/assets/icons/yellowflag.png';
+import blueFlagIcon from '~/assets/icons/blueflag.png';
 
 interface TaskUser {
   _id: string;
@@ -701,10 +704,13 @@ const EditTaskScreen = () => {
               className={`flex-1 flex-row items-center justify-center border rounded-lg py-3 mx-1 ${taskForm.priority === level ? 'bg-[#FAE5CA] border-black' : 'bg-white border-slate-300'}`}
               onPress={() => handleInputChange('priority', level)}
             >
-              <MaterialIcons 
-                name="flag" 
-                size={18} 
-                color={level === 'high' ? 'red' : level === 'medium' ? 'gold' : 'blue'} 
+              <Image 
+                source={
+                  level === 'high' ? redFlagIcon : 
+                  level === 'medium' ? yellowFlagIcon : 
+                  blueFlagIcon
+                } 
+                style={{ width: 18, height: 18 }} 
               />
               <Text className={`ml-1 font-semibold capitalize ${taskForm.priority === level ? 'text-black' : 'text-black'}`}>
                 {level}
