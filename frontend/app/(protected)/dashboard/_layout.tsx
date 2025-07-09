@@ -273,14 +273,14 @@ export default function DashboardLayout() {
             {/* Horizontal separator line */}
             <View style={{ height: 1, backgroundColor: '#2A1800' }} />
             <SafeAreaView edges={['bottom']}>
-              <View className="flex-row justify-around items-center py-3 px-2 min-h-[70px]">
+              <View className="flex-row justify-around items-center px-2 min-h-[70px]">
                 {tabs.map((tab) => {
                   const isActive = segments.join('/').includes(tab.route); // Check active tab
                   return (
                     <Pressable
                       key={tab.name}
                       onPress={() => handleTabPress(tab.route)}
-                      className={`items-center py-2 px-3 flex-1 max-w-[90px] ${isActive ? 'rounded-lg bg-transparent overflow-hidden' : ''}`}
+                      className={`items-center py-3 px-3 flex-1 max-w-[90px] ${isActive ? 'rounded-lg bg-transparent overflow-hidden' : ''}`}
                     >
                       {/* Icon */}
                       {renderIcon(tab.icon, isActive)}

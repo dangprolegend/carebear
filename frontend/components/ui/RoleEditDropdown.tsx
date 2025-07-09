@@ -62,11 +62,31 @@ const RoleEditDropdown: React.FC<RoleEditDropdownProps> = memo(({
   const [selectedRole, setSelectedRole] = useState(mapBackendToFrontendRole(member.role));
   const [familialRelation, setFamilialRelation] = useState(member.familialRelation || '');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [expandedRole, setExpandedRole] = useState<string | null>(null);
+  const [clickedRole, setClickedRole] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleRoleSelect = (role: string) => {
     setSelectedRole(role);
+    setClickedRole(role);
+  };
+
+  const toggleRoleDescription = (role: string) => {
+    setExpandedRole(expandedRole === role ? null : role);
+  };
+
+  const getRoleDescription = (role: string) => {
+    switch (role) {
+      case 'CareBear':
+        return 'Assign tasks to yourself and to BabyBear members. You can edit any tasks you\'ve assigned. You can also receive care like a BabyBear, meaning others can assign tasks to you.';
+      case 'BabyBear':
+        return 'Receive tasks from CareBear and manage your own tasks. You cannot edit tasks assigned to you by others.';
+      case 'BearBoss':
+        return 'Admin of the family group. You can take on both CareBear and BabyBear roles, and also manage the group by adding or removing members.';
+      default:
+        return '';
+    }
   };
 
   const handleUpdateRole = async () => {
@@ -137,52 +157,109 @@ const RoleEditDropdown: React.FC<RoleEditDropdownProps> = memo(({
         <Text className="text-[#222] font-lato text-lg font-bold mb-4">Bear Role</Text>
         
         {/* CareBear Option */}
-        <Pressable 
-          className={`p-4 rounded-lg bg-[#E1F0FF] border-b-4 border-2 mb-3 flex-row items-center gap-3 ${
-            selectedRole === 'CareBear' ? 'border-[#2A1800]' : 'border-white'
-          }`}
-          onPress={() => handleRoleSelect('CareBear')}
-        >
-          <View className="w-14 h-14 rounded-full flex items-center justify-center">
-            <Image source={CareBear} className="w-14 h-14" />
-          </View>
-          <View className="flex-1">
-            <Text className="text-[#222] font-lato text-lg font-semibold">CareBear</Text>
-            <Text className="text-[#666] font-lato text-sm">Care giver & receiver</Text>
-          </View>
-        </Pressable>
+        <View className="mb-3">
+          <Pressable 
+            className={`p-4 rounded-lg bg-[#E1F0FF] border-b-4 border-2 flex-row items-center gap-3 ${
+              selectedRole === 'CareBear' ? 'border-[#2A1800]' : 'border-white'
+            }`}
+            onPress={() => handleRoleSelect('CareBear')}
+          >
+            <View className="w-14 h-14 rounded-full flex items-center justify-center">
+              <Image source={CareBear} className="w-14 h-14" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-[#222] font-lato text-lg font-semibold">CareBear</Text>
+              <Text className="text-[#666] font-lato text-sm">Care giver & receiver</Text>
+            </View>
+            {clickedRole === 'CareBear' && (
+              <Pressable
+                className="p-2"
+                onPress={() => toggleRoleDescription('CareBear')}
+              >
+                <Text className="text-[#2A1800] font-lato text-lg">
+                  {expandedRole === 'CareBear' ? '^' : '›'}
+                </Text>
+              </Pressable>
+            )}
+          </Pressable>
+          {expandedRole === 'CareBear' && (
+            <View className=" -mt-2 p-4 rounded-b-lg border-r border-l border-b border-[#2A1800]">
+              <Text className="text-[#2A1800] font-lato text-sm leading-5">
+                {getRoleDescription('CareBear')}
+              </Text>
+            </View>
+          )}
+        </View>
 
         {/* BabyBear Option */}
-        <Pressable 
-          className={`p-4 rounded-lg bg-[#FAE5CA] border-b-4 border-2 mb-3 flex-row items-center gap-3 ${
-            selectedRole === 'BabyBear' ? 'border-[#2A1800]' : 'border-white'
-          }`}
-          onPress={() => handleRoleSelect('BabyBear')}
-        >
-          <View className="w-14 h-14 rounded-full flex items-center justify-center">
-            <Image source={BabyBear} className="w-14 h-14" />
-          </View>
-          <View className="flex-1">
-            <Text className="text-[#222] font-lato text-lg font-semibold">BabyBear</Text>
-            <Text className="text-[#666] font-lato text-sm">Care receiver</Text>
-          </View>
-        </Pressable>
+        <View className="mb-3">
+          <Pressable 
+            className={`p-4 rounded-lg bg-[#FAE5CA] border-b-4 border-2 flex-row items-center gap-3 ${
+              selectedRole === 'BabyBear' ? 'border-[#2A1800]' : 'border-white'
+            }`}
+            onPress={() => handleRoleSelect('BabyBear')}
+          >
+            <View className="w-14 h-14 rounded-full flex items-center justify-center">
+              <Image source={BabyBear} className="w-14 h-14" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-[#222] font-lato text-lg font-semibold">BabyBear</Text>
+              <Text className="text-[#666] font-lato text-sm">Care receiver</Text>
+            </View>
+            {clickedRole === 'BabyBear' && (
+              <Pressable
+                className="p-2"
+                onPress={() => toggleRoleDescription('BabyBear')}
+              >
+                <Text className="text-[#2A1800] font-lato text-lg">
+                  {expandedRole === 'BabyBear' ? '^' : '›'}
+                </Text>
+              </Pressable>
+            )}
+          </Pressable>
+          {expandedRole === 'BabyBear' && (
+            <View className=" -mt-2 p-4 rounded-b-lg border-r border-l border-b border-[#2A1800]">
+              <Text className="text-[#2A1800] font-lato text-sm leading-5">
+                {getRoleDescription('BabyBear')}
+              </Text>
+            </View>
+          )}
+        </View>
 
         {/* BearBoss Option */}
-        <Pressable 
-          className={`p-4 rounded-lg bg-[#E1F0FF] border-b-4 border-2 mb-3 flex-row items-center gap-3 ${
-            selectedRole === 'BearBoss' ? 'border-[#2A1800]' : 'border-white'
-          }`}
-          onPress={() => handleRoleSelect('BearBoss')}
-        >
-          <View className="w-14 h-14 rounded-full flex items-center justify-center">
-            <Image source={BearBoss} className="w-14 h-14" />
-          </View>
-          <View className="flex-1">
-            <Text className="text-[#222] font-lato text-lg font-semibold">BearBoss</Text>
-            <Text className="text-[#666] font-lato text-sm">Admin</Text>
-          </View>
-        </Pressable>
+        <View className="mb-3">
+          <Pressable 
+            className={`p-4 rounded-lg bg-[#E1F0FF] border-b-4 border-2 flex-row items-center gap-3 ${
+              selectedRole === 'BearBoss' ? 'border-[#2A1800]' : 'border-white'
+            }`}
+            onPress={() => handleRoleSelect('BearBoss')}
+          >
+            <View className="w-14 h-14 rounded-full flex items-center justify-center">
+              <Image source={BearBoss} className="w-14 h-14" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-[#222] font-lato text-lg font-semibold">BearBoss</Text>
+              <Text className="text-[#666] font-lato text-sm">Admin</Text>
+            </View>
+            {clickedRole === 'BearBoss' && (
+              <Pressable
+                className="p-2"
+                onPress={() => toggleRoleDescription('BearBoss')}
+              >
+                <Text className="text-[#2A1800] font-lato text-lg">
+                  {expandedRole === 'BearBoss' ? '^' : '›'}
+                </Text>
+              </Pressable>
+            )}
+          </Pressable>
+          {expandedRole === 'BearBoss' && (
+            <View className=" -mt-2 p-4 rounded-b-lg border-r border-l border-b border-[#2A1800]">
+              <Text className="text-[#2A1800] font-lato text-sm leading-5">
+                {getRoleDescription('BearBoss')}
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
 
       {/* Action Buttons */}

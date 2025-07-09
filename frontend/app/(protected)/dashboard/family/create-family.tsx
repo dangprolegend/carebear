@@ -48,7 +48,7 @@ export default function CreateFamilyGroupScreen() {
             value={groupName}
             onChangeText={setGroupName}
             autoCapitalize="words"
-            className="p-3"
+            className="p-3 border border-[#2A1800] text-[#623405]"
           />
         </View>
       </View>

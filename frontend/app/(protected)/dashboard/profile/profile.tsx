@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, Pressable, Image, ScrollView } from 'react-native';
@@ -6,6 +5,7 @@ import { useAuth, useUser } from '@clerk/clerk-expo';
 import axios from 'axios';
 import CalendarStrip from '~/components/CalendarStrip';
 import CircularProgress from '~/components/CircularProgress';
+import TaskDetailModal from '~/components/TaskDetailModal';
 import Settings from '../../../../assets/icons/settings.png';
 import Heart from '../../../../assets/icons/heart.png';
 import FeedLoading from '~/components/ui/feed-loading';
@@ -36,6 +36,9 @@ export default function Profile() {
 
   const [taskCompletion, setTaskCompletion] = useState<number>(0);
   const [numFamilies, setNumFamilies] = useState<number>(0);
+
+  // Modal state
+  const [isTaskModalVisible, setIsTaskModalVisible] = useState<boolean>(false);
 
   const moods = [
     { id: 'happy', emoji: '😊', label: 'Happy', value: 'happy' },
@@ -300,7 +303,7 @@ export default function Profile() {
     <ScrollView className="flex-1">
       <View className='flex flex-col items-center gap-4 mt-6'>
         <Image
-          source={{ uri: userImageURL }}
+          source={{ uri: userImageURL || undefined }}
           className='w-20 h-20 flex-shrink-0 aspect-square rounded-full border-2 border-[#2A1800] bg-cover bg-center'
           />
 
@@ -314,6 +317,7 @@ export default function Profile() {
           <CircularProgress
               percentage={taskCompletion} 
               size={24} 
+              onPress={() => setIsTaskModalVisible(true)}
             />
         </View>
         </View>
@@ -353,7 +357,7 @@ export default function Profile() {
           </View>
         </View>
 
-          <CalendarStrip selectedDate={selectedDate} setSelectedDate={setSelectedDate} userID={userID} />
+          <CalendarStrip selectedDate={selectedDate} setSelectedDate={setSelectedDate} userID={userID || ''} />
       </View>
 
         <View className="flex flex-col items-start gap-[8px] p-4 rounded-lg bg-[#FAE5CA] mt-10 w-5/6 self-center">
@@ -365,6 +369,15 @@ export default function Profile() {
         </View>
           <Text className='text-[#2A1800] font-lato text-[16px] font-light leading-[24px] tracking-[-0.1px]'>{getDayText(daysHealthy)} Healthy</Text>
         </View>
+
+        {/* Task Detail Modal */}
+        <TaskDetailModal
+          isVisible={isTaskModalVisible}
+          onClose={() => setIsTaskModalVisible(false)}
+          userID={userID || ''}
+          groupID={primaryGroupId || ''}
+          taskCompletion={taskCompletion}
+        />
 
     </ScrollView>
   );
