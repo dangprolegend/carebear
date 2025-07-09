@@ -132,21 +132,21 @@ export default function Family() {
   } | null>(null);
 
   const moods = [
-    { id: 'happy', emoji: '😊', label: 'Happy', value: 'happy' },
-    { id: 'excited', emoji: '🤩', label: 'Excited', value: 'excited' },
-    { id: 'sad',  emoji: '😢',label: 'Sad', value: 'sad' },
-    { id: 'angry',  emoji: '😠',label: 'Angry', value: 'angry' },
-    { id: 'nervous',  emoji: '😬',label: 'Nervous', value: 'nervous' },
-    { id: 'peaceful',  emoji: '🧘',label: 'Peaceful', value: 'peaceful' },
+    { id: 'happy', emoji: '😆', label: 'Great', value: 'happy' },
+    { id: 'excited', emoji: '😊', label: 'Good', value: 'excited' },
+    { id: 'sad',  emoji: '🙂',label: 'Okay', value: 'sad' },
+    { id: 'angry',  emoji: '😌',label: 'Calm', value: 'angry' },
+    { id: 'nervous',  emoji: '😞',label: 'Bad', value: 'nervous' },
+    { id: 'peaceful',  emoji: '😭',label: 'Terrible', value: 'peaceful' },
   ];
 
   const bodyFeelings = [
-    { id: 'energized',  emoji: '⚡',label: 'Energized', value: 'energized' },
-    { id: 'sore',  emoji: '💪',label: 'Sore', value: 'sore' },
-    { id: 'tired',  emoji: '😴',label: 'Tired', value: 'tired' },
+    { id: 'energized',  emoji: '💪',label: 'Strong', value: 'energized' },
+    { id: 'sore',  emoji: '😶',label: 'Normal', value: 'sore' },
+    { id: 'tired',  emoji: '😙',label: 'Relaxed', value: 'tired' },
     { id: 'sick',  emoji: '🤒',label: 'Sick', value: 'sick' },
-    { id: 'relaxed',  emoji: '😌',label: 'Relaxed', value: 'relaxed' },
-    { id: 'tense',  emoji: '😣',label: 'Tense', value: 'tense' },
+    { id: 'relaxed',  emoji: '😩',label: 'Sore', value: 'relaxed' },
+    { id: 'tense',  emoji: '🤧',label: 'Weak', value: 'tense' },
   ];
 
   // Helper function to get emoji from value
@@ -1073,32 +1073,54 @@ const FamilyMemberCard = ({
             <Text className="text-black text-center font-lato text-base font-normal leading-6 tracking-[-0.1px] mt-2">
               Before you continue, let's check in on how you're feeling today!
             </Text>
-
+            
             {/* Mood Section */}
             <View className="w-full mb-6">
               <Text className="text-lg font-semibold mb-3 text-center">How is your mood today?</Text>
-              <View className="flex-row flex-wrap justify-center">
-                {moods.map((mood) =>
-                  renderOptionButton(mood, selectedMood, setSelectedMood)
+              {/* First row - 3 moods */}
+              <View className="flex-row justify-between mb-4">
+                {moods.slice(0, 3).map((mood) =>
+                  <View key={mood.id} className="flex-1 mx-1">
+                    {renderOptionButton(mood, selectedMood, setSelectedMood)}
+                  </View>
+                )}
+              </View>
+              {/* Second row - remaining moods */}
+              <View className="flex-row justify-between">
+                {moods.slice(3).map((mood) =>
+                  <View key={mood.id} className="flex-1 mx-1">
+                    {renderOptionButton(mood, selectedMood, setSelectedMood)}
+                  </View>
                 )}
               </View>
             </View>
-
+            
             {/* Body Feeling Section */}
             <View className="w-full mb-6">
               <Text className="text-lg font-semibold mb-3 text-center">How does your body feel?</Text>
-              <View className="flex-row flex-wrap justify-center">
-                {bodyFeelings.map((feeling) =>
-                  renderOptionButton(feeling, selectedBodyFeeling, setSelectedBodyFeeling)
+              {/* First row - 3 body feelings */}
+              <View className="flex-row justify-between mb-4">
+                {bodyFeelings.slice(0, 3).map((feeling) =>
+                  <View key={feeling.id} className="flex-1 mx-1">
+                    {renderOptionButton(feeling, selectedBodyFeeling, setSelectedBodyFeeling)}
+                  </View>
+                )}
+              </View>
+              {/* Second row - remaining body feelings */}
+              <View className="flex-row justify-between">
+                {bodyFeelings.slice(3).map((feeling) =>
+                  <View key={feeling.id} className="flex-1 mx-1">
+                    {renderOptionButton(feeling, selectedBodyFeeling, setSelectedBodyFeeling)}
+                  </View>
                 )}
               </View>
             </View>
-
+            
             {/* Submit Button */}
             <TouchableOpacity
               className={`w-full py-4 rounded-full items-center mt-2 ${
-                (!selectedMood || !selectedBodyFeeling || isSubmittingStatus) 
-                  ? 'bg-gray-300' 
+                (!selectedMood || !selectedBodyFeeling || isSubmittingStatus)
+                  ? 'bg-gray-300'
                   : 'bg-[#2A1800]'
               }`}
               onPress={handleSubmitDailyStatus}
