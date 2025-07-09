@@ -8,7 +8,7 @@ const setupSteps = [
   'health-input',
   'join-family',
   'create-family' ,
-  'roles-info',
+  'roles-info', 
   'congrats'
 ];
 
@@ -17,7 +17,7 @@ interface SetupProgressIndicatorProps {
 }
 
 function SetupProgressIndicator({ currentStepIndex }: SetupProgressIndicatorProps) {
-    const totalVisibleDots = 4;
+    const totalVisibleDots = 5;
     const nonNegativeIndex = Math.max(0, currentStepIndex);
     const lastVisibleDotIndex = totalVisibleDots - 1;
     let activeVisibleDotIndex;
@@ -32,13 +32,13 @@ function SetupProgressIndicator({ currentStepIndex }: SetupProgressIndicatorProp
     <View className="mb-8 flex flex-row items-center justify-center space-x-6 gap-2 p-4">
       {Array.from({ length: totalVisibleDots }).map((_, index) => {
         const isActive = index === activeVisibleDotIndex;
-        const widthClass = isActive ? 'w-8' : 'w-4';
-        const bgClass = isActive ? 'bg-primary dark:bg-primary' : 'bg-[#2A1800] dark:bg-[#2A1800]';
+        const widthClass = isActive ? 'w-8' : 'w-3';
+        const bgClass = isActive ? 'bg-[#2A1800] dark:bg-primary' : 'bg-[#2A1800] dark:bg-[#2A1800]';
 
         return (
           <View
             key={index}
-            className={`h-4 w-4 rounded-full ${widthClass} ${bgClass}`}
+            className={`h-3 w-3 rounded-full ${widthClass} ${bgClass}`}
           />
         );
       })}

@@ -32,14 +32,14 @@ export default function RolesInfo() {
         </Text>
 
         {/* Roles Container */}
-        <View className="flex-1 justify-center">
+        <View className="flex-1 justify-center ml-10">
           {/* BabyBear Role */}
           <View className="flex-row items-center mb-20">
-            <View className="w-20 h-20 items-center justify-center mr-[55px]">
+            <View className="w-16 h-20 items-center justify-center mr-[55px]">
               <Image source={BabyBear} className="w-40 h-40" resizeMode="contain" />
             </View>
             <View className="flex-1">
-              <Text className="text-[#2A1800] font-lato text-[20px] font-bold leading-6 mb-2">
+              <Text className="text-[#2A1800] font-lato text-[14px] font-bold leading-6 mb-2">
             BabyBear
               </Text>
               <Text className="text-[#2A1800] font-lato text-[14px] font-normal leading-5">
@@ -50,11 +50,11 @@ export default function RolesInfo() {
 
           {/* CareBear Role */}
           <View className="flex-row items-center mb-20">
-            <View className="w-20 h-20 items-center justify-center mr-[55px]">
+            <View className="w-16 h-20 items-center justify-center mr-[55px]">
               <Image source={CareBear} className="w-40 h-40" resizeMode="contain" />
             </View>
             <View className="flex-1">
-              <Text className="text-[#2A1800] font-lato text-[20px] font-bold leading-6 mb-2">
+              <Text className="text-[#2A1800] font-lato text-[14px] font-bold leading-6 mb-2">
             CareBear
               </Text>
               <Text className="text-[#2A1800] font-lato text-[14px] font-normal leading-5">
@@ -65,11 +65,11 @@ export default function RolesInfo() {
 
           {/* BearBoss Role */}
           <View className="flex-row items-center">
-            <View className="w-20 h-20 items-center justify-center mr-[55px]">
+            <View className="w-16 h-20 items-center justify-center mr-[55px]">
               <Image source={BearBoss} className="w-40 h-40" resizeMode="contain" />
             </View>
             <View className="flex-1">
-              <Text className="text-[#2A1800] font-lato text-[20px] font-bold leading-6 mb-2">
+              <Text className="text-[#2A1800] font-lato text-[14px] font-bold leading-6 mb-2">
             BearBoss
               </Text>
               <Text className="text-[#2A1800] font-lato text-[14px] font-normal leading-5">
@@ -80,9 +80,9 @@ export default function RolesInfo() {
         </View>
 
         {/* Navigation Buttons */}
-        <View className="flex-row gap-12 mt-12">
+        <View className="flex-row gap-[35px] mt-12">
           <TouchableOpacity
-            className="flex-1 py-4 px-3 bg-white border border-[#DDD] rounded-full items-center justify-center"
+            className="flex-1 py-4 px-3 bg-white border border-black rounded-full items-center justify-center"
             onPress={handleBack}
           >
             <Text className="text-[#2A1800] font-lato text-[16px] font-semibold">Back</Text>

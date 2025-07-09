@@ -205,7 +205,7 @@ export default function Family() {
 
     const fetchPrimaryGroupId = async (userID: string) => {
       try {
-        const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
+        const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
         setPrimaryGroupId(response.data.groupID);
         return response.data.groupID;
       } catch (error) {
@@ -216,7 +216,7 @@ export default function Family() {
 
     const fetchTaskCompletion = async (userID: string, groupID: string) => {
       try {
-        const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`);
+        const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`);
         const percentage = response.data.completionPercentage || 0;
         setTaskCompletionByUser(prev => ({
           ...prev,
@@ -237,7 +237,7 @@ export default function Family() {
   // Fetch today's daily status
   const fetchTodayStatus = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/daily/today/${userID}`);
+      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/daily/today/${userID}`);
       if (response.data && response.data.mood && response.data.body) {
         setTodayMoodValue(response.data.mood);
         setTodayBodyValue(response.data.body);
@@ -260,7 +260,7 @@ export default function Family() {
 
 const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
     try {
-      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/role`, {
+      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/role`, {
         params: {
           groupID: groupID
         }
@@ -279,7 +279,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
   // Fetch family member's daily status
   const fetchMemberStatus = async (memberUserID: string) => {
     try {
-      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/daily/today/${memberUserID}`);
+      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/daily/today/${memberUserID}`);
       if (response.data && response.data.mood && response.data.body) {
         return {
           mood: response.data.mood,
@@ -301,7 +301,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
   // Fetch admin status for a specific group and store in isAdminByGroup
   const fetchAdminStatus = async (userID: string, groupID: string) => {
     try {
-      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/groups/${groupID}/admin-status`);
+      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/groups/${groupID}/admin-status`);
       setIsAdminByGroup(prev => ({
         ...prev,
         [groupID]: response.data.isAdmin
@@ -321,7 +321,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
   // Fetch all groups user belongs to
   const fetchUserGroups = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/allGroups`);
+      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/allGroups`);
       const { groupIDs } = response.data;
       
       const groupNames = {};
@@ -330,7 +330,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
       for (let i = 0; i < groupIDs.length; i++) {
         const groupID = groupIDs[i];
         try {
-          const groupResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/groups/${groupID}/admin-status`);
+          const groupResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/groups/${groupID}/admin-status`);
           const groupName = groupResponse.data.groupName || `Family ${i + 1}`;
           groupNames[groupID] = groupName;
           familyTabs.push({
@@ -375,7 +375,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
   const fetchFamilyMembersForGroup = async (userID: string, groupID: string) => {
     try {
       setIsLoadingFamily(true);
-      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/familyMembers?groupID=${groupID}`);
+      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/familyMembers?groupID=${groupID}`);
       console.log(`Fetched family members for group ${groupID}:`, response.data);
       
       // Log individual member data to check familialRelation
@@ -486,7 +486,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
        groupID: activeTab // Send the current tab's groupID
      };
 
-     await axios.post(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/invite`, invitationData);
+     await axios.post(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/invite`, invitationData);
 
      // Reset form after successful invitation
      setMemberRelation('');
@@ -551,12 +551,12 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
         setIsCheckingStatus(true);
         try {
           // Step 1: Fetch userID using clerkID
-          const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+          const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
           const fetchedUserID = userResponse.data.userID;
           setUserID(fetchedUserID);
 
           // Step 2: Check if user has submitted today
-          const statusResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/daily/check/${fetchedUserID}`);
+          const statusResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/daily/check/${fetchedUserID}`);
           
           // If user has submitted today, fetch their status to display emojis
           if (statusResponse.data.hasSubmittedToday) {
@@ -583,7 +583,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
     const fetchUserInfo = async () => {
       if (userID) {
         try {
-          const res = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/info`);
+          const res = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/info`);
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
 
@@ -622,7 +622,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
       setIsSubmittingStatus(true);
 
       // Submit daily status to backend (userID in endpoint, only mood and body fields)
-      await axios.post(`https://carebear-carebearvtmps-projects.vercel.app/api/daily/submit/${userID}`, {
+      await axios.post(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/daily/submit/${userID}`, {
         mood: selectedMood,
         body: selectedBodyFeeling,
       });
@@ -790,6 +790,14 @@ const FamilyMemberCard = ({
 
   return (
     <View className="flex-1">
+      {/* Full-page overlay loading state */}
+      {isLoadingFamily && (
+        <FeedLoading 
+          dataReady={false}
+          visible={true}
+        />
+      )}
+      
       <ScrollView className="flex-1">
       <Text className="text-[#2A1800] font-lato text-base font-extrabold px-8 pt-6">Your Families</Text>
           {/* Family Management Header */}
@@ -834,20 +842,13 @@ const FamilyMemberCard = ({
           </View>
           <View className="px-4">
             {/* Family Members Cards */}
-          {isLoadingFamily ? (
-            <View className="flex-1 justify-center items-center py-8">
-              <View className="w-8 h-8 mb-2 bg-gray-300 rounded-full animate-pulse" />
-              <Text className="mt-4 text-gray-600">Loading family members...</Text>
-            </View>
-          ) : (
-            currentFamilyMembers.map((member) => (
+            {currentFamilyMembers.map((member) => (
               <FamilyMemberCard 
                 key={member.userID}
                 member={member}
                 isCurrentUser={false}
               />
-            ))
-          )}
+            ))}
 
           {/* Add Member Card */}
             <View className='flex flex-col mx-4 mt-4'>
