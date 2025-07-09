@@ -134,8 +134,7 @@ export default function DashboardLayout() {
         position: 'relative', 
         alignItems: 'center', 
         justifyContent: 'center', 
-        width: 64,  // Fixed width for all tabs
-        height: 40  // Fixed height for all tabs
+        height: 32  
       }}>
       {/* Background shade for active tab */}
         {isActive && (
@@ -157,7 +156,7 @@ export default function DashboardLayout() {
           style={{
             width: 24,
             height: 24,
-            tintColor: isActive ? '#1A0933' : '#777',
+            tintColor: isActive ? '#2A1800' : 'gray',
             zIndex: 1,
           }}
           resizeMode="contain"
@@ -183,12 +182,12 @@ export default function DashboardLayout() {
               }
             }}
           >
-            <MaterialIcons name="keyboard-arrow-left" size={24} color="#362209" />
+            <MaterialIcons name="keyboard-arrow-left" size={24} color="#2A1800" />
           </Pressable>
 
           {/* Dynamic Dashboard Title */}
           <Text
-            className="text-lg font-bold text-[#362209] font-['Lato'] text-[18px] tracking-[0.3px]"
+            className="text-[18px] font-bold text-[#2A1800] font-['Lato'] text-[18px] tracking-[0.3px]"
           >
             {activeTitle}
           </Text>
@@ -224,8 +223,8 @@ export default function DashboardLayout() {
             }}
             style={{
               position: 'relative',
-              padding: 5,
-              marginRight: 10,
+              paddingTop: 16,
+              paddingBottom: 16,
             }}
             >
             <Image

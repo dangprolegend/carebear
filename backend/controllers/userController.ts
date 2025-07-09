@@ -382,7 +382,7 @@ export const getUserInfo = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-// Get all family members of the group a user belongs to (excluding the user themselves)
+// Get all family members of the group a user belongs to (including the user themselves)
 export const getFamilyMembers = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userID } = req.params;
@@ -407,9 +407,9 @@ export const getFamilyMembers = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    // Filter out the current user and collect member info with role and familial relation
-    const otherMembers = group.members.filter((member: any) => member.user.toString() !== userID);
-    const memberUserIDs = otherMembers.map((member: any) => member.user.toString());
+    // Include ALL members (including the current user)
+    const allMembers = group.members;
+    const memberUserIDs = allMembers.map((member: any) => member.user.toString());
     const users = await User.find({ _id: { $in: memberUserIDs } }).select('firstName lastName imageURL');
 
     const userMap = new Map();
@@ -418,7 +418,7 @@ export const getFamilyMembers = async (req: Request, res: Response): Promise<voi
     });
 
     // Combine user info with role and familial relation from group members
-    const familyMembers = otherMembers.map((member: any) => {
+    const familyMembers = allMembers.map((member: any) => {
       const userInfo = userMap.get(member.user.toString());
       return {
         userID: member.user,

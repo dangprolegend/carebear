@@ -39,7 +39,7 @@ export default function RolesInfo() {
               <Image source={BabyBear} className="w-40 h-40" resizeMode="contain" />
             </View>
             <View className="flex-1">
-              <Text className="text-[#2A1800] font-lato text-[20px] font-bold leading-6 mb-2">
+              <Text className="text-[#2A1800] font-lato text-[14px] font-bold leading-6 mb-2">
             BabyBear
               </Text>
               <Text className="text-[#2A1800] font-lato text-[14px] font-normal leading-5">
@@ -54,7 +54,7 @@ export default function RolesInfo() {
               <Image source={CareBear} className="w-40 h-40" resizeMode="contain" />
             </View>
             <View className="flex-1">
-              <Text className="text-[#2A1800] font-lato text-[20px] font-bold leading-6 mb-2">
+              <Text className="text-[#2A1800] font-lato text-[14px] font-bold leading-6 mb-2">
             CareBear
               </Text>
               <Text className="text-[#2A1800] font-lato text-[14px] font-normal leading-5">
@@ -69,7 +69,7 @@ export default function RolesInfo() {
               <Image source={BearBoss} className="w-40 h-40" resizeMode="contain" />
             </View>
             <View className="flex-1">
-              <Text className="text-[#2A1800] font-lato text-[20px] font-bold leading-6 mb-2">
+              <Text className="text-[#2A1800] font-lato text-[14px] font-bold leading-6 mb-2">
             BearBoss
               </Text>
               <Text className="text-[#2A1800] font-lato text-[14px] font-normal leading-5">
