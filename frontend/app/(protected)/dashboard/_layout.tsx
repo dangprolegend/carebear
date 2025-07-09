@@ -173,7 +173,7 @@ export default function DashboardLayout() {
           {/* Home Button */}
             <Pressable
               onPress={() => {
-                router.back();
+                router.back;
               }}
             >
               <Image
