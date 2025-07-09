@@ -1018,7 +1018,12 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
               <MaterialIcons name="arrow-left" size={24} color="#666" />
             </Pressable>
             <View className="flex-row items-center">
-              <MaterialIcons name="calendar-today" size={20} color="#666" />
+              {/* Replace MaterialIcons with Image */}
+              <Image
+                source={require('../../../../assets/icons/calendar.png')}
+                style={{ width: 20, height: 20 }}
+                resizeMode="contain"
+              />
               <Text className="ml-2">
                 {selectedDate.toLocaleDateString('en-US', {
                   month: '2-digit',
