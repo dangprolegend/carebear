@@ -70,7 +70,7 @@ const throttleRequest = async <T>(
   }
 };
 
-const API_BASE_URL = "https://mature-catfish-cheaply.ngrok-free.app";
+const API_BASE_URL = "https://carebear-carebearvtmps-projects.vercel.app";
 
 
 console.log("apiService.ts: Using API Base URL:", API_BASE_URL);

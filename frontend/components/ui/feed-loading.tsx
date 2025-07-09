@@ -1,16 +1,19 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, StyleSheet } from 'react-native';
+import { BlurView } from 'expo-blur';
 
 interface FeedLoadingProps {
   dataReady?: boolean;
   onFinish?: () => void;
   fastTransition?: boolean; // New prop to control transition speed
+  visible?: boolean; // New prop to control visibility
 }
 
 const FeedLoading: React.FC<FeedLoadingProps> = ({ 
   dataReady = false, 
   onFinish,
-  fastTransition = true // Default to fast transitions
+  fastTransition = true, // Default to fast transitions
+  visible = true // Default to visible
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -59,22 +62,65 @@ const FeedLoading: React.FC<FeedLoadingProps> = ({
     };
   }, [dataReady, currentImageIndex, onFinish, fastTransition, images.length]);
 
+  // Don't render if not visible
+  if (!visible) {
+    return null;
+  }
+
   return (
-    <View className="flex-1 justify-center items-center bg-white">
-        <View className="items-center">
-        <Image 
-          source={images[currentImageIndex]} 
-          className="w-40 h-40"
-          style={{ opacity: 1 }}
-          resizeMode="contain"
-        />
-        
-        <Text className="text-[#623405] text-lg mt-4 font-medium">
-          Loading...
-        </Text>
-      </View>
+    <View style={styles.overlay}>
+      <BlurView intensity={20} style={styles.blurContainer}>
+        <View style={styles.modalContent}>
+          <View className="items-center">
+            <Image 
+              source={images[currentImageIndex]} 
+              className="w-[300px] h-[97px]"
+              style={{ opacity: 1 }}
+              resizeMode="contain"
+            />
+            
+            <Text className="text-[#623405] text-lg mt-4 font-medium">
+              Loading...
+            </Text>
+          </View>
+        </View>
+      </BlurView>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 9999,
+    backgroundColor: '#AF9D86', 
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  blurContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    borderColor: 'black', 
+    borderWidth: 1, // Increased border line to 1px
+    padding: 33,
+    alignItems: 'center',
+    elevation: 8,
+    minWidth: 280,
+    maxWidth: 320,
+  },
+});
 
 export default FeedLoading;
