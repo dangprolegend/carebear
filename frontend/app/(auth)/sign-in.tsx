@@ -139,22 +139,22 @@ import {
           </View>  
   
         {/* Sign in with social providers (Google, Facebook, Apple) */}
-          <View className="flex flex-col items-start gap-8 self-stretch mt-[40px]">
+          <View className=" ml-9 flex flex-col justify-center items-center gap-8 self-stretch mt-[40px] w-[350px]">
             <View className='flex flex-row justify-center items-center gap-2 self-stretch'>
-              <Image source={Line} className="w-[40px]"/>
-              <Text className="text-black font-lato text-base font-light leading-6 tracking-[-0.1px]">Or Sign In With</Text>
-              <Image source={Line} className="w-[40px]"/>
-              </View>
-            <View style={{ flexDirection: 'row', gap: 32, marginHorizontal: 'auto' }}>
+              <Image source={Line} className="w-[150px]"/>
+              <Text className="text-black font-lato text-base font-light leading-6 tracking-[-0.1px]">or</Text>
+              <Image source={Line} className="w-[150px]"/>
+            </View>
+            <View className="flex flex-col gap-4 w-full">
               <SignInWith strategy='oauth_google' />
-              <SignInWith strategy='oauth_facebook' />
               <SignInWith strategy='oauth_apple' />
+              <SignInWith strategy='oauth_facebook' />
             </View>
           </View>
 
             <View className='items-center gap-[16px]'>
               <TouchableOpacity
-                  className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full mt-[68px]"
+                  className="bg-[##2A1800] inline-flex min-w-[350px] py-4 px-8 justify-center items-center gap-1 rounded-full mt-[68px]"
                   onPress={handleSubmit(onSignIn)}
                 >
                   <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Sign In</Text>
@@ -164,7 +164,7 @@ import {
                     Don't have an account? 
                   </Text>
                   <TouchableOpacity onPress={() => router.replace('/sign-up')}>
-                    <Text className='text-[#0F172A] font-lato text-base font-extrabold leading-6 tracking-[-0.1px]'>
+                    <Text className='text-[#2A1800] font-lato text-base font-extrabold leading-6 tracking-[-0.1px]'>
                       Sign Up
                     </Text>
                   </TouchableOpacity>

@@ -20,7 +20,7 @@ export default function JoinFamilyScreen() {
       }
 
       // Step 1: Fetch userID using clerkID
-      const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+      const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
       const userID = userResponse.data.userID;
       console.log('Fetching userID for clerkID:', userID);
       
@@ -28,8 +28,8 @@ export default function JoinFamilyScreen() {
       // Step 2: Join group with provided group ID
       const updateData = { groupID: groupId };
 
-      await axios.patch(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/joinGroup`, updateData);
-      router.push('/setup/congrats');
+      await axios.patch(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/joinGroup`, updateData);
+      router.push('/setup/roles-info');
     } catch (error) {
       console.error('Error joining group:', error);
       alert('Failed to join group');
@@ -67,9 +67,9 @@ export default function JoinFamilyScreen() {
           variant="default"
           size="lg"
           onPress={handleJoin}
-          className="rounded-full bg-foreground px-10 py-3 w-48" 
+          className="rounded-full bg-[#2A1800] px-10 py-3 w-48" 
         >
-          <Text className="text-primary-foreground">Join</Text>
+          <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Join</Text>
         </Button>
       </View>
 
@@ -80,7 +80,7 @@ export default function JoinFamilyScreen() {
       <View className="flex flex-row justify-between items-start self-stretch mt-[56px]">
           <TouchableOpacity 
             onPress={() => router.push('/setup/health-input')}
-            className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-[#DDD]"
+            className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-black"
           >
           <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
             Back
@@ -88,7 +88,7 @@ export default function JoinFamilyScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+          className="bg-[#2A1800] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
           onPress={() => router.push('/setup/create-family')}
         >
           <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Create Group</Text>

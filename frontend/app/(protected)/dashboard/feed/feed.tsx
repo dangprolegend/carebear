@@ -113,7 +113,7 @@ export default function Feed() {
           
           setClerkAuthTokenForFeedService(token);
 
-          const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`, {
+          const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
@@ -124,7 +124,7 @@ export default function Feed() {
           const userGroups = await fetchUserGroups(backendUserID);
           setAvailableGroups(userGroups);
 
-          const groupResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${backendUserID}/group`, {
+          const groupResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${backendUserID}/group`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
@@ -140,7 +140,7 @@ export default function Feed() {
               setCurrentGroupName(primaryGroup.name || 'Family Group');
             } else {
               try {
-                const groupDetailsResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/groups/${primaryGroupID}`, {
+                const groupDetailsResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/groups/${primaryGroupID}`, {
                   headers: {
                     'Authorization': `Bearer ${token}`,
                   },
@@ -266,7 +266,19 @@ const loadFeedData = async () => {
     setRefreshing(false);
   };  
   return (
-    <View className="flex-1 bg-white">    
+    <View className="flex-1 bg-white">
+      {/* Full-page overlay loading state */}
+      {(loading || !showContent) && (
+        <FeedLoading 
+          dataReady={dataReady}
+          visible={true}
+          onFinish={() => {
+            setLoading(false);
+            setShowContent(true);
+          }}
+        />
+      )}
+      
       <View className="px-3 py-3">        
         <View className="flex-row justify-between items-center">
           <Text className="font-semibold left-4 text-lg text-gray-900 font-['Lato']">
@@ -291,15 +303,9 @@ const loadFeedData = async () => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 16 }}      >{loading || !showContent ? (
-          <FeedLoading 
-            dataReady={dataReady}
-            onFinish={() => {
-              setLoading(false);
-              setShowContent(true);
-            }}
-          />
-        ) : filteredData.length === 0 ? (
+        contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 0 }}
+      >
+        {filteredData.length === 0 ? (
           <EmptyState
             icon="feed"
             title="No activities to show"

@@ -6,6 +6,7 @@ import axios from 'axios';
 import CalendarStrip from '~/components/CalendarStrip';
 import CircularProgress from '~/components/CircularProgress';
 import TaskDetailModal from '~/components/TaskDetailModal';
+import StravaConnectSection from '~/components/StravaConnectButton'; 
 import Settings from '../../../../assets/icons/settings.png';
 import Heart from '../../../../assets/icons/heart.png';
 import FeedLoading from '~/components/ui/feed-loading';
@@ -37,8 +38,9 @@ export default function Profile() {
   const [taskCompletion, setTaskCompletion] = useState<number>(0);
   const [numFamilies, setNumFamilies] = useState<number>(0);
 
-  // Modal state
   const [isTaskModalVisible, setIsTaskModalVisible] = useState<boolean>(false);
+  // Add state for Strava connection status
+  const [isStravaConnected, setIsStravaConnected] = useState<boolean>(false);
 
   const moods = [
     { id: 'happy', emoji: '😊', label: 'Happy', value: 'happy' },
@@ -92,9 +94,14 @@ export default function Profile() {
     return Math.max(0, daysDifference); 
   };
 
+  // Add handler for Strava connection changes
+  const handleStravaConnectionChange = (isConnected: boolean) => {
+    setIsStravaConnected(isConnected);
+  };
+
   const fetchNumGroups = async (userID: string) => {
       try {
-        const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/allGroups`);
+        const response = await axios.get(`https://carebear-backend.onrender.com/api/users/${userID}/allGroups`);
         const numGroups = response.data.totalGroups || 0;
         setNumFamilies(numGroups);
         return numGroups;
@@ -106,7 +113,7 @@ export default function Profile() {
   
   const fetchTaskCompletion = async (userID: string, groupID: string) => {
       try {
-        const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`);
+        const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`);
         const percentage = response.data.completionPercentage || 0;
         setTaskCompletion(percentage);
         return percentage;
@@ -119,7 +126,7 @@ export default function Profile() {
   // Fetch user created date
   const fetchUserCreatedDate = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}`);
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}`);
       const createdDate = new Date(response.data.createdAt);
       setUserCreatedDate(createdDate);
       
@@ -146,7 +153,7 @@ export default function Profile() {
   // Fetch today's daily status
   const fetchTodayStatus = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/daily/today/${userID}`);
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/daily/today/${userID}`);
       if (response.data && response.data.mood && response.data.body) {
         setTodayMoodValue(response.data.mood);
         setTodayBodyValue(response.data.body);
@@ -169,7 +176,7 @@ export default function Profile() {
 
   const fetchPrimaryGroupId = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
       setPrimaryGroupId(response.data.groupID);
       return response.data.groupID;
     } catch (error) {
@@ -189,7 +196,7 @@ export default function Profile() {
   const fetchTaskCompletionForDate = async (userID: string, groupID: string, date: Date) => {
     try {
       const dateKey = formatDateForAPI(date); // Use helper function for consistent formatting
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`, {
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`, {
         params: {
           date: dateKey 
         }
@@ -239,11 +246,11 @@ export default function Profile() {
     const getUserInfo = async () => {
       if (isSignedIn && userId) {
         try {
-          const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+          const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
           const fetchedUserID = userResponse.data.userID;
           setUserID(fetchedUserID);
 
-          const res = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${fetchedUserID}/info`);
+          const res = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${fetchedUserID}/info`);
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
 
@@ -267,12 +274,12 @@ export default function Profile() {
         setIsCheckingStatus(true);
         try {
           // Step 1: Fetch userID using clerkID
-          const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+          const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
           const fetchedUserID = userResponse.data.userID;
           setUserID(fetchedUserID);
 
           // Step 2: Check if user has submitted today
-          const statusResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/daily/check/${fetchedUserID}`);
+          const statusResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/daily/check/${fetchedUserID}`);
           
           // If user has submitted today, fetch their status to display emojis
           if (statusResponse.data.hasSubmittedToday) {
@@ -360,15 +367,8 @@ export default function Profile() {
           <CalendarStrip selectedDate={selectedDate} setSelectedDate={setSelectedDate} userID={userID || ''} />
       </View>
 
-        <View className="flex flex-col items-start gap-[8px] p-4 rounded-lg bg-[#FAE5CA] mt-10 w-5/6 self-center">
-          <View className="flex flex-row items-center gap-2">
-            <View className="flex w-6 h-6 p-0.5 justify-center items-center gap-2 aspect-square rounded-full border border-[#2A1800] bg-[#198AE9]">
-              <Image source={Heart} className='w-4 h-4'/>
-            </View>
-            <Text className='text-[#2A1800] font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]'>{daysHealthy}</Text>
-        </View>
-          <Text className='text-[#2A1800] font-lato text-[16px] font-light leading-[24px] tracking-[-0.1px]'>{getDayText(daysHealthy)} Healthy</Text>
-        </View>
+      {/* Strava Connect */}
+      <StravaConnectSection onConnectionChange={handleStravaConnectionChange} />
 
         {/* Task Detail Modal */}
         <TaskDetailModal

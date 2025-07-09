@@ -818,6 +818,14 @@ const FamilyMemberCard = ({
 
   return (
     <View className="flex-1">
+      {/* Full-page overlay loading state */}
+      {isLoadingFamily && (
+        <FeedLoading 
+          dataReady={false}
+          visible={true}
+        />
+      )}
+      
       <ScrollView className="flex-1">
       <Text className="text-[#2A1800] font-lato text-base font-extrabold px-8 pt-6">Your Families</Text>
           {/* Family Management Header */}
@@ -862,20 +870,13 @@ const FamilyMemberCard = ({
           </View>
           <View className="px-4">
             {/* Family Members Cards */}
-          {isLoadingFamily ? (
-            <View className="flex-1 justify-center items-center py-8">
-              <View className="w-8 h-8 mb-2 bg-gray-300 rounded-full animate-pulse" />
-              <Text className="mt-4 text-gray-600">Loading family members...</Text>
-            </View>
-          ) : (
-            currentFamilyMembers.map((member) => (
+            {currentFamilyMembers.map((member) => (
               <FamilyMemberCard 
                 key={member.userID}
                 member={member}
                 isCurrentUser={false}
               />
-            ))
-          )}
+            ))}
 
           {/* Add Member Card */}
             <View className='flex flex-col mx-4 mt-4'>

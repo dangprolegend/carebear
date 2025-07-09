@@ -13,6 +13,7 @@ import Privacy from '../../../../assets/icons/pocket.png';
 import Profile from '../../../../assets/icons/circle-user-round.png';
 import Account from '../../../../assets/icons/user-cog.png';
 import Help from '../../../../assets/icons/circle-help.png';
+import SettingsIcon from '../../../../assets/icons/settings.png';
 import Google from '../../../../assets/images/google.png';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
@@ -276,7 +277,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       console.log('Uploading image for user:', userID);
 
       const response = await axios.post(
-        `https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/upload-image`,
+        `https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/upload-image`,
         formData,
         {
           headers: {
@@ -315,7 +316,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
     try {
       setIsLoadingPreferences(true);
       const response = await axios.get(
-        `https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/notification-preferences`
+        `https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/notification-preferences`
       );
       
       if (response.status === 200) {
@@ -339,7 +340,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       
       // Trigger a notification update in the notification system
       await axios.post(
-        `https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/notifications/refresh-settings`,
+        `https://carebear-carebearvtmps-projects.vercel.app/api/notifications/refresh-settings`,
         { userID }
       );
     } catch (error) {
@@ -372,7 +373,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       };
       
       const response = await axios.patch(
-        `https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/notification-preferences`,
+        `https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/notification-preferences`,
         preferences
       );
 
@@ -552,7 +553,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
       console.log('Updating profile with data:', updateData);
       
       const response = await axios.patch(
-        `https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/update`,
+        `https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/update`,
         updateData,
         {
           headers: {
@@ -636,7 +637,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
     const getUserInfo = async () => {
       if (isSignedIn && userId) {
         try {
-          const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+          const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
           const fetchedUserID = userResponse.data.userID;
           setUserID(fetchedUserID);
           
@@ -644,7 +645,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
             fetchNotificationPreferences();
           }
           
-          const res = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${fetchedUserID}/info`);
+          const res = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${fetchedUserID}/info`);
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
         } catch (error) {
@@ -699,7 +700,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
         <View className="mb-8 px-6 mt-8">
           <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px] mb-4">Settings</Text>
 
-          <View className="border border-[#623405] px-0.5 py-0.5 rounded-lg">
+          <View className="border border-[#2A1800] px-0.5 py-0.5 rounded-lg">
             <View className="bg-white rounded-lg">
               <DropdownSettingItem
                 icon={Profile}
@@ -765,7 +766,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                       style={{
                         minHeight: 43,
                         borderWidth: 1,
-                        borderColor: '#e5e5e5',
+                        borderColor: '#2A1800',
                         borderRadius: 6,
                         paddingHorizontal: 12,
                         backgroundColor: 'white',
@@ -851,7 +852,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
               <DropdownSettingItem
                 icon={Account}
                 title="Account"
-                iconColor="#78350f"
+                iconColor="#2A1800"
                 isExpanded={isAccountExpanded}
                 onToggleExpanded={() => setIsAccountExpanded(!isAccountExpanded)}
               >
@@ -901,7 +902,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
         </View>          
 
         <View className="mb-8 px-6">
-          <View className="border border-[#623405] px-0.5 py-0.5 rounded-lg">
+          <View className="border border-[#2A1800] px-0.5 py-0.5 rounded-lg">
             <View className="bg-white rounded-lg">
               <DropdownSettingItem
                   icon={Bell}
@@ -964,7 +965,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
 
         {/* Sign Out*/}
         <View className="mb-4 px-6">
-          <View className="border border-[#623405] px-0.5 py-0.5 rounded-lg">
+          <View className="border border-[#2A1800] px-0.5 py-0.5 rounded-lg">
             <View className="bg-white rounded-lg">
               <TouchableOpacity 
                 onPress={handleSignOut}

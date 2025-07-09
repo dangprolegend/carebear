@@ -20,9 +20,9 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
   const [taskCompletionByDate, setTaskCompletionByDate] = useState<{[dateKey: string]: number}>({});
   const [primaryGroupId, setPrimaryGroupId] = useState<string | null>(null);
 
-    const fetchUserCreatedDate = async (userID: string) => {
+  const fetchUserCreatedDate = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}`);
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}`);
       const createdDate = new Date(response.data.createdAt);
       setUserCreatedDate(createdDate);
       return createdDate;
@@ -34,7 +34,7 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
 
   const fetchPrimaryGroupId = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
       setPrimaryGroupId(response.data.groupID);
       return response.data.groupID;
     } catch (error) {
@@ -54,7 +54,7 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
   const fetchTaskCompletionForDate = async (userID: string, groupID: string, date: Date) => {
     try {
       const dateKey = formatDateForAPI(date); // Use helper function for consistent formatting
-      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`, {
+      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`, {
         params: {
           date: dateKey 
         }
@@ -75,7 +75,7 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
     }
   };
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchUserData = async () => {
       if (userID) { 
         const createdDate = await fetchUserCreatedDate(userID);
@@ -120,22 +120,8 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
           setCalendarEvents(events);
         }
       }
-      
-      // Fetch task completions for new week when selectedDate changes
-      if (userID && primaryGroupId && userCreatedDate) {
-        const promises = [];
-        for (let i = -3; i <= 3; i++) {
-          const date = new Date(selectedDate);
-          date.setDate(date.getDate() + i);
-          
-          if (date >= userCreatedDate) {
-            promises.push(fetchTaskCompletionForDate(userID, primaryGroupId, date));
-          }
-        }
-        await Promise.all(promises);
-      }
     })();
-  }, [selectedDate, userID, primaryGroupId, userCreatedDate]);
+  }, [selectedDate]);
 
   const shouldShowHeart = (date: Date) => {
     if (!userCreatedDate) return false;
@@ -148,100 +134,99 @@ const CalendarStrip = ({ selectedDate, setSelectedDate, userID }: CalendarStripP
     return dateToCheck >= createdDateNormalized;
   };
 
-
   return (
     <View className="px-4">
-              {/* Calendar Strip */}
-              <View className="flex-row items-center justify-between mt-6">
-                <Pressable
-                  onPress={() => {
-                    const newDate = new Date(selectedDate);
-                    newDate.setDate(selectedDate.getDate() - 1);
-                    setSelectedDate(newDate);
-                  }}
-                >
-                  <MaterialIcons name="arrow-left" size={24} color="#666" />
-                </Pressable>
-                <View className="flex-row items-center">
-                  <MaterialIcons name="calendar-today" size={20} color="#666" />
-                  <Text className="ml-2">
-                    {selectedDate.toLocaleDateString('en-US', {
-                      month: '2-digit',
-                      day: '2-digit',
-                      year: 'numeric',
-                    })}
-                  </Text>
-                </View>
-                <Pressable
-                  onPress={() => {
-                    const newDate = new Date(selectedDate);
-                    newDate.setDate(selectedDate.getDate() + 1);
-                    setSelectedDate(newDate);
-                  }}
-                >
-                  <MaterialIcons name="arrow-right" size={24} color="#666" />
-                </Pressable>
-              </View>
-    
-              {/* Week Days */}
-              <View className="flex-row items-center justify-between mt-4">
-                {Array.from({ length: 7 }).map((_, index) => {
-                  const date = new Date(selectedDate);
-                  date.setDate(date.getDate() - 3 + index);
-                  const isSelected = date.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
-                  const today = new Date();
-                  today.setHours(0, 0, 0, 0);
-                  const dateToCompare = new Date(date);
-                  dateToCompare.setHours(0, 0, 0, 0);
-                  const isPastDate = dateToCompare <= today;
-                  const completionPercentage = taskCompletionByDate[formatDateForAPI(date)] || 0;
-    
-                  return (
-                    <Pressable
-                      key={index}
-                      onPress={() => setSelectedDate(new Date(date))}
-                      style={{
-                        width: 35,
-                        height: 88,
-                        borderRadius: 4,
-                        borderStyle: 'solid',
-                        borderWidth: isSelected ? 1 : 0,
-                        borderColor: isSelected ? '#2A1800' : 'transparent',
-                        padding: 8,
-                        alignItems: 'center',
-                        backgroundColor: isSelected ? '#FAE5CA' : 'transparent',
-                        marginHorizontal: 2,
-                      }}
-                    >
-                      <Text
-                        className={`w-[24px] h-[24px] text-center text-xs ${
-                          isSelected ? 'text-gray-800' : 'text-gray-500'
-                        }`}
-                      >
-                        {date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0).toUpperCase()}
-                      </Text>
-                      <Text
-                        className={`w-[19px] h-[24px] text-center text-xs ${
-                          isSelected ? 'text-gray-800' : 'text-gray-500'
-                        }`}
-                      >
-                        {date.getDate()}
-                      </Text>
-    
-                      {shouldShowHeart(date) && completionPercentage > 0 ? (
-                          <CircularProgress 
-                            percentage={completionPercentage} 
-                            size={20} 
-                          />
-                        ) : (
-                          <View className="w-5 h-5" />
-                        )}
-                                </Pressable>
-                                );
-                              })}
-                            </View>
-                          </View>
-                        );
-                      };
+      {/* Calendar Strip */}
+      <View className="flex-row items-center justify-between mt-6">
+        <Pressable
+          onPress={() => {
+            const newDate = new Date(selectedDate);
+            newDate.setDate(selectedDate.getDate() - 1);
+            setSelectedDate(newDate);
+          }}
+        >
+          <MaterialIcons name="arrow-left" size={24} color="#666" />
+        </Pressable>
+        <View className="flex-row items-center">
+          <MaterialIcons name="calendar-today" size={20} color="#666" />
+          <Text className="ml-2">
+            {selectedDate.toLocaleDateString('en-US', {
+              month: '2-digit',
+              day: '2-digit',
+              year: 'numeric',
+            })}
+          </Text>
+        </View>
+        <Pressable
+          onPress={() => {
+            const newDate = new Date(selectedDate);
+            newDate.setDate(selectedDate.getDate() + 1);
+            setSelectedDate(newDate);
+          }}
+        >
+          <MaterialIcons name="arrow-right" size={24} color="#666" />
+        </Pressable>
+      </View>
+
+      {/* Week Days */}
+      <View className="flex-row items-center justify-between mt-4">
+        {Array.from({ length: 7 }).map((_, index) => {
+          const date = new Date(selectedDate);
+          date.setDate(date.getDate() - 3 + index);
+          const isSelected = date.toISOString().split('T')[0] === selectedDate.toISOString().split('T')[0];
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const dateToCompare = new Date(date);
+          dateToCompare.setHours(0, 0, 0, 0);
+          const isPastDate = dateToCompare <= today;
+          const completionPercentage = taskCompletionByDate[formatDateForAPI(date)] || 0;
+
+          return (
+            <Pressable
+              key={index}
+              onPress={() => setSelectedDate(new Date(date))}
+              style={{
+                width: 35,
+                height: 88,
+                borderRadius: 4,
+                borderStyle: 'solid',
+                borderWidth: isSelected ? 1 : 0,
+                borderColor: isSelected ? '#2A1800' : 'transparent',
+                padding: 8,
+                alignItems: 'center',
+                backgroundColor: isSelected ? '#FAE5CA' : 'transparent',
+                marginHorizontal: 2,
+              }}
+            >
+              <Text
+                className={`w-[24px] h-[24px] text-center text-xs ${
+                  isSelected ? 'text-gray-800' : 'text-gray-500'
+                }`}
+              >
+                {date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0).toUpperCase()}
+              </Text>
+              <Text
+                className={`w-[19px] h-[24px] text-center text-xs ${
+                  isSelected ? 'text-gray-800' : 'text-gray-500'
+                }`}
+              >
+                {date.getDate()}
+              </Text>
+
+              {shouldShowHeart(date) && completionPercentage > 0 ? (
+                <CircularProgress 
+                  percentage={completionPercentage} 
+                  size={20} 
+                />
+              ) : (
+                <View className="w-5 h-5" />
+              )}
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+};
 
 export default CalendarStrip;

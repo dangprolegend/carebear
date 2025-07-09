@@ -54,7 +54,7 @@ export const suggestTasksFromInput = async (req: UserRequest, res: Response): Pr
     const currentDateFormatted = today.toLocaleDateString('en-CA'); 
 
     const llmPrompt = `
-      You are an expert assistant for the CareBear app. Your goal is to help users create caregiving tasks (strictly less than or equal to 5 tasks).
+      You are an expert assistant for the CareBear app. Your goal is to help users create caregiving tasks (strictly less than or equal to 5 tasks, no more than 5 tasks generated).
       Today's date is ${currentDateFormatted}.
       The user making this request has ID: ${userID}.
       They are in group ID: ${groupID}.
