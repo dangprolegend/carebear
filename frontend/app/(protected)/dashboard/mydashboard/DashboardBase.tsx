@@ -545,7 +545,7 @@ useEffect(() => {
       // Create a reminder time
       // Adjust the time ahead as needed
       const reminderTime = new Date(taskDate);
-      const timeAhead = 13; // Set a default time ahead of 10 minutes
+      const timeAhead = 5; // Set a default time ahead of 5 minutes
       reminderTime.setMinutes(reminderTime.getMinutes() - timeAhead);
       
       // Only schedule if in the future
