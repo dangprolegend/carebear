@@ -388,18 +388,16 @@ useEffect(() => {
     if (selectedGroup) {
       // Update the current group ID in API service
       setCurrentGroupIDForApiService(selectedGroup.id);
-      
-      // Reset filters
-      setSelectedTaskAssignee([]);
-      setTaskFilterLabel("All Tasks");
-      setSelectedAssignedBy(null);
-      
-      // Show loading state
-      setLocalTasks([]); // Clear current tasks while loading
       setGroupsLoading(true);
       
-      // Fetch tasks for the newly selected group
-      loadTasksForGroup(selectedGroup.id);
+      // Different handling based on user role
+      if (isCareReceiver) {
+        // For care receivers, load only tasks assigned to them in this group
+        loadTasksForCareReceiverInGroup(selectedGroup.id);
+      } else {
+        // For other users, use the existing function
+        loadTasksForGroup(selectedGroup.id);
+      }
     }
   };
 
@@ -844,22 +842,98 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
       loadFamilyMembers();
     }, [selectedGroupName, isCareReceiver, user]);
 
+
+  const loadTasksForCareReceiverInGroup = async (groupID: string) => {
+    try {
+      // Get current user ID
+      const currentUserId = getCurrentUserID();
+      if (!currentUserId) {
+        console.error("No user ID available");
+        setLocalTasks([]);
+        setGroupsLoading(false);
+        return;
+      }
+      
+      console.log(`Loading tasks for care receiver (${currentUserId}) in group ${groupID}`);
+      
+      // First, fetch all tasks for the selected group
+      const allGroupTasks = await fetchTasksForDashboard(groupID);
+      console.log(`Found ${allGroupTasks.length} total tasks in group ${groupID}`);
+      
+      // Then filter to only show tasks assigned to this care receiver
+      const myTasks = allGroupTasks.filter(task => {
+        let assignedToId;
+        
+        // Handle different ways assignedTo might be structured
+        if (typeof task.assignedTo === 'object' && task.assignedTo !== null) {
+          if ('_id' in task.assignedTo) {
+            assignedToId = (task.assignedTo as { _id: string })._id;
+          } else if ('id' in task.assignedTo) {
+            assignedToId = (task.assignedTo as { id: string }).id;
+          } else if ('userID' in task.assignedTo) {
+            assignedToId = (task.assignedTo as { userID: string }).userID;
+          }
+        } else {
+          assignedToId = task.assignedTo;
+        }
+        
+        return assignedToId === currentUserId;
+      });
+      
+      console.log(`Found ${myTasks.length} tasks assigned to care receiver in group ${groupID}`);
+      setLocalTasks(myTasks);
+      
+    } catch (error) {
+      console.error(`Error loading care receiver tasks for group ${groupID}:`, error);
+      setLocalTasks([]);
+    } finally {
+      setGroupsLoading(false);
+    }
+  };
+
   // Add this useEffect to load tasks when the default group is selected
   useEffect(() => {
     const loadInitialTasks = async () => {
-      const groupID = getCurrentGroupID();
-      if (!groupID) return;
+      // Get the first group or current group ID
+      let groupID;
+      if (userGroups.length > 0) {
+        // Use the currently selected group if available
+        if (selectedGroupName) {
+          const group = userGroups.find(g => g.name === selectedGroupName);
+          if (group) groupID = group.id;
+        } else {
+          // Otherwise use the first group
+          groupID = userGroups[0].id;
+          setSelectedGroupName(userGroups[0].name);
+        }
+      } else {
+        // Fallback to whatever is in the API service
+        groupID = getCurrentGroupID();
+      }
+      
+      if (!groupID) {
+        console.log("No group ID available for initial task load");
+        return;
+      }
+      
+      setGroupsLoading(true);
       
       try {
-        const groupTasks = await fetchTasksForDashboard(groupID);
-        setLocalTasks(groupTasks);
+        if (isCareReceiver) {
+          await loadTasksForCareReceiverInGroup(groupID);
+        } else {
+          const groupTasks = await fetchTasksForDashboard(groupID);
+          setLocalTasks(groupTasks);
+        }
       } catch (error) {
         console.error('Error loading initial tasks:', error);
+      } finally {
+        setGroupsLoading(false);
       }
     };
     
     loadInitialTasks();
-  }, []);
+  }, [userGroups, isCareReceiver]);
 
 
   // Get avatar URL helper function
