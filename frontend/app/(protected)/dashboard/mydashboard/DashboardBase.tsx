@@ -1056,13 +1056,81 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
 
         {/* CONDITIONAL RENDERING BASED ON USER ROLE */}
         {isCareReceiver ? (
-          // CARE RECEIVER VIEW - Simple task cards
-          <View className="flex-1 mt-6">
-            <View className="mb-0">
-              <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4"
-                style={{ paddingTop: 16, paddingBottom: 16 }}>
-                <Text className="text-lg font-semibold text-[#2A1800]">Today's Tasks</Text>
-              </View>
+        // CARE RECEIVER VIEW - Simple task cards
+        <View className="flex-1 mt-6">
+          <View className="mb-0">
+            {/* Combined header with group selector - MODIFIED */}
+            <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4"
+              style={{ paddingTop: 12, paddingBottom: 12 }}>
+              <Text className="text-lg font-semibold text-[#2A1800]">Today's Tasks</Text>
+              <Pressable 
+                onPress={(e) => {
+                  e.stopPropagation();
+                  setShowGroupSelector(!showGroupSelector);
+                }}
+                style={{
+                  display: 'flex',
+                  width: 157,
+                  height: 32,
+                  padding: 0,
+                  paddingLeft: 12,
+                  paddingRight: 8,
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: '#2A1800',
+                  backgroundColor: '#FFF',
+                  flexDirection: 'row'
+                }}
+              >
+                <Text className="text-sm mr-2">{selectedGroupName}</Text>
+                <MaterialIcons 
+                  name={showGroupSelector ? "arrow-drop-up" : "arrow-drop-down"} 
+                  size={20} color="#333" 
+                />
+              </Pressable>
+              
+              {/* Group dropdown menu */}
+              {showGroupSelector && (
+                <View
+                  style={{ 
+                    position: 'absolute',
+                    top: 43, // Position below header
+                    right: 20, // Align with right padding
+                    backgroundColor: 'white',
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: '#2A1800',
+                    zIndex: 10,
+                    width: 157,
+                    elevation: 5,
+                  }}
+                >
+                  {userGroups.map((group, index) => (
+                    <Pressable
+                      key={index}
+                      style={{
+                        paddingVertical: 8,
+                        paddingHorizontal: 12,
+                        borderBottomWidth: index < userGroups.length - 1 ? 1 : 0,
+                        borderBottomColor: '#FAE5CA',
+                      }}
+                      onPress={() => handleGroupChange(group.name)}
+                    >
+                      <Text
+                        style={{ 
+                          color: '#2A1800',
+                          fontWeight: selectedGroupName === group.name ? 'bold' : 'normal'
+                        }}
+                      >
+                        {group.name}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
               <View className="bg-white px-4">
                 {filteredTasks.length === 0 ? (
                   <View className="items-center justify-center py-12">
