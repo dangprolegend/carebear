@@ -1651,7 +1651,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
 
                         {/* Task Group */}
                         <View className="flex-1 ml-2">
-                          <Text className="text-sm font-semibold text-[#2A1800] mb-2">{group.time}</Text>
+                          {/* <Text className="text-sm font-semibold text-[#2A1800] mb-2">{group.time}</Text> */}
                           {group.tasks.map((task, taskIndex) => {
                             // Check if task is in the past
                             const isPastTask = isTaskInPast(task.datetime);
@@ -1668,64 +1668,86 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                   marginBottom: 16,
                                 }}
                               >
-                              <Pressable onPress={() => handleTaskPress(task)} className="flex-1">
-                                {/* Task content */}
-                                <View className="flex-row items-center justify-between mb-2">
-                                  <View className="flex-row items-center gap-4 flex-1">
-                                    {/* Avatar of assignee */}
-                                    <Image
-                                      source={{ uri: getAvatarUrl(task.assignedTo) }}
-                                      className="w-6 h-6 rounded-full"
-                                    />
-                                    {/* Priority flag */}
+                                <Pressable onPress={() => handleTaskPress(task)} className="flex-1">
+                                  {/* ROW 1: Avatar, Title, Flag */}
+                                  <View className="flex-row items-center justify-between mb-2">
+                                    <View className="flex-row items-center flex-1">
+                                      {/* Avatar of assignee */}
+                                      <Image
+                                        source={{ uri: getAvatarUrl(task.assignedTo) }}
+                                        className="w-6 h-6 rounded-full mr-3"
+                                      />
+                                      
+                                      {/* Task title */}
+                                      <Text
+                                        style={{ fontFamily: 'Lato', fontSize: 16 }}
+                                        className="text-sm font-bold text-[#2A1800] flex-shrink mr-2"
+                                        numberOfLines={1}
+                                      >
+                                        {task.title}
+                                      </Text>
+                                    </View>
+                                    
+                                    {/* Flag at far right */}
                                     <MaterialIcons
                                       name="flag"
                                       size={20}
                                       color={getPriorityColor(task.priority as any)}
                                     />
-                                    {/* Task title */}
-                                    <Text
-                                      style={{ fontFamily: 'Lato', fontSize: 16 }}
-                                      className="text-sm font-bold text-[#2A1800] flex-shrink"
-                                    >
-                                      {task.title}
-                                    </Text>
                                   </View>
                                   
-                                  {/* Notification bell moved to far right */}
-                                  <Pressable
-                                    onPress={() => console.log('Notification for:', task.title)}
-                                    className="w-6 h-6 flex items-center justify-center"
-                                  >
-                                    <Image
-                                      source={require('../../../../assets/icons/bell-icon.png')}
-                                      style={{ width: 20, height: 20 }}
-                                      resizeMode="contain"
-                                    />
-                                  </Pressable>
-                                </View>
-                                {/* Second Line */}
-                                <View className="flex-row items-center gap-4 mb-2">
-                                  <Text
-                                    style={{ fontFamily: 'Lato', fontSize: 14 }}
-                                    className="text-xs font-lato text-[#666] flex-1"
-                                  >
-                                    {task.description}
-                                  </Text>
-                                  <Pressable
-                                    onPress={() => console.log('Task completed:', task.title)}
-                                    className="w-6 h-6 border border-[#2A1800] rounded-lg flex items-center justify-center"
-                                  >
-                                    {task.checked ? (
-                                      <MaterialIcons name="check" size={16} color="#2A1800" />
-                                    ) : isPastTask ? (
-                                      // Show error icon for missed tasks
-                                      <MaterialIcons name="error-outline" size={16} color="#F44336" />
-                                    ) : null}
-                                  </Pressable>
-                                </View>
-                              </Pressable>
-                            </View>
+                                  {/* ROW 2: Time and Checkbox */}
+                                  <View className="flex-row items-center justify-between mb-2">
+                                    {/* Time */}
+                                    <Text 
+                                      className="text-[#666]"
+                                      style={{ fontSize: 14 }}
+                                    >
+                                      {new Date(task.datetime).toLocaleTimeString('en-US', {
+                                        hour: 'numeric',
+                                        minute: '2-digit',
+                                        hour12: true
+                                      })}
+                                    </Text>
+                                    
+                                    {/* Checkbox */}
+                                    <Pressable
+                                      onPress={() => console.log('Task completed:', task.title)}
+                                      className="w-6 h-6 border border-[#2A1800] rounded-full flex items-center justify-center"
+                                    >
+                                      {task.checked ? (
+                                        <MaterialIcons name="check" size={16} color="#2A1800" />
+                                      ) : isPastTask ? (
+                                        <MaterialIcons name="error-outline" size={16} color="#F44336" />
+                                      ) : null}
+                                    </Pressable>
+                                  </View>
+                                  
+                                  {/* ROW 3: Description and Bell */}
+                                  <View className="flex-row items-center justify-between mt-1">
+                                    {/* Task Description */}
+                                    <Text
+                                      style={{ fontFamily: 'Lato', fontSize: 14 }}
+                                      className="text-xs font-lato text-[#666] flex-1 mr-2"
+                                      numberOfLines={2}
+                                    >
+                                      {task.description}
+                                    </Text>
+                                    
+                                    {/* Bell icon */}
+                                    <Pressable
+                                      onPress={() => console.log('Notification for:', task.title)}
+                                      className="w-6 h-6 flex items-center justify-center"
+                                    >
+                                      <Image
+                                        source={require('../../../../assets/icons/bell-icon.png')}
+                                        style={{ width: 20, height: 20 }}
+                                        resizeMode="contain"
+                                      />
+                                    </Pressable>
+                                  </View>
+                                </Pressable>
+                              </View>
                             );
                           })}
                         </View>
