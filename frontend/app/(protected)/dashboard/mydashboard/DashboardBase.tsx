@@ -83,16 +83,16 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
 
   // API base URL - use the same as your other API calls
   const API_BASE_URL = "https://carebear-carebearvtmps-projects.vercel.app";
-  
+
   // Function to get emoji for mood
   const getMoodEmoji = (mood: string): string => {
     switch(mood) {
-      case 'happy': return '😊';
-      case 'excited': return '🤩';
-      case 'sad': return '😢';
-      case 'angry': return '😠';
-      case 'nervous': return '😬';
-      case 'peaceful': return '🧘';
+      case 'happy': return '😆';
+      case 'excited': return '😊';
+      case 'sad': return '🙂';
+      case 'angry': return '😌';
+      case 'nervous': return '😞';
+      case 'peaceful': return '😭';
       default: return '⚪';
     }
   };
@@ -100,12 +100,12 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
   // Function to get emoji for body feeling
   const getBodyEmoji = (body: string): string => {
     switch(body) {
-      case 'energized': return '⚡';
-      case 'sore': return '💪';
-      case 'tired': return '😴';
+      case 'energized': return '💪';
+      case 'sore': return '😶';
+      case 'tired': return '😙';
       case 'sick': return '🤒';
-      case 'relaxed': return '😌';
-      case 'tense': return '😣';
+      case 'relaxed': return '😩';
+      case 'tense': return '🤧';
       default: return '⚪';
     }
   };
