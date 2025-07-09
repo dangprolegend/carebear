@@ -128,23 +128,23 @@ import {
              
     
           {/* Sign in with social providers (Google, Facebook, Apple) */}
-            <View className="flex flex-col items-start gap-8 self-stretch mt-[40px]">
+            <View className="flex flex-col items-center gap-4 self-stretch mt-[40px] w-[345px]">
               <View className='flex flex-row justify-center items-center gap-2 self-stretch'>
-                <Image source={Line} className="w-[40px]"/>
-                <Text className="text-black font-lato text-base font-light leading-6 tracking-[-0.1px]">Or Continue With</Text>
-                <Image source={Line} className="w-[40px]"/>
-                </View>
-              <View style={{ flexDirection: 'row', gap: 32, marginHorizontal: 'auto' }}>
+                <Image source={Line} className="w-[150px]"/>
+                <Text className="text-black font-lato text-base font-light leading-6 tracking-[-0.1px]">or</Text>
+                <Image source={Line} className="w-[150px]"/>
+              </View>
+              <View className="flex flex-col gap-4 w-full">
                 <SignInWith strategy='oauth_google' />
-                <SignInWith strategy='oauth_facebook' />
                 <SignInWith strategy='oauth_apple' />
+                <SignInWith strategy='oauth_facebook' />
               </View>
             </View>
 
-              <View className="flex flex-row justify-between items-start self-stretch mt-[56px]">
+              <View className="flex flex-row justify-between items-start self-stretch mt-[56px] gap-[35px]">
                 <TouchableOpacity 
                   onPress={() => router.replace('/sign-in')}
-                  className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-[#DDD]"
+                  className="flex min-w-[80px] py-4 px-12 justify-center items-center gap-1 rounded-full border border-black"
                 >
                 <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
                   Back
@@ -152,7 +152,7 @@ import {
               </TouchableOpacity>
 
                 <TouchableOpacity
-                    className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+                    className="bg-[#2A1800] inline-flex min-w-[80px] py-4 px-12 justify-center items-center gap-1 rounded-full"
                     onPress={handleSubmit(onSignUp)}
                   >
                     <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Next</Text>

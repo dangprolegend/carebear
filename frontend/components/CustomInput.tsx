@@ -34,7 +34,7 @@ import {
               style={[
                 styles.input,
                 props.style,
-                { borderColor: error ? 'crimson' : 'gray' },
+                { borderColor: error ? 'black' : 'black' },
               ]}
             />
             {error ? (

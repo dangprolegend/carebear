@@ -413,6 +413,7 @@ const EditTaskScreen = () => {
                 >
                   {/* Option to clear assignee */}
                   <Pressable
+                    key="unassigned"
                     className={`py-3 px-4 flex-row items-center ${!taskForm.assignedTo ? 'bg-blue-100' : ''}`}
                     onPress={() => {
                       handleInputChange('assignedTo', '');
