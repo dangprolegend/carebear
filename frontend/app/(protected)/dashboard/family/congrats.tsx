@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity, Image } from 'react-native';
 export default function CompleteScreen() {
 
   return (
-    <View className="flex-1 items-center justify-center">
+    <View className="flex-1 bg-[#FAE5CA] items-center justify-center">
       <Text className="mb-6 text-3xl font-bold text-foreground text-center">
         Congrats!
       </Text>
