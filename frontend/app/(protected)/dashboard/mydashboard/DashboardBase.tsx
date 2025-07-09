@@ -1218,119 +1218,103 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                 ) : (
                   filteredTasks.map((task, index) => (
                     // SIMPLIFIED TASK CARD FOR CARE RECEIVERS
-                    <View 
+                    <Pressable
                       key={index}
-                      className="border rounded-lg p-4 mb-4"
-                      style={{
-                        borderWidth: 1.5,
-                        borderColor: '#2A1800',
-                        borderRadius: 12,
-                        backgroundColor: '#FFFFFF',
-                        // Apply blur effect based on task status
-                        opacity: task.status === 'skipped' || task.status === 'done' ? 0.6 : 1,
-                      }}
+                      onPress={() => handleTaskPress(task)}
                     >
-                      {/* Task Title and Flag */}
-                      <View className="flex-row items-center justify-between mb-2">
-                        <View className="flex-row items-center gap-2">
-                          <MaterialIcons 
-                            name="circle" 
-                            size={16} 
-                            color="#623405"
-                          />
-                          <Text 
-                            className="text-[#2A1800]"
-                            style={{
-                              fontFamily: 'Lato',
-                              fontSize: 16,
-                              fontWeight: '900',
-                              lineHeight: 24,
-                              letterSpacing: 0.3,
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis'
-                            }}
-                            numberOfLines={1}
-                          >
-                            {task.title}
-                          </Text>
-                        </View>
-                        <MaterialIcons
-                          name="flag"
-                          size={20}
-                          color={getPriorityColor(task.priority as any)}
-                        />
-                      </View>
-
-                      {/* Task Description */}
-                      <Text 
-                        className="text-[#2A1800] mb-3 pl-2"
+                      <View 
+                        key={index}
+                        className="border rounded-lg p-4 mb-4"
                         style={{
-                          fontFamily: 'Lato',
-                          fontSize: 14,
-                          fontWeight: '300',
-                          lineHeight: 24,
-                          letterSpacing: -0.1,
-                          overflow: 'hidden'
+                          borderWidth: 1.5,
+                          borderColor: '#2A1800',
+                          borderRadius: 12,
+                          backgroundColor: '#FFFFFF',
+                          // Apply blur effect based on task status
+                          opacity: task.status === 'skipped' || task.status === 'done' ? 0.6 : 1,
                         }}
-                        numberOfLines={2}
                       >
-                        {task.description}
-                      </Text>
+                        {/* Task Title and Flag */}
+                        <View className="flex-row items-center justify-between mb-2">
+                          <View className="flex-row items-center gap-2">
+                            <MaterialIcons 
+                              name="circle" 
+                              size={16} 
+                              color="#623405"
+                            />
+                            <Text 
+                              className="text-[#2A1800]"
+                              style={{
+                                fontFamily: 'Lato',
+                                fontSize: 16,
+                                fontWeight: '900',
+                                lineHeight: 24,
+                                letterSpacing: 0.3,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
+                              }}
+                              numberOfLines={1}
+                            >
+                              {task.title}
+                            </Text>
+                          </View>
+                          <MaterialIcons
+                            name="flag"
+                            size={20}
+                            color={getPriorityColor(task.priority as any)}
+                          />
+                        </View>
 
-                      {/* Assigned By - with updated typography */}
-                      <View className="flex-row items-center mb-4 pl-2">
+                        {/* Task Description */}
                         <Text 
-                          className="mr-1"
+                          className="text-[#2A1800] mb-3 pl-2"
                           style={{
-                            color: '#000',
                             fontFamily: 'Lato',
                             fontSize: 14,
                             fontWeight: '300',
                             lineHeight: 24,
-                            letterSpacing: -0.1
+                            letterSpacing: -0.1,
+                            overflow: 'hidden'
                           }}
+                          numberOfLines={2}
                         >
-                          Assigned by
+                          {task.description}
                         </Text>
-                        <Image
-                          source={{ uri: getAvatarUrl(task.assignedBy) }}
-                          className="w-6 h-6 rounded-full"
-                        />
+
+                        {/* Action Buttons - Show based on task status */}
+                        {task.status === 'pending' || task.status === 'in-progress' ? (
+                          // Regular buttons for active tasks
+                          <View className="flex-row justify-between mt-2">
+                            <Pressable
+                              onPress={() => handleSkipTask(task)}
+                              className="py-2 px-6 rounded-full border border-[#2A1800]"
+                            >
+                              <Text className="text-[#2A1800]">Skip</Text>
+                            </Pressable>
+
+                            <Pressable
+                              onPress={() => handleTakeTask(task)}
+                              className="py-2 px-8 rounded-full bg-[#2A1800]"
+                            >
+                              <Text className="text-white">Take</Text>
+                            </Pressable>
+                          </View>
+                        ) : task.status === 'skipped' ? (
+                          // Only show Restore button for skipped tasks
+                          <View className="flex-row justify-center mt-2">
+                            <Pressable
+                              onPress={() => handleRestoreTask(task)}
+                              className="py-2 px-6 rounded-full border border-[#2A1800]"
+                            >
+                              <Text className="text-[#2A1800]">Restore Task</Text>
+                            </Pressable>
+                          </View>
+                        ) : (
+                          // No buttons for completed tasks
+                          <View />
+                        )}
                       </View>
-
-                      {/* Action Buttons - Show based on task status */}
-                      {task.status === 'pending' || task.status === 'in-progress' ? (
-                        // Regular buttons for active tasks
-                        <View className="flex-row justify-between mt-2">
-                          <Pressable
-                            onPress={() => handleSkipTask(task)}
-                            className="py-2 px-6 rounded-full border border-[#2A1800]"
-                          >
-                            <Text className="text-[#2A1800]">Skip</Text>
-                          </Pressable>
-
-                          <Pressable
-                            onPress={() => handleTakeTask(task)}
-                            className="py-2 px-8 rounded-full bg-[#2A1800]"
-                          >
-                            <Text className="text-white">Take</Text>
-                          </Pressable>
-                        </View>
-                      ) : task.status === 'skipped' ? (
-                        // Only show Restore button for skipped tasks
-                        <View className="flex-row justify-center mt-2">
-                          <Pressable
-                            onPress={() => handleRestoreTask(task)}
-                            className="py-2 px-6 rounded-full border border-[#2A1800]"
-                          >
-                            <Text className="text-[#2A1800]">Restore Task</Text>
-                          </Pressable>
-                        </View>
-                      ) : (
-                        // No buttons for completed tasks
-                        <View />
-                      )}
-                    </View>
+                    </Pressable>
                   ))
                 )}
               </View>
