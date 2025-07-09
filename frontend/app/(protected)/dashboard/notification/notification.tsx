@@ -6,6 +6,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuth } from '@clerk/clerk-expo';
 import axios from 'axios';
 import FeedLoading from '~/components/ui/feed-loading';
+import RedFlag from '../../../../assets/icons/redflag.png';
+import YellowFlag from '../../../../assets/icons/yellowflag.png';
+import BlueFlag from '../../../../assets/icons/blueflag.png';
 
 // Helper function to check if a date is today (more accurate comparison)
 function isToday(date: Date): boolean {
@@ -245,6 +248,9 @@ const NotificationScreen = () => {
   }, [currentGroupID, currentUserID]);
 
   const renderNotification = (n: any, idx: number) => {
+    // Determine flag image based on priority
+    const flagImage = n.priorityColor === '#FF0000' ? RedFlag : n.priorityColor === '#FFD700' ? YellowFlag : BlueFlag;
+
     // Show scheduled date if available, but not using it for sorting
     const hasScheduledDate = n.reminder?.start_date ? true : false;
     const scheduledDate = hasScheduledDate ? new Date(n.reminder.start_date) : null;
@@ -274,14 +280,6 @@ const NotificationScreen = () => {
           </Text>
           <Text className="text-xs text-gray-500 mt-0.5">{n.time}</Text>
           
-          {/* Display scheduled date if available, just for information */}
-          {hasScheduledDate && (
-            <View className="flex-row items-center mt-1">
-              <MaterialIcons name="event" size={16} color="#4285F4" />
-              <Text className="ml-1 text-xs text-blue-600">{scheduledDateFormatted}</Text>
-            </View>
-          )}
-          
           {n.taskTitle ? (
             <Pressable 
               className="flex-row items-center mt-1" 
@@ -295,7 +293,7 @@ const NotificationScreen = () => {
                 }
               }}
             >
-              <MaterialIcons name="flag" size={18} color={n.priorityColor || '#3498db'} />
+              <Image source={flagImage} className="w-5 h-5" />
               <Text className="ml-1 font-bold text-[15px]">{n.taskTitle}</Text>
               <MaterialIcons name="chevron-right" size={16} color="#999" style={{ marginLeft: 4 }} />
             </Pressable>

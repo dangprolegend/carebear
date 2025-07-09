@@ -53,7 +53,7 @@ export default function JoinFamilyScreen() {
           value={groupId}
           onChangeText={setGroupId}
           autoCapitalize="characters" 
-          className="p-3"
+          className="p-3 border-[#2A1800]"
         />
       </View>
       {/* Description Text */}
@@ -69,7 +69,7 @@ export default function JoinFamilyScreen() {
           onPress={handleJoin}
           className="rounded-full bg-[#2A1800] px-10 py-3 w-48" 
         >
-          <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Join</Text>
+          <Text className="text-white text-center font-lato text-[16px] font-semibold leading-[24px] tracking-[0.3px]">Join</Text>
         </Button>
       </View>
 
@@ -79,19 +79,19 @@ export default function JoinFamilyScreen() {
 
       <View className="flex flex-row justify-between items-start self-stretch mt-[56px]">
           <TouchableOpacity 
-            onPress={() => router.push('/setup/health-input')}
-            className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-black"
+            onPress={() => router.push('/setup/roles-info')}
+            className="flex min-w-[160px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-black"
           >
-          <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
+          <Text className='text-[#0F172A] font-lato text-[16px] leading-6 font-semibold tracking-[-0.1px]'>
             Back
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="bg-[#2A1800] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+          className="bg-[#2A1800] inline-flex min-w-[160px] py-4 px-8 justify-center items-center gap-1 rounded-full"
           onPress={() => router.push('/setup/create-family')}
         >
-          <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Create Group</Text>
+          <Text className="text-white text-center font-lato text-[16px] leading-[24px] font-semibold tracking-[0.3px]">Create Group</Text>
         </TouchableOpacity>
       </View>
       

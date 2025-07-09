@@ -28,7 +28,7 @@ export default function CreateFamilyGroupScreen() {
       const data = { name: groupName };
 
       await axios.post(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/createGroup`, data);
-      router.push('/setup/roles-info');
+      router.push('/setup/congrats');
     } catch (error) {
       console.error('Error creating group:', error);
       alert('Failed to create group');
@@ -37,12 +37,12 @@ export default function CreateFamilyGroupScreen() {
 
   return (
     <View>
-      <Text className="mb-8 text-3xl font-bold text-foreground">
+      <Text className="mb-8 text-3xl font-bold text-foreground mb-12">
         Create Family Group
       </Text>
 
-      <View className="mb-6">
-        <Label nativeID="groupNameLabel" className="mb-2 text-lg font-medium">
+      <View className="mb-12">
+        <Label nativeID="groupNameLabel" className="mb-2 text-[16px] font-semibold">
           Group Name
         </Label>
         <Input
@@ -51,14 +51,14 @@ export default function CreateFamilyGroupScreen() {
           value={groupName}
           onChangeText={setGroupName}
           autoCapitalize="words"
-          className="p-3" 
+          className="p-3 border-[#2A1800]" 
         />
       </View>
 
       <View className="flex flex-row justify-between items-start self-stretch mt-[286px]">
           <TouchableOpacity 
             onPress={() => router.push('/setup/join-family')}
-            className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-black"
+            className="flex min-w-[160px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-black"
           >
           <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
             Back
@@ -66,7 +66,7 @@ export default function CreateFamilyGroupScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          className="bg-[#2A1800] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+          className="bg-[#2A1800] inline-flex min-w-[160px] py-4 px-8 justify-center items-center gap-1 rounded-full"
           onPress={handleCreate}
         >
           <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Next</Text>

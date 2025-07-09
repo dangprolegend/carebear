@@ -6,9 +6,9 @@ import { Button } from '~/components/ui/button';
 
 const setupSteps = [
   'health-input',
+  'roles-info',
   'join-family',
-  'create-family' ,
-  'roles-info', 
+  'create-family' , 
   'congrats'
 ];
 
@@ -29,16 +29,16 @@ function SetupProgressIndicator({ currentStepIndex }: SetupProgressIndicatorProp
     }
 
   return (
-    <View className="mb-8 flex flex-row items-center justify-center space-x-6 gap-2 p-4">
+    <View className="mb-12 mt-[-30px] flex-row items-center justify-center space-x-6 gap-2">
       {Array.from({ length: totalVisibleDots }).map((_, index) => {
         const isActive = index === activeVisibleDotIndex;
-        const widthClass = isActive ? 'w-8' : 'w-3';
+        const widthClass = isActive ? 'w-6' : 'w-2.5';
         const bgClass = isActive ? 'bg-[#2A1800] dark:bg-primary' : 'bg-[#2A1800] dark:bg-[#2A1800]';
 
         return (
           <View
             key={index}
-            className={`h-3 w-3 rounded-full ${widthClass} ${bgClass}`}
+            className={`h-2.5 rounded-full ${widthClass} ${bgClass}`}
           />
         );
       })}
