@@ -756,6 +756,20 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
   ? getTasksForCareReceiver(localTasks).filter(isTaskForSelectedDate)
   : localTasks.filter(isTaskForSelectedDate);
 
+  // Add this function to replace getPriorityColor
+  const getPriorityFlagIcon = (priority?: string): any => {
+    switch (priority) {
+      case 'high': 
+        return require('../../../../assets/icons/redflag.png');
+      case 'medium': 
+        return require('../../../../assets/icons/yellowflag.png');
+      case 'low': 
+        return require('../../../../assets/icons/blueflag.png');
+      default:
+        return require('../../../../assets/icons/redflag.png'); // Default flag
+    }
+  };
+
   // Replace the loadFamilyMembers function inside useEffect around line ~800
     useEffect(() => {
       const loadFamilyMembers = async () => {
@@ -1258,10 +1272,10 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                               {task.title}
                             </Text>
                           </View>
-                          <MaterialIcons
-                            name="flag"
-                            size={20}
-                            color={getPriorityColor(task.priority as any)}
+                          <Image
+                            source={getPriorityFlagIcon(task.priority as string)}
+                            style={{ width: 20, height: 20 }}
+                            resizeMode="contain"
                           />
                         </View>
 
@@ -1820,10 +1834,10 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                     </View>
                                     
                                     {/* Flag at far right */}
-                                    <MaterialIcons
-                                      name="flag"
-                                      size={20}
-                                      color={getPriorityColor(task.priority as any)}
+                                    <Image
+                                      source={getPriorityFlagIcon(task.priority as string)}
+                                      style={{ width: 20, height: 20 }}
+                                      resizeMode="contain"
                                     />
                                   </View>
                                   
