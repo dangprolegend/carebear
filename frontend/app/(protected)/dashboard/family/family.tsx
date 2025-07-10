@@ -89,6 +89,7 @@ export default function Family() {
   // Invitation states
   const [isSendingInvitation, setIsSendingInvitation] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showSuccessModal2, setShowSuccessModal2] = useState(false);
 
   const [activeTab, setActiveTab] = useState('');
   const [groupName, setGroupName] = useState<string>('');
@@ -665,7 +666,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
       // Hide modal
       setShowDailyModal(false);
 
-      Alert.alert('Success', 'Your daily status has been updated!');
+      setShowSuccessModal2(true);
     } catch (error) {
       console.error('Error submitting daily status:', error);
       Alert.alert('Error', 'Failed to update your status. Please try again.');
@@ -696,6 +697,64 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
       </View>
     </TouchableOpacity>
   );
+
+const SuccessModal = () => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const intervalRef = useRef(null);
+  const images = [
+    require('~/assets/images/1.png'),
+    require('~/assets/images/2.png'),
+    require('~/assets/images/3.png'),
+    require('~/assets/images/4.png'),
+    require('~/assets/images/5.png'),
+    require('~/assets/images/6.png')
+  ];
+
+  useEffect(() => {
+    if (showSuccessModal2) {
+      intervalRef.current = setInterval(() => {
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+      }, 150);
+    }
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [showSuccessModal2]);
+
+  if (!showSuccessModal2) return null;
+
+  return (
+    <View className="absolute top-0 left-0 right-0 bottom-0 z-50 bg-[#AF9D86]/70 justify-center items-center">
+      <View className="bg-white rounded-3xl border border-black p-10 items-center min-w-[320px] max-w-[360px]">
+        <View className="items-center">
+          {/* Animated gif images */}
+          <Image
+            source={images[currentImageIndex]}
+            className="w-[120px] h-[120px]"
+            style={{ opacity: 1 }}
+            resizeMode="contain"
+          />
+          <Text className="text-[#2A1800] font-lato text-[32px] font-extrabold leading-9 tracking-[0.3px]">
+            Congrats!
+          </Text>
+          <Text className="text-black text-center font-lato text-base font-extrabold leading-6 tracking-[0.3px] mt-3">
+            Your daily status have been updated!
+          </Text>
+          <TouchableOpacity
+            className="bg-[#2A1800] px-10 py-4 rounded-full mt-5 min-w-[200px] items-center shadow-lg mt-6"
+            onPress={() => setShowSuccessModal2(false)}
+          >
+            <Text className="text-white font-lato text-sm font-extrabold leading-6 tracking-[0.3px]">
+              Go to Family Group
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+};
 
 
   // FamilyMemberCard Component
@@ -1244,7 +1303,8 @@ const FamilyMemberCard = ({
       )}
       </ScrollView>
 
-
+      {/* Success Modal */}
+      <SuccessModal />
       {/* Daily Status Modal */}
       <Modal
         visible={showDailyModal}
