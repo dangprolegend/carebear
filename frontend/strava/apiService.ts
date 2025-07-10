@@ -124,16 +124,16 @@ class StravaApiService {
       
       return {
         thisWeek: {
-          activities: stats.recent_run_totals.count + stats.recent_ride_totals.count + (stats.recent_walk_totals?.count || 0),
-          distance: stats.recent_run_totals.distance + stats.recent_ride_totals.distance + (stats.recent_walk_totals?.distance || 0),
-          movingTime: stats.recent_run_totals.moving_time + stats.recent_ride_totals.moving_time + (stats.recent_walk_totals?.moving_time || 0),
-          elevationGain: stats.recent_run_totals.elevation_gain + stats.recent_ride_totals.elevation_gain + (stats.recent_walk_totals?.elevation_gain || 0),
+          activities: stats.recent_run_totals.count + stats.recent_ride_totals.count,
+          distance: stats.recent_run_totals.distance + stats.recent_ride_totals.distance,
+          movingTime: stats.recent_run_totals.moving_time + stats.recent_ride_totals.moving_time,
+          elevationGain: stats.recent_run_totals.elevation_gain + stats.recent_ride_totals.elevation_gain,
         },
         allTime: {
-          activities: stats.all_run_totals.count + stats.all_ride_totals.count + (stats.all_walk_totals?.count || 0),
-          distance: stats.all_run_totals.distance + stats.all_ride_totals.distance + (stats.all_walk_totals?.distance || 0),
-          movingTime: stats.all_run_totals.moving_time + stats.all_ride_totals.moving_time + (stats.all_walk_totals?.moving_time || 0),
-          elevationGain: stats.all_run_totals.elevation_gain + stats.all_ride_totals.elevation_gain + (stats.all_walk_totals?.elevation_gain || 0),
+          activities: stats.all_run_totals.count + stats.all_ride_totals.count,
+          distance: stats.all_run_totals.distance + stats.all_ride_totals.distance,
+          movingTime: stats.all_run_totals.moving_time + stats.all_ride_totals.moving_time,
+          elevationGain: stats.all_run_totals.elevation_gain + stats.all_ride_totals.elevation_gain,
         }
       };
     } catch (error) {
