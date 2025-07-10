@@ -1097,18 +1097,26 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                 >
                   {/* Day letter */}
                   <Text
-                    className={`text-center text-xs ${
-                      isSelected ? 'text-gray-800' : 'text-gray-500'
-                    }`}
+                    className="text-center text-xs text-[#2A1800]"
+                    style={{ 
+                      fontSize: 14, 
+                      fontWeight: '600',
+                      marginBottom: 2,
+                      fontFamily: 'Lato'
+                    }}
                   >
                     {date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0).toUpperCase()}
                   </Text>
                   
                   {/* Day number */}
                   <Text
-                    className={`text-center text-xs ${
-                      isSelected ? 'text-gray-800' : 'text-gray-500'
-                    }`}
+                    className="text-center text-xs text-[#2A1800]"
+                    style={{ 
+                      fontSize: 12,
+                      fontWeight: isSelected ? '600' : '400',
+                      marginBottom: 6,
+                      fontFamily: 'Lato'
+                    }}
                   >
                     {date.getDate()}
                   </Text>
@@ -1196,9 +1204,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                     borderRadius: 8,
                     borderWidth: 1,
                     borderColor: '#2A1800',
-                    zIndex: 10,
-                    width: 157,
-                    elevation: 5,
+                    width: 157
                   }}
                 >
                   {userGroups.map((group, index) => (
@@ -1476,7 +1482,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                       style={{
                         display: 'flex',
                         width: 153,
-                        height: 44,
+                        height: 40,
                         padding: 0,
                         paddingLeft: 12,
                         paddingRight: 8,
@@ -1512,15 +1518,14 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                       <View
                         style={{ 
                           position: 'absolute',
-                          top: 47, // Positioned below the selector
-                          left: 20,
+                          top: 43, // Positioned below the selector
+                          left: 21,
                           backgroundColor: 'white',
-                          borderRadius: 4,
+                          borderRadius: 6,
                           borderWidth: 1,
-                          borderColor: '#FAE5CA',
+                          borderColor: '#2A1800',
                           zIndex: 10,
                           width: 153,
-                          elevation: 5,
                         }}
                       >
                         {userGroups.map((group, index) => (
@@ -1529,8 +1534,6 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                             style={{
                               paddingVertical: 8,
                               paddingHorizontal: 12,
-                              borderBottomWidth: index < userGroups.length - 1 ? 1 : 0,
-                              borderBottomColor: '#FAE5CA',
                             }}
                             onPress={() => handleGroupChange(group.name)}
                           >
