@@ -1551,11 +1551,11 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                         borderRadius: 8,
                         borderWidth: 1,
                         borderColor: '#2A1800',
-                        backgroundColor: '#FFF',
+                        backgroundColor: 'white',
                         flexDirection: 'row'
                       }}
                     >
-                      <Text className="text-sm mr-2">{selectedGroupName}</Text>
+                      <Text className="text-s mr-2">{selectedGroupName}</Text>
                       <MaterialIcons 
                         name={showGroupSelector ? "arrow-drop-up" : "arrow-drop-down"} 
                         size={20} color="#333" 
@@ -1600,6 +1600,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                             <Text
                               style={{ 
                                 color: '#2A1800',
+                                fontSize: 14, 
                                 fontWeight: selectedGroupName === group.name ? 'bold' : 'normal'
                               }}
                             >
