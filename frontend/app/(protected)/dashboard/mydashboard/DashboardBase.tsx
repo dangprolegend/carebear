@@ -1375,7 +1375,8 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                         color: '#808080', 
                         textAlign: 'center',
                         fontSize: 14,
-                        lineHeight: 20
+                        lineHeight: 20,
+                        fontFamily: 'Lato'
                       }}>
                         You have no assigned task.{'\n'}Add task and set priority
                       </Text>
