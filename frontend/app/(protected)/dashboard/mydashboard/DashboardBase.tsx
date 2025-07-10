@@ -1156,18 +1156,26 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                 >
                   {/* Day letter */}
                   <Text
-                    className={`text-center text-xs ${
-                      isSelected ? 'text-gray-800' : 'text-gray-500'
-                    }`}
+                    className="text-center text-xs text-[#2A1800]"
+                    style={{ 
+                      fontSize: 14, 
+                      fontWeight: '600',
+                      marginBottom: 2,
+                      fontFamily: 'Lato'
+                    }}
                   >
                     {date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0).toUpperCase()}
                   </Text>
                   
                   {/* Day number */}
                   <Text
-                    className={`text-center text-xs ${
-                      isSelected ? 'text-gray-800' : 'text-gray-500'
-                    }`}
+                    className="text-center text-xs text-[#2A1800]"
+                    style={{ 
+                      fontSize: 12,
+                      fontWeight: isSelected ? '600' : '400',
+                      marginBottom: 6,
+                      fontFamily: 'Lato'
+                    }}
                   >
                     {date.getDate()}
                   </Text>
@@ -1255,9 +1263,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                     borderRadius: 8,
                     borderWidth: 1,
                     borderColor: '#2A1800',
-                    zIndex: 10,
-                    width: 157,
-                    elevation: 5,
+                    width: 157
                   }}
                 >
                   {userGroups.map((group, index) => (
@@ -1536,7 +1542,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                       style={{
                         display: 'flex',
                         width: 153,
-                        height: 44,
+                        height: 40,
                         padding: 0,
                         paddingLeft: 12,
                         paddingRight: 8,
@@ -1559,9 +1565,12 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                     {/* Filter Button (circular) */}
                     <Pressable 
                       onPress={() => setShowFilterModal(true)}
-                      className="w-10 h-10 items-center justify-center border border-black bg-white rounded-full"
                     >
-                      <MaterialIcons name="filter-list" size={20} color="#2A1800" />
+                      <Image
+                        source={require('../../../../assets/icons/filterbutton.png')}
+                        style={{ width: 32, height: 32 }}
+                        resizeMode="contain"
+                      />
                     </Pressable>
                     
                     {/* Group dropdown menu */}
@@ -1569,15 +1578,14 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                       <View
                         style={{ 
                           position: 'absolute',
-                          top: 47, // Positioned below the selector
-                          left: 20,
+                          top: 43, // Positioned below the selector
+                          left: 21,
                           backgroundColor: 'white',
-                          borderRadius: 4,
+                          borderRadius: 6,
                           borderWidth: 1,
-                          borderColor: '#FAE5CA',
+                          borderColor: '#2A1800',
                           zIndex: 10,
                           width: 153,
-                          elevation: 5,
                         }}
                       >
                         {userGroups.map((group, index) => (
@@ -1586,8 +1594,6 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                             style={{
                               paddingVertical: 8,
                               paddingHorizontal: 12,
-                              borderBottomWidth: index < userGroups.length - 1 ? 1 : 0,
-                              borderBottomColor: '#FAE5CA',
                             }}
                             onPress={() => handleGroupChange(group.name)}
                           >
@@ -1883,98 +1889,213 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                           {group.tasks.map((task, taskIndex) => {
                             // Check if task is in the past
                             const isPastTask = isTaskInPast(task.datetime);
+                            // Update the isTaskInPast function to check if task is missed (past and not completed)
+                            const isTaskMissed = (task: Task): boolean => {
+                              try {
+                                // Task is missed if it's in the past and not checked/completed
+                                const taskDate = new Date(task.datetime);
+                                return taskDate < new Date() && !task.checked && task.status !== 'done';
+                              } catch (e) {
+                                console.error("Error checking if task is missed:", e);
+                                return false;
+                              }
+                            };
                             
                             return (
                               <View
                                 key={taskIndex}
-                                className={`border border-[#FAE5CA] rounded-lg p-4 mb-4 ${isPastTask ? 'opacity-60' : ''}`}
+                                className={`border border-[#FAE5CA] rounded-lg p-4 mb-4 ${(isPastTask && !isTaskMissed(task)) ? 'opacity-60' : ''}`}
                                 style={{
                                   borderWidth: 1.5,
-                                  borderColor: '#2A1800',
+                                  borderColor: isTaskMissed(task) ? '#FF5555' : '#2A1800', // Red border for missed tasks
                                   borderRadius: 8,
                                   backgroundColor: '#FFFFFF',
                                   marginBottom: 16,
+                                  opacity: task.checked ? 0.6 : 1, // Only reduce opacity if completed
                                 }}
                               >
                                 <Pressable onPress={() => handleTaskPress(task)} className="flex-1">
-                                  {/* ROW 1: Avatar, Title, Flag */}
-                                  <View className="flex-row items-center justify-between mb-2">
-                                    <View className="flex-row items-center flex-1">
-                                      {/* Avatar of assignee */}
-                                      <Image
-                                        source={{ uri: getAvatarUrl(task.assignedTo) }}
-                                        className="w-6 h-6 rounded-full mr-3 border border-[#2A1800]"
-                                      />
-                                      
-                                      {/* Task title */}
-                                      <Text
-                                        style={{fontFamily: 'Lato', fontSize: 16 }}
-                                        className="text-sm font-bold text-[#2A1800] flex-shrink mr-2 font-lato"
-                                        numberOfLines={1}
-                                      >
-                                        {task.title}
-                                      </Text>
-                                    </View>
+                                  {/* Check if task is assigned to current user */}
+                                  {(() => {
+                                    // Determine if task is assigned to current user
+                                    const currentUserId = getCurrentUserID();
+                                    let isAssignedToMe = false;
                                     
-                                    {/* Flag at far right */}
-                                    <Image
-                                      source={getPriorityFlagIcon(task.priority as string)}
-                                      style={{ width: 20, height: 20 }}
-                                      resizeMode="contain"
-                                    />
-                                  </View>
-                                  
-                                  {/* ROW 2: Time and Checkbox */}
-                                  <View className="flex-row items-center justify-between mb-2">
-                                    {/* Time */}
-                                    <Text 
-                                      className="text-[#666] font-lato"
-                                      style={{fontFamily: 'Lato', fontSize: 14 }}
-                                    >
-                                      {new Date(task.datetime).toLocaleTimeString('en-US', {
-                                        hour: 'numeric',
-                                        minute: '2-digit',
-                                        hour12: true,
-                                        hourCycle: 'h12'
-                                      })}
-                                    </Text>
+                                    if (currentUserId && task.assignedTo) {
+                                      const assignedToId = typeof task.assignedTo === 'object' && task.assignedTo !== null
+                                        ? (
+                                            typeof task.assignedTo === 'object' && task.assignedTo !== null
+                                              ? (('id' in task.assignedTo && (task.assignedTo as any).id) ||
+                                                 ('_id' in task.assignedTo && (task.assignedTo as any)._id) ||
+                                                 ('userID' in task.assignedTo && (task.assignedTo as any).userID))
+                                              : undefined
+                                          )
+                                        : task.assignedTo;
+                                        
+                                      isAssignedToMe = assignedToId === currentUserId;
+                                    }
                                     
-                                    {/* Checkbox */}
-                                    <Pressable
-                                      onPress={() => console.log('Task completed:', task.title)}
-                                      className="w-6 h-6 border border-[#2A1800] rounded-full flex items-center justify-center"
-                                    >
-                                      {task.checked ? (
-                                        <MaterialIcons name="check" size={16} color="#2A1800" />
-                                      ) : isPastTask ? (
-                                        <MaterialIcons name="error-outline" size={16} color="#F44336" />
-                                      ) : null}
-                                    </Pressable>
-                                  </View>
-                                  
-                                  {/* ROW 3: Description and Bell */}
-                                  <View className="flex-row items-center justify-between mt-1">
-                                    {/* Task Description */}
-                                    <Text
-                                      style={{fontFamily: 'Lato', fontSize: 14 }}
-                                      className="text-xs font-lato text-[#666] flex-1 mr-2 font-lato"
-                                      numberOfLines={2}
-                                    >
-                                      {task.description}
-                                    </Text>
-                                    
-                                    {/* Bell icon */}
-                                    <Pressable
-                                      onPress={handleSendReminder}
-                                      className="w-6 h-6 flex items-center justify-center"
-                                    >
-                                      <Image
-                                        source={require('../../../../assets/icons/bell-icon.png')}
-                                        style={{ width: 20, height: 20 }}
-                                        resizeMode="contain"
-                                      />
-                                    </Pressable>
-                                  </View>
+                                    if (isAssignedToMe) {
+                                      // LAYOUT FOR TASKS ASSIGNED TO ME - MATCHING THE IMAGE
+                                      return (
+                                        <>
+                                          {/* ROW 1: Flag and Title */}
+                                          <View className="flex-row items-center justify-between mb-2">
+                                            <View className="flex-row items-center flex-1">
+                                              {/* Flag on left */}
+                                              <Image
+                                                source={getPriorityFlagIcon(task.priority as string)}
+                                                style={{ width: 20, height: 20, marginRight: 8 }}
+                                                resizeMode="contain"
+                                              />
+                                              
+                                              {/* Title */}
+                                              <Text
+                                                style={{ fontFamily: 'Lato', fontSize: 16 }}
+                                                className="text-sm font-bold text-[#2A1800] flex-1"
+                                                numberOfLines={1}
+                                              >
+                                                {task.title}
+                                              </Text>
+                                            </View>
+                                          </View>
+                                          
+                                          {/* ROW 2: Time only */}
+                                          <View className="flex-row items-center justify-between mb-2">
+                                            <View className="flex-row items-center">
+                                              <Text
+                                                className={`${isTaskMissed(task) ? 'text-[#FF5555]' : 'text-[#666]'}`}
+                                                style={{ fontSize: 14 }}
+                                              >
+                                                {new Date(task.datetime).toLocaleTimeString('en-US', {
+                                                  hour: 'numeric',
+                                                  minute: '2-digit',
+                                                  hour12: true
+                                                })}
+                                              </Text>
+                                              
+                                              {/* Add Missed label for past due tasks */}
+                                              {isTaskMissed(task) && (
+                                                <Text className="ml-2 text-[#FF5555]" style={{ fontSize: 12 }}>
+                                                  Missed
+                                                </Text>
+                                              )}
+                                            </View>
+
+                                            {/* Checkbox moved to second row */}
+                                            <Pressable
+                                              onPress={() => console.log('Task completed:', task.title)}
+                                              style={{
+                                                width: 24,
+                                                height: 24,
+                                                borderRadius: 12, // Make it perfectly circular
+                                                borderWidth: 1.5,
+                                                borderColor: '#2A1800',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: task.checked ? '#2A1800' : 'transparent', // Black background when checked
+                                              }}
+                                            >
+                                              {task.checked ? (
+                                                <MaterialIcons name="check" size={16} color="#FFFFFF" /> // White check when checked
+                                              ) : null}
+                                            </Pressable>
+                                            
+                                          </View>
+                                          
+                                          {/* ROW 3: Description and Bell */}
+                                          <View className="flex-row items-center justify-between mt-1">
+                                            <Text
+                                              style={{ fontFamily: 'Lato', fontSize: 14 }}
+                                              className="text-xs text-[#666] flex-1 mr-2"
+                                              numberOfLines={2}
+                                            >
+                                              {task.description}
+                                            </Text>
+                                          </View>
+                                        </>
+                                      );
+                                    } else {
+                                      // EXISTING LAYOUT FOR TASKS ASSIGNED TO OTHERS - NO CHANGES
+                                      return (
+                                        <>
+                                          {/* ROW 1: Avatar, Title, Flag */}
+                                          <View className="flex-row items-center justify-between mb-2">
+                                            <View className="flex-row items-center flex-1">
+                                              {/* Avatar of assignee */}
+                                              <Image
+                                                source={{ uri: getAvatarUrl(task.assignedTo) }}
+                                                className="w-6 h-6 rounded-full mr-3 border border-[#2A1800]"
+                                              />
+                                              
+                                              {/* Task title */}
+                                              <Text
+                                                style={{fontFamily: 'Lato', fontSize: 16 }}
+                                                className="text-sm font-bold text-[#2A1800] flex-shrink mr-2 font-lato"
+                                                numberOfLines={1}
+                                              >
+                                                {task.title}
+                                              </Text>
+                                            </View>
+                                            
+                                            {/* Flag at far right */}
+                                            <Image
+                                              source={getPriorityFlagIcon(task.priority as string)}
+                                              style={{ width: 20, height: 20 }}
+                                              resizeMode="contain"
+                                            />
+                                          </View>
+                                          
+                                          {/* In the ROW 2 with time */}
+                                          <View className="flex-row items-center justify-between mb-2">
+                                            <View className="flex-row items-center">
+                                              <Text
+                                                className={`${isTaskMissed(task) ? 'text-[#FF5555]' : 'text-[#666] font-lato'}`}
+                                                style={{fontFamily: 'Lato', fontSize: 14 }}
+                                              >
+                                                {new Date(task.datetime).toLocaleTimeString('en-US', {
+                                                  hour: 'numeric',
+                                                  minute: '2-digit',
+                                                  hour12: true
+                                                })}
+                                              </Text>
+                                              
+                                              {/* Add Missed label for past due tasks */}
+                                              {isTaskMissed(task) && (
+                                                <Text className="ml-2 text-[#FF5555]" style={{ fontSize: 12 }}>
+                                                  Missed
+                                                </Text>
+                                              )}
+                                            </View>
+                                          </View>
+                                          
+                                          {/* ROW 3: Description and Bell */}
+                                          <View className="flex-row items-center justify-between mt-1">
+                                            {/* Task Description */}
+                                            <Text
+                                              style={{fontFamily: 'Lato', fontSize: 14 }}
+                                              className="text-xs font-lato text-[#666] flex-1 mr-2 font-lato"
+                                              numberOfLines={2}
+                                            >
+                                              {task.description}
+                                            </Text>
+                                            
+                                            {/* Bell icon */}
+                                            <Pressable
+                                              onPress={handleSendReminder}
+                                              className="w-6 h-6 flex items-center justify-center"
+                                            >
+                                              <Image
+                                                source={require('../../../../assets/icons/bell-icon.png')}
+                                                style={{ width: 24, height: 24 }}
+                                                resizeMode="contain"
+                                              />
+                                            </Pressable>
+                                          </View>
+                                        </>
+                                      );
+                                    }
+                                  })()}
                                 </Pressable>
                               </View>
                             );
