@@ -315,15 +315,15 @@ export default function Profile() {
           />
 
         <View className="flex flex-row items-center gap-4">
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Text className="text-xs">{todayMoodEmoji}</Text>
+          <View className="w-8 h-8 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Text className="text-base">{todayMoodEmoji}</Text>
           </View>
-          <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-            <Text className="text-xs">{todayBodyEmoji}</Text>
+          <View className="w-8 h-8 bg-[#2A1800] rounded-full flex items-center justify-center">
+            <Text className="text-base">{todayBodyEmoji}</Text>
           </View>
           <CircularProgress
               percentage={taskCompletion} 
-              size={24} 
+              size={30} 
               onPress={() => setIsTaskModalVisible(true)}
             />
         </View>
@@ -376,7 +376,6 @@ export default function Profile() {
           onClose={() => setIsTaskModalVisible(false)}
           userID={userID || ''}
           groupID={primaryGroupId || ''}
-          taskCompletion={taskCompletion}
         />
 
     </ScrollView>
