@@ -7,7 +7,7 @@ import CalendarStrip from '~/components/CalendarStrip';
 import CircularProgress from '~/components/CircularProgress';
 import TaskDetailModal from '~/components/TaskDetailModal';
 import StravaConnectSection from '~/components/StravaConnectButton'; 
-import Settings from '../../../../assets/icons/settings.png';
+import Settings from '../../../../assets/icons/Tab-2.png';
 import Heart from '../../../../assets/icons/heart.png';
 import FeedLoading from '~/components/ui/feed-loading';
 
@@ -43,21 +43,21 @@ export default function Profile() {
   const [isStravaConnected, setIsStravaConnected] = useState<boolean>(false);
 
   const moods = [
-    { id: 'happy', emoji: '😊', label: 'Happy', value: 'happy' },
-    { id: 'excited', emoji: '🤩', label: 'Excited', value: 'excited' },
-    { id: 'sad',  emoji: '😢',label: 'Sad', value: 'sad' },
-    { id: 'angry',  emoji: '😠',label: 'Angry', value: 'angry' },
-    { id: 'nervous',  emoji: '😬',label: 'Nervous', value: 'nervous' },
-    { id: 'peaceful',  emoji: '🧘',label: 'Peaceful', value: 'peaceful' },
+    { id: 'happy', emoji: '😆', label: 'Great', value: 'happy' },
+    { id: 'excited', emoji: '😊', label: 'Good', value: 'excited' },
+    { id: 'sad',  emoji: '🙂',label: 'Okay', value: 'sad' },
+    { id: 'angry',  emoji: '😌',label: 'Calm', value: 'angry' },
+    { id: 'nervous',  emoji: '😞',label: 'Bad', value: 'nervous' },
+    { id: 'peaceful',  emoji: '😭',label: 'Terrible', value: 'peaceful' },
   ];
 
   const bodyFeelings = [
-    { id: 'energized',  emoji: '⚡',label: 'Energized', value: 'energized' },
-    { id: 'sore',  emoji: '💪',label: 'Sore', value: 'sore' },
-    { id: 'tired',  emoji: '😴',label: 'Tired', value: 'tired' },
+    { id: 'energized',  emoji: '💪',label: 'Strong', value: 'energized' },
+    { id: 'sore',  emoji: '😶',label: 'Normal', value: 'sore' },
+    { id: 'tired',  emoji: '😙',label: 'Relaxed', value: 'tired' },
     { id: 'sick',  emoji: '🤒',label: 'Sick', value: 'sick' },
-    { id: 'relaxed',  emoji: '😌',label: 'Relaxed', value: 'relaxed' },
-    { id: 'tense',  emoji: '😣',label: 'Tense', value: 'tense' },
+    { id: 'relaxed',  emoji: '😩',label: 'Sore', value: 'relaxed' },
+    { id: 'tense',  emoji: '🤧',label: 'Weak', value: 'tense' },
   ];
 
   // Helper function to get emoji from value
@@ -345,7 +345,7 @@ export default function Profile() {
         </View>
         <View className="pl-4">
           <Pressable onPress={() => router.push('/(protected)/dashboard/profile/settings')}>
-            <Image source={Settings} className="w-6 h-6" />
+            <Image source={Settings} className="w-8 h-8" />
           </Pressable>
         </View>
       </View>

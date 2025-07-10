@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, Image, ActivityIndicator } from 'react-native';
 import { useManualStrava } from '~/hooks/useManualStrava';
 import Strava from '~/assets/icons/strava.png'; 
-
+import Tab from '~/assets/icons/Tab.png';
 
 interface StravaConnectSectionProps {
   onConnectionChange?: (isConnected: boolean) => void;
@@ -17,6 +17,7 @@ const StravaConnectSection: React.FC<StravaConnectSectionProps> = ({ onConnectio
     authenticate, 
     signOut, 
     getWeeklySummary,
+    getHealthData,
     refreshAuthStatus 
   } = useManualStrava();
   
@@ -131,78 +132,76 @@ const StravaConnectSection: React.FC<StravaConnectSectionProps> = ({ onConnectio
 
   return (
     <View className="w-5/6 self-center mt-10">
+      {/* Header */}
       <View className="flex-row justify-between items-center mb-4">
         <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">
           Automatic Tracking
         </Text>
-        <Pressable onPress={refreshAuthStatus}>
-          <View className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center">
-            <Text className="text-gray-600 text-xs">↻</Text>
-          </View>
+        <Pressable onPress={handleDisconnect}>
+          <Image source={Tab} className="w-8 h-8" />
         </Pressable>
       </View>
 
-      {/* Connected Status */}
-      <View className="flex-row items-center mb-4">
-        <View className="w-3 h-3 bg-green-500 rounded-full mr-2" />
-        <Text className="text-black font-lato text-[16px] font-medium">
-          Connected as {athlete?.firstname} {athlete?.lastname}
-        </Text>
-      </View>
-
-      {/* Weekly Summary */}
-      {isLoadingSummary ? (
-        <View className="bg-[#FAE5CA] rounded-lg p-4 mb-4 items-center">
-          <ActivityIndicator size="small" color="#2A1800" />
+      {/* Strava Connected Card */}
+      <View className='flex flex-row items-center gap-10 self-stretch'>
+        {/* Strava Info Row */}
+        <View className="flex w-[79px] flex-col justify-center items-center gap-4 self-stretch">
+          <View className="relative">
+            <Image source={Strava} className="w-8 h-8" />
+            {/* Green dot indicator */}
+            <View className="absolute -top-2 -right-2 w-[10px] h-[10px] bg-green-500 rounded-full border-2 border-white" />
+          </View>
+          <View className="ml-3 flex-1">
+            <Text className="text-[#2A1800] text-center font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px]">
+              Strava
+            </Text>
+          </View>
         </View>
-      ) : weeklySummary ? (
-        <View className="bg-[#FAE5CA] rounded-lg p-4 mb-4">
-          <Text className="text-[#2A1800] font-lato text-[16px] font-extrabold mb-3">
-            This week
+
+        {/* This Week Header */}
+        <View className='flex flex-col items-start gap-2 flex-1'>
+          <Text className='text-black text-center font-lato text-[14px] font-black leading-[24px] tracking-[0.3px]'>
+            This Week
           </Text>
-          <View className="flex-row justify-between">
-            <View className="flex-1">
-              <Text className="text-[#2A1800] font-lato text-[14px] font-medium">
-                Activities
-              </Text>
-              <Text className="text-[#2A1800] font-lato text-[18px] font-extrabold">
-                {weeklySummary.count}
-              </Text>
-            </View>
-            <View className="flex-1">
-              <Text className="text-[#2A1800] font-lato text-[14px] font-medium">
-                Distance
-              </Text>
-              <Text className="text-[#2A1800] font-lato text-[18px] font-extrabold">
-                {formatDistance(weeklySummary.distance)}
-              </Text>
-            </View>
-            <View className="flex-1">
-              <Text className="text-[#2A1800] font-lato text-[14px] font-medium">
-                Time
-              </Text>
-              <Text className="text-[#2A1800] font-lato text-[18px] font-extrabold">
-                {formatTime(weeklySummary.moving_time)}
-              </Text>
-            </View>
+
+        <View className="flex flex-row justify-between">
+          <View className="flex flex-col items-start gap-px">
+            <Text className="text-black text-center font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px]">
+              Activities
+            </Text>
+            <Text className="text-black text-center font-lato text-[14px] font-black leading-[24px] tracking-[0.3px]">
+              {isLoadingSummary ? '-' : (weeklySummary?.thisWeek?.activities || 0)}
+            </Text>
           </View>
           
-          <View className="flex-row items-center justify-between mt-4">
-            <View className="flex-row items-center">
-              <View className="w-4 h-4 bg-[#FC4C02] rounded mr-2" />
-              <Text className="text-[#2A1800] font-lato text-[14px] font-medium">
-                Strava
-              </Text>
-            </View>
-            <Pressable onPress={handleDisconnect}>
-              <Text className="text-[#2A1800] font-lato text-[14px] font-medium underline">
-                Disconnect
-              </Text>
-            </Pressable>
+          <View className="flex-1">
+            <Text className="text-black text-center font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px]">
+              Distance
+            </Text>
+            <Text className="text-black text-center font-lato text-[14px] font-black leading-[24px] tracking-[0.3px]">
+              {isLoadingSummary ? '-' : (weeklySummary?.thisWeek?.distance ? formatDistance(weeklySummary.thisWeek.distance) : '0.00 mi')}
+            </Text>
+          </View>
+          
+          <View className="flex-1">
+            <Text className="text-black text-center font-lato text-[14px] font-normal leading-[24px] tracking-[-0.1px]">
+              Time
+            </Text>
+            <Text className="text-black text-center font-lato text-[14px] font-black leading-[24px] tracking-[0.3px]">
+              {isLoadingSummary ? '-' : (weeklySummary?.thisWeek?.movingTime ? formatTime(weeklySummary.thisWeek.movingTime) : '0m')}
+            </Text>
           </View>
         </View>
-      ) : null}
-    </View>
+        </View>
+        </View>
+
+        {/* Loading indicator for summary */}
+        {isLoadingSummary && (
+          <View className="absolute inset-0 flex-1 justify-center items-center bg-white/50 rounded-lg">
+            <ActivityIndicator size="small" color="#2A1800" />
+          </View>
+        )}
+      </View>
   );
 };
 
