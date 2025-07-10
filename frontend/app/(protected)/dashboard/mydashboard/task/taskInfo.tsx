@@ -225,7 +225,7 @@ const TaskInfoScreen = () => {
               className="absolute bottom-3 right-3 bg-[#2A1800] rounded-full p-2"
               onPress={takePhoto}
             >
-              <Camera color="#2A1800" size={24} />
+              <Camera color="white" size={24} />
             </Pressable>
           )}
         </View>
@@ -273,7 +273,7 @@ const TaskInfoScreen = () => {
               );
             }}
           >
-            <Trash2 size={16}/>
+            <Trash2 size={16} color={'#2A1800'}/>
           </Pressable>
         </View>
 
@@ -281,22 +281,22 @@ const TaskInfoScreen = () => {
         <View className="px-4 pt-4">
 
           <View className="mb-3 p-3">
-            <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Instructions</Text>
-            <Text style={{ fontFamily: 'Lato' }} >{task.description || 'No instructions provided.'}</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="text-[16px] font-bold mb-2">Instructions</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="text-[16px]" >{task.description || 'No instructions provided.'}</Text>
           </View>
           <View className="mb-3 p-3">
-            <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Purpose</Text>
-            <Text style={{ fontFamily: 'Lato' }}>{task.purpose || task.description || 'No purpose provided.'}</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="text-[16px] font-bold mb-2">Purpose</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="text-[16px]">{task.purpose || task.description || 'No purpose provided.'}</Text>
           </View>
           <View className="mb-3 p-3">
-            <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Start and End Date</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="text-[16px] font-bold mb-2">Start and End Date</Text>
             {/* Debug logs for reminder and dates */}
             {(() => {
               if (task.reminder) {
               }
               return null;
             })()}
-            <Text style={{ fontFamily: 'Lato' }}>
+            <Text style={{ fontFamily: 'Lato' }} className="text-[16px]">
               {task.reminder?.start_date
                 ? (() => {
                     const start = new Date(task.reminder.start_date);
@@ -313,7 +313,7 @@ const TaskInfoScreen = () => {
             </Text>
           </View>
           <View className="mb-3 flex-row items-center p-3">
-            <Text style={{ fontFamily: 'Lato' }}>
+            <Text className="text-[16px]" style={{ fontFamily: 'Lato' }}>
                 <Text style={{ fontFamily: 'Lato' }} className="font-bold">Assigned </Text>
 
                 to{' '}
@@ -324,10 +324,10 @@ const TaskInfoScreen = () => {
                   source={{ uri: assignedToUser.imageURL || 'https://via.placeholder.com/32' }}
                   className="w-6 h-6 rounded-full mx-1"
                 />
-                <Text style={{ fontFamily: 'Lato' }} className="font-bold">{assignedToUser.fullName || 'Unknown'}</Text>
+                <Text style={{ fontFamily: 'Lato' }} className="font-bold text-[16px]">{assignedToUser.fullName || 'Unknown'}</Text>
               </>
             ) : (
-              <Text style={{ fontFamily: 'Lato' }} className="font-bold">Unassigned</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="text-[16px] font-bold">Unassigned</Text>
             )}
             <Text style={{ fontFamily: 'Lato' }}> by{' '}</Text>
             {assignedByUser ? (
@@ -336,10 +336,10 @@ const TaskInfoScreen = () => {
                   source={{ uri: assignedByUser.imageURL || 'https://via.placeholder.com/32' }}
                   className="w-6 h-6 rounded-full mx-1"
                 />
-                <Text style={{ fontFamily: 'Lato' }} className="font-bold">{assignedByUser.fullName || 'Unknown'}</Text>
+                <Text style={{ fontFamily: 'Lato' }} className="font-bold text-[16px]">{assignedByUser.fullName || 'Unknown'}</Text>
               </>
             ) : (
-              <Text style={{ fontFamily: 'Lato' }} className="font-bold">Nobody</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="font-bold text-[16px]">Nobody</Text>
             )}
           </View>
         </View>
