@@ -137,7 +137,7 @@ const StravaActivities: React.FC = () => {
                       Activities
                     </Text>
                     <Text className="text-black text-center font-lato text-[14px] font-black leading-[24px] tracking-[0.3px]">
-                      {isLoadingSummary ? '-' : (weeklySummary?.thisWeek?.activities || 0)}
+                      {isLoadingSummary ? '-' : (weeklySummary?.allTime?.activities || 0)}
                     </Text>
                   </View>
                   
@@ -146,7 +146,7 @@ const StravaActivities: React.FC = () => {
                       Distance
                     </Text>
                     <Text className="text-black text-center font-lato text-[14px] font-black leading-[24px] tracking-[0.3px]">
-                      {isLoadingSummary ? '-' : (weeklySummary?.thisWeek?.distance ? formatDistance(weeklySummary.thisWeek.distance) : '0.00 mi')}
+                      {isLoadingSummary ? '-' : (weeklySummary?.allTime?.distance ? formatDistance(weeklySummary.allTime.distance) : '0.00 mi')}
                     </Text>
                   </View>
 
@@ -155,7 +155,7 @@ const StravaActivities: React.FC = () => {
                       Steps
                     </Text>
                     <Text className="text-black text-center font-lato text-[14px] font-black leading-[24px] tracking-[0.3px]">
-                      {isLoadingSummary ? '-' : (weeklySummary?.thisWeek?.distance ? formatSteps(weeklySummary.thisWeek.distance) : '0')}
+                      {isLoadingSummary ? '-' : (weeklySummary?.allTime?.distance ? formatSteps(weeklySummary.allTime.distance) : '0')}
                     </Text>
                   </View>
                   
@@ -164,7 +164,7 @@ const StravaActivities: React.FC = () => {
                       Time
                     </Text>
                     <Text className="text-black text-center font-lato text-[14px] font-black leading-[24px] tracking-[0.3px]">
-                      {isLoadingSummary ? '-' : (weeklySummary?.thisWeek?.movingTime ? formatTime(weeklySummary.thisWeek.movingTime) : '0m')}
+                      {isLoadingSummary ? '-' : (weeklySummary?.allTime?.movingTime ? formatTime(weeklySummary.allTime.movingTime) : '0m')}
                     </Text>
                   </View>
                 </View>
