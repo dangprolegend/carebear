@@ -26,8 +26,10 @@ import { Avatar } from '../../../../../components/ui/avatar';
 
 interface TaskUser {
   _id: string;
+  userID?: string; // Add userID field
   firstName?: string;
   lastName?: string;
+  fullName?: string; // Add fullName field
   email?: string;
   imageURL?: string;
   profilePicture?: string;
@@ -137,7 +139,8 @@ const EditTaskScreen = () => {
         if (task.assignedTo) {
           if (typeof task.assignedTo === 'object' && task.assignedTo !== null) {
             const assignedUser = task.assignedTo as TaskUser;
-            assignedToId = assignedUser._id;
+            // Try userID first (like in aiTask), then fall back to _id
+            assignedToId = assignedUser.userID || assignedUser._id;
             console.log("Assigned to user (object):", assignedUser._id, 
               assignedUser.firstName ? `${assignedUser.firstName} ${assignedUser.lastName}` : assignedUser.email);
           } else if (typeof task.assignedTo === 'string') {
@@ -186,6 +189,7 @@ const EditTaskScreen = () => {
           console.log("Fetching users for group:", currentGroupID);
           usersList = await fetchUsersInGroup(currentGroupID);
           console.log("Fetched users from group:", usersList.length);
+          console.log("Sample user data:", usersList[0]); // Debug: log first user structure
         } catch (e) {
           console.error('Error fetching group users:', e);
         }
@@ -193,18 +197,14 @@ const EditTaskScreen = () => {
         console.log("No group ID available to fetch users");
       }
       
-      // Map the users we have
+      // Map the users we have - exactly like aiTask.tsx
       const mappedUsers = usersList.map((user: any) => ({
-        label: user.firstName && user.lastName 
-          ? `${user.firstName} ${user.lastName}` 
-          : user.email || 'Unknown User',
-        value: user._id,
-        imageURL: user.imageURL || user.profilePicture || null,
-        firstName: user.firstName || '',
-        lastName: user.lastName || ''
-      }));
-      
-      // Always try to fetch the assigned user's info if we have an assignedTo value
+        label: user.fullName || user.email || 'Unknown User',
+        value: user.userID, // Changed from user._id to user.userID to match aiTask.tsx
+        imageURL: user.imageURL || null,
+        firstName: user.fullName?.split(' ')[0] || '',
+        lastName: user.fullName?.split(' ')[1] || ''
+      }));      
       const assignedToId = taskForm.assignedTo;
       if (assignedToId && !mappedUsers.some(u => u.value === assignedToId)) {
         console.log("Assigned user not in mapped list, fetching user info:", assignedToId);
@@ -213,13 +213,11 @@ const EditTaskScreen = () => {
           console.log("Fetched assigned user info:", userInfo);
           if (userInfo) {
             mappedUsers.push({
-              label: userInfo.firstName && userInfo.lastName 
-                ? `${userInfo.firstName} ${userInfo.lastName}` 
-                : userInfo.email || 'Unknown User',
-              value: userInfo._id,
+              label: userInfo.fullName || userInfo.email || 'Unknown User',
+              value: userInfo.userID || userInfo._id,
               imageURL: userInfo.imageURL || userInfo.profilePicture || null,
-              firstName: userInfo.firstName || '',
-              lastName: userInfo.lastName || ''
+              firstName: userInfo.fullName?.split(' ')[0] || userInfo.firstName || '',
+              lastName: userInfo.fullName?.split(' ')[1] || userInfo.lastName || ''
             });
             console.log("Added assigned user to options:", userInfo.email || userInfo._id);
           }
@@ -366,7 +364,6 @@ const EditTaskScreen = () => {
                 {(() => {
                   const selectedUser = assigneeOptions.find(opt => opt.value === taskForm.assignedTo);
                   
-                  // If we have an assignedTo ID but no matching user in options yet
                   if (!selectedUser) {
                     return (
                       <View className="flex-row items-center">
@@ -379,19 +376,19 @@ const EditTaskScreen = () => {
                   return (
                     <>
                       {selectedUser.imageURL ? (
-                        <Image 
-                          source={{ uri: selectedUser.imageURL }} 
-                          className="w-8 h-8 rounded-full mr-2"
-                          onError={() => console.log("Failed to load image for", selectedUser.label)} 
-                        />
+                        <Image source={{ uri: selectedUser.imageURL }} className="w-8 h-8 rounded-full mr-2" />
                       ) : (
                         <Avatar 
-                          name={`${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() || selectedUser.label || 'User'} 
+                          name={selectedUser.firstName && selectedUser.lastName 
+                            ? `${selectedUser.firstName} ${selectedUser.lastName}`
+                            : selectedUser.label || 'User'} 
                           size="sm"
                           className="mr-2"
                         />
                       )}
-                      <Text className="text-base">{selectedUser.label}</Text>
+                      <Text className="text-base">
+                        {selectedUser.label || 'Select Assignee'}
+                      </Text>
                     </>
                   );
                 })()}
@@ -416,6 +413,7 @@ const EditTaskScreen = () => {
                 >
                   {/* Option to clear assignee */}
                   <Pressable
+                    key="unassigned"
                     className={`py-3 px-4 flex-row items-center ${!taskForm.assignedTo ? 'bg-blue-100' : ''}`}
                     onPress={() => {
                       handleInputChange('assignedTo', '');
@@ -447,20 +445,11 @@ const EditTaskScreen = () => {
                       }}
                     >
                       <View className="mr-3">
-                        {user.imageURL ? (
-                          <Image 
-                            source={{ uri: user.imageURL }} 
-                            className="w-8 h-8 rounded-full"
-                            onError={(e) => {
-                              console.log("Failed to load image for", user.label);
-                            }} 
-                          />
-                        ) : (
-                          <Avatar 
-                            name={`${user.firstName || ''} ${user.lastName || ''}`.trim() || user.label || 'User'}
-                            size="sm"
-                          />
-                        )}
+                        <Avatar 
+                          name={`${user.firstName || ''} ${user.lastName || ''}`}
+                          size="sm"
+                          src={user.imageURL || undefined}
+                        />
                       </View>
                       <View>
                         <Text className={`text-base ${taskForm.assignedTo === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>

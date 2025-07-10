@@ -266,7 +266,19 @@ const loadFeedData = async () => {
     setRefreshing(false);
   };  
   return (
-    <View className="flex-1 bg-white">    
+    <View className="flex-1 bg-white">
+      {/* Full-page overlay loading state */}
+      {(loading || !showContent) && (
+        <FeedLoading 
+          dataReady={dataReady}
+          visible={true}
+          onFinish={() => {
+            setLoading(false);
+            setShowContent(true);
+          }}
+        />
+      )}
+      
       <View className="px-3 py-3">        
         <View className="flex-row justify-between items-center">
           <Text className="font-semibold left-4 text-lg text-gray-900 font-['Lato']">
@@ -291,15 +303,9 @@ const loadFeedData = async () => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 16 }}      >{loading || !showContent ? (
-          <FeedLoading 
-            dataReady={dataReady}
-            onFinish={() => {
-              setLoading(false);
-              setShowContent(true);
-            }}
-          />
-        ) : filteredData.length === 0 ? (
+        contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 0 }}
+      >
+        {filteredData.length === 0 ? (
           <EmptyState
             icon="feed"
             title="No activities to show"

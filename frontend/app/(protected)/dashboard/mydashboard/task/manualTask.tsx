@@ -80,6 +80,20 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
     setManualForm(prev => ({ ...prev, [field]: value }));
   };
 
+  // Priority flag icon getter moved outside so it's accessible in render and handlers
+  const getPriorityFlagIcon = (priority: string): any => {
+    switch (priority) {
+      case 'high': 
+        return require('../../../../../assets/icons/redflag.png');
+      case 'medium': 
+        return require('../../../../../assets/icons/yellowflag.png');
+      case 'low': 
+        return require('../../../../../assets/icons/blueflag.png');
+      default:
+        return require('../../../../../assets/icons/redflag.png'); // Default flag
+    }
+  };
+
   const handleSaveManualTask = async () => {
   // Validate all required fields
   if (!manualForm.title.trim()) {
@@ -514,6 +528,7 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
               onChangeText={text => handleInputChange('description', text)}
             />
 
+            
             {/* Priority */}
             <Text className="font-semibold mb-2">Priority</Text>
             <View className="flex-row mb-8">
@@ -523,7 +538,11 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
                           className={`flex-1 flex-row items-center justify-center border border-[0.5px] rounded-lg py-3 mx-1 ${manualForm.priority === level ? 'border-[black] bg-[#FAE5CA]' : 'bg-white border-black'}`}
                           onPress={() => handleInputChange('priority', level)}
                         >
-                          <MaterialIcons name="flag" size={18} color={level === 'high' ? 'red' : level === 'medium' ? 'gold' : 'blue'} />
+                          <Image 
+                            source={getPriorityFlagIcon(level)}
+                            style={{ width: 18, height: 18 }}
+                            resizeMode="contain"
+                          />
                           <Text className={`ml-1 font-semibold capitalize ${manualForm.priority === level ? 'text-black' : 'text-black'}`}>{level}</Text>
                         </Pressable>
                       ))}

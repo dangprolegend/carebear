@@ -29,7 +29,6 @@ import bear6 from '../../../../assets/images/Bear-6.png';
 import CircularProgress from '~/components/CircularProgress';
 import { Dropdown } from '~/components/ui/dropdown';
 import { Camera } from 'lucide-react-native';
-import CameraIcon from '../../../../assets/icons/camera.png';
 import RoleEditDropdown from '~/components/ui/RoleEditDropdown';
 
 // Define the FamilyMember type
@@ -103,6 +102,10 @@ export default function Family() {
 
   // Role editing states
   const [roleEditDropdownMemberId, setRoleEditDropdownMemberId] = useState<string | null>(null);
+
+  // Add member role dropdown states
+  const [expandedRole, setExpandedRole] = useState<string | null>(null);
+  const [clickedRole, setClickedRole] = useState<string | null>(null);
 
   // Open/close modal with animation logic (no useEffect)
   const openSuccessModal = () => {
@@ -203,9 +206,32 @@ export default function Family() {
       }
     };
 
+    // Helper functions for role descriptions and dropdown
+    const getRoleDescription = (role: string) => {
+      switch (role) {
+        case 'CareBear':
+          return 'Assign tasks to yourself and to BabyBear members. You can edit any tasks you\'ve assigned. You can also receive care like a BabyBear, meaning others can assign tasks to you.';
+        case 'BabyBear':
+          return 'Receive tasks from CareBear and manage your own tasks. You cannot edit tasks assigned to you by others.';
+        case 'BearBoss':
+          return 'Admin of the family group. You can take on both CareBear and BabyBear roles, and also manage the group by adding or removing members.';
+        default:
+          return '';
+      }
+    };
+
+    const handleRoleSelect = (role: string) => {
+      setSelectedRole(role);
+      setClickedRole(role);
+    };
+
+    const toggleRoleDescription = (role: string) => {
+      setExpandedRole(expandedRole === role ? null : role);
+    };
+
     const fetchPrimaryGroupId = async (userID: string) => {
       try {
-        const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
+        const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/group`);
         setPrimaryGroupId(response.data.groupID);
         return response.data.groupID;
       } catch (error) {
@@ -216,7 +242,7 @@ export default function Family() {
 
     const fetchTaskCompletion = async (userID: string, groupID: string) => {
       try {
-        const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`);
+        const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/tasks/user/${userID}/group/${groupID}/completion`);
         const percentage = response.data.completionPercentage || 0;
         setTaskCompletionByUser(prev => ({
           ...prev,
@@ -237,7 +263,7 @@ export default function Family() {
   // Fetch today's daily status
   const fetchTodayStatus = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/daily/today/${userID}`);
+      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/daily/today/${userID}`);
       if (response.data && response.data.mood && response.data.body) {
         setTodayMoodValue(response.data.mood);
         setTodayBodyValue(response.data.body);
@@ -260,7 +286,7 @@ export default function Family() {
 
 const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
     try {
-      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/role`, {
+      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/role`, {
         params: {
           groupID: groupID
         }
@@ -279,7 +305,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
   // Fetch family member's daily status
   const fetchMemberStatus = async (memberUserID: string) => {
     try {
-      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/daily/today/${memberUserID}`);
+      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/daily/today/${memberUserID}`);
       if (response.data && response.data.mood && response.data.body) {
         return {
           mood: response.data.mood,
@@ -301,7 +327,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
   // Fetch admin status for a specific group and store in isAdminByGroup
   const fetchAdminStatus = async (userID: string, groupID: string) => {
     try {
-      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/groups/${groupID}/admin-status`);
+      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/groups/${groupID}/admin-status`);
       setIsAdminByGroup(prev => ({
         ...prev,
         [groupID]: response.data.isAdmin
@@ -321,7 +347,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
   // Fetch all groups user belongs to
   const fetchUserGroups = async (userID: string) => {
     try {
-      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/allGroups`);
+      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/allGroups`);
       const { groupIDs } = response.data;
       
       const groupNames = {};
@@ -330,7 +356,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
       for (let i = 0; i < groupIDs.length; i++) {
         const groupID = groupIDs[i];
         try {
-          const groupResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/groups/${groupID}/admin-status`);
+          const groupResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/groups/${groupID}/admin-status`);
           const groupName = groupResponse.data.groupName || `Family ${i + 1}`;
           groupNames[groupID] = groupName;
           familyTabs.push({
@@ -375,7 +401,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
   const fetchFamilyMembersForGroup = async (userID: string, groupID: string) => {
     try {
       setIsLoadingFamily(true);
-      const response = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/familyMembers?groupID=${groupID}`);
+      const response = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/familyMembers?groupID=${groupID}`);
       console.log(`Fetched family members for group ${groupID}:`, response.data);
       
       // Log individual member data to check familialRelation
@@ -480,13 +506,13 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
 
      const invitationData = {
        email: memberEmail.trim(),
-       role: selectedRole,
+       role: mapFrontendToBackendRole(selectedRole),
        familialRelation: memberRelation.trim(),
        inviterName: userFullName || 'A family member',
        groupID: activeTab // Send the current tab's groupID
      };
 
-     await axios.post(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/invite`, invitationData);
+     await axios.post(`https://carebear-backend.onrender.com/api/users/${userID}/invite`, invitationData);
 
      // Reset form after successful invitation
      setMemberRelation('');
@@ -494,6 +520,8 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
      setSelectedRole('CareBear');
      setIsDataSaved(false);
      setShowAddMemberDropdown(false);
+     setExpandedRole(null);
+     setClickedRole(null);
 
      // Show success modal
      openSuccessModal();
@@ -551,12 +579,12 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
         setIsCheckingStatus(true);
         try {
           // Step 1: Fetch userID using clerkID
-          const userResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
+          const userResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/clerk/${userId}`);
           const fetchedUserID = userResponse.data.userID;
           setUserID(fetchedUserID);
 
           // Step 2: Check if user has submitted today
-          const statusResponse = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/daily/check/${fetchedUserID}`);
+          const statusResponse = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/daily/check/${fetchedUserID}`);
           
           // If user has submitted today, fetch their status to display emojis
           if (statusResponse.data.hasSubmittedToday) {
@@ -583,7 +611,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
     const fetchUserInfo = async () => {
       if (userID) {
         try {
-          const res = await axios.get(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/info`);
+          const res = await axios.get(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/users/${userID}/info`);
           setUserImageURL(res.data.imageURL);
           setUserFullName(res.data.fullName);
 
@@ -622,7 +650,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
       setIsSubmittingStatus(true);
 
       // Submit daily status to backend (userID in endpoint, only mood and body fields)
-      await axios.post(`https://carebear-carebearvtmps-projects.vercel.app/api/daily/submit/${userID}`, {
+      await axios.post(`https://carebear-4ju68wsmg-carebearvtmps-projects.vercel.app/api/daily/submit/${userID}`, {
         mood: selectedMood,
         body: selectedBodyFeeling,
       });
@@ -790,10 +818,18 @@ const FamilyMemberCard = ({
 
   return (
     <View className="flex-1">
+      {/* Full-page overlay loading state */}
+      {isLoadingFamily && (
+        <FeedLoading 
+          dataReady={false}
+          visible={true}
+        />
+      )}
+      
       <ScrollView className="flex-1">
       <Text className="text-[#2A1800] font-lato text-base font-extrabold px-8 pt-6">Your Families</Text>
           {/* Family Management Header */}
-          <View className="px-8 pt-2 mb-2 flex-row items-center justify-end">
+          <View className="px-8 pt-3 mb-4 flex-row items-center justify-end">
             {/* Family Dropdown */}
             <View className="flex-shrink">
               <Dropdown
@@ -810,9 +846,9 @@ const FamilyMemberCard = ({
 
             <Pressable
               onPress={() => {router.push('/(protected)/dashboard/family/create-family')}}
-              className="bg-white rounded-2xl ml-4"
+              className="bg-white border border-[#2A1800] rounded-full ml-4 w-10 h-10 items-center justify-center"
             >
-              <AntDesign name="pluscircleo" size={24} color="#2A1800" />
+              <AntDesign name="plus" size={20} color="#2A1800" />
             </Pressable>
           </View>
 
@@ -834,26 +870,19 @@ const FamilyMemberCard = ({
           </View>
           <View className="px-4">
             {/* Family Members Cards */}
-          {isLoadingFamily ? (
-            <View className="flex-1 justify-center items-center py-8">
-              <View className="w-8 h-8 mb-2 bg-gray-300 rounded-full animate-pulse" />
-              <Text className="mt-4 text-gray-600">Loading family members...</Text>
-            </View>
-          ) : (
-            currentFamilyMembers.map((member) => (
+            {currentFamilyMembers.map((member) => (
               <FamilyMemberCard 
                 key={member.userID}
                 member={member}
                 isCurrentUser={false}
               />
-            ))
-          )}
+            ))}
 
           {/* Add Member Card */}
             <View className='flex flex-col mx-4 mt-4'>
-              <View className='bg-white flex flex-row p-4 items-center gap-4 rounded-lg border border-[#2A1800]'>
+              <View className='bg-white flex flex-row p-5 items-center gap-4 rounded-lg border border-[#2A1800]'>
                 <View className='flex w-10 h-10 justify-center items-center rounded-full border border-[#2A1800] bg-[#623405]'>
-                  <Image source={CameraIcon} className="w-5 h-5" resizeMode="contain" />
+                  < Camera color='white'/>
                 </View>
                 
                 {!showAddMemberDropdown ? (
@@ -862,7 +891,7 @@ const FamilyMemberCard = ({
                       Add new member
                     </Text>
                     <Pressable 
-                      className='flex w-8 h-8 justify-center items-center rounded-full bg-white ml-auto'
+                      className='flex w-8 h-8 justify-center items-center rounded-full bg-white ml-auto border border-[#2A1800]'
                       onPress={() => {
                         setShowAddMemberDropdown(true);
                         if (savedMemberData) {
@@ -872,7 +901,7 @@ const FamilyMemberCard = ({
                         }
                       }}
                     >
-                      <AntDesign name="pluscircleo" size={24} color="#2A1800" />
+                      <AntDesign name="plus" size={20} color="#2A1800" />
                     </Pressable>
                   </>
                 ) : (
@@ -893,6 +922,8 @@ const FamilyMemberCard = ({
                         setMemberRelation('');
                         setMemberEmail('');
                         setSelectedRole('CareBear');
+                        setExpandedRole(null);
+                        setClickedRole(null);
                       }}
                     >
                       <Image source={UserPen} className="w-9 h-9" />
@@ -920,55 +951,112 @@ const FamilyMemberCard = ({
 
                   {/* Bear Role */}
                   <View className="mb-6">
-                    <Text className="text-[#222] font-lato text-lg font-semibold mb-4">Bear Role</Text>
+                    <Text className="text-[#222] font-lato text-lg font-bold mb-4">Bear Role</Text>
                     
                     {/* CareBear Option */}
-                    <Pressable 
-                      className={`p-4 rounded-lg bg-[#E1F0FF] border-b-4 border-2 mb-3 flex-row items-center gap-3 ${
-                        selectedRole === 'CareBear' ? 'border-[#2A1800]' : 'border-white'
-                      }`}
-                      onPress={() => setSelectedRole('CareBear')}
-                    >
-                      <View className="w-14 h-14 rounded-full flex items-center justify-center">
-                        <Image source={CareBear} className="w-14 h-14" />
-                      </View>
-                      <View className="flex-1">
-                        <Text className="text-[#222] font-lato text-lg font-semibold">CareBear</Text>
-                        <Text className="text-[#666] font-lato text-sm">Care giver & receiver</Text>
-                      </View>
-                    </Pressable>
+                    <View className="mb-3">
+                      <Pressable 
+                        className={`p-4 rounded-lg bg-[#E1F0FF] border-b-4 border-2 flex-row items-center gap-3 ${
+                          selectedRole === 'CareBear' ? 'border-[#2A1800]' : 'border-white'
+                        }`}
+                        onPress={() => handleRoleSelect('CareBear')}
+                      >
+                        <View className="w-14 h-14 rounded-full flex items-center justify-center">
+                          <Image source={CareBear} className="w-14 h-14" />
+                        </View>
+                        <View className="flex-1">
+                          <Text className="text-[#222] font-lato text-lg font-semibold">CareBear</Text>
+                          <Text className="text-[#666] font-lato text-sm">Care giver & receiver</Text>
+                        </View>
+                        {clickedRole === 'CareBear' && (
+                          <Pressable
+                            className="p-2"
+                            onPress={() => toggleRoleDescription('CareBear')}
+                          >
+                            <Text className="text-[#2A1800] font-lato text-lg">
+                              {expandedRole === 'CareBear' ? '^' : '›'}
+                            </Text>
+                          </Pressable>
+                        )}
+                      </Pressable>
+                      {expandedRole === 'CareBear' && (
+                        <View className=" -mt-2 p-4 rounded-b-lg border-r border-l border-b border-[#2A1800]">
+                          <Text className="text-[#2A1800] font-lato text-sm leading-5">
+                            {getRoleDescription('CareBear')}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
 
                     {/* BabyBear Option */}
-                    <Pressable 
-                      className={`p-4 rounded-lg bg-[#FAE5CA] border-b-4 border-2 mb-3 flex-row items-center gap-3 ${
-                        selectedRole === 'BabyBear' ? 'border-[#2A1800]' : 'border-white'
-                      }`}
-                      onPress={() => setSelectedRole('BabyBear')}
-                    >
-                      <View className="w-14 h-14 rounded-full flex items-center justify-center">
-                        <Image source={BabyBear} className="w-14 h-14" />
-                      </View>
-                      <View className="flex-1">
-                        <Text className="text-[#222] font-lato text-lg font-semibold">BabyBear</Text>
-                        <Text className="text-[#666] font-lato text-sm">Care receiver</Text>
-                      </View>
-                    </Pressable>
+                    <View className="mb-3">
+                      <Pressable 
+                        className={`p-4 rounded-lg bg-[#FAE5CA] border-b-4 border-2 flex-row items-center gap-3 ${
+                          selectedRole === 'BabyBear' ? 'border-[#2A1800]' : 'border-white'
+                        }`}
+                        onPress={() => handleRoleSelect('BabyBear')}
+                      >
+                        <View className="w-14 h-14 rounded-full flex items-center justify-center">
+                          <Image source={BabyBear} className="w-14 h-14" />
+                        </View>
+                        <View className="flex-1">
+                          <Text className="text-[#222] font-lato text-lg font-semibold">BabyBear</Text>
+                          <Text className="text-[#666] font-lato text-sm">Care receiver</Text>
+                        </View>
+                        {clickedRole === 'BabyBear' && (
+                          <Pressable
+                            className="p-2"
+                            onPress={() => toggleRoleDescription('BabyBear')}
+                          >
+                            <Text className="text-[#2A1800] font-lato text-lg">
+                              {expandedRole === 'BabyBear' ? '^' : '›'}
+                            </Text>
+                          </Pressable>
+                        )}
+                      </Pressable>
+                      {expandedRole === 'BabyBear' && (
+                        <View className=" -mt-2 p-4 rounded-b-lg border-r border-l border-b border-[#2A1800]">
+                          <Text className="text-[#2A1800] font-lato text-sm leading-5">
+                            {getRoleDescription('BabyBear')}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
 
                     {/* BearBoss Option */}
-                    <Pressable 
-                      className={`p-4 rounded-lg bg-[#E1F0FF] border-b-4 border-2 mb-3 flex-row items-center gap-3 ${
-                        selectedRole === 'BearBoss' ? 'border-[#2A1800]' : 'border-white'
-                      }`}
-                      onPress={() => setSelectedRole('BearBoss')}
-                    >
-                      <View className="w-14 h-14 rounded-full flex items-center justify-center">
-                        <Image source={BearBoss} className="w-14 h-14" />
-                      </View>
-                      <View className="flex-1">
-                        <Text className="text-[#222] font-lato text-lg font-semibold">BearBoss</Text>
-                        <Text className="text-[#666] font-lato text-sm">Admin</Text>
-                      </View>
-                    </Pressable>
+                    <View className="mb-3">
+                      <Pressable 
+                        className={`p-4 rounded-lg bg-[#E1F0FF] border-b-4 border-2 flex-row items-center gap-3 ${
+                          selectedRole === 'BearBoss' ? 'border-[#2A1800]' : 'border-white'
+                        }`}
+                        onPress={() => handleRoleSelect('BearBoss')}
+                      >
+                        <View className="w-14 h-14 rounded-full flex items-center justify-center">
+                          <Image source={BearBoss} className="w-14 h-14" />
+                        </View>
+                        <View className="flex-1">
+                          <Text className="text-[#222] font-lato text-lg font-semibold">BearBoss</Text>
+                          <Text className="text-[#666] font-lato text-sm">Admin</Text>
+                        </View>
+                        {clickedRole === 'BearBoss' && (
+                          <Pressable
+                            className="p-2"
+                            onPress={() => toggleRoleDescription('BearBoss')}
+                          >
+                            <Text className="text-[#2A1800] font-lato text-lg">
+                              {expandedRole === 'BearBoss' ? '^' : '›'}
+                            </Text>
+                          </Pressable>
+                        )}
+                      </Pressable>
+                      {expandedRole === 'BearBoss' && (
+                        <View className=" -mt-2 p-4 rounded-b-lg border-r border-l border-b border-[#2A1800]">
+                          <Text className="text-[#2A1800] font-lato text-sm leading-5">
+                            {getRoleDescription('BearBoss')}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
                   </View>
 
                   {/* Email Input */}
@@ -1058,7 +1146,104 @@ const FamilyMemberCard = ({
           </Modal>
           </View>
 
+      {/* Family Groups Pagination */}
+      {availableFamilies.length > 0 && (
+        <View className="px-8 py-4 bg-white">
+          <View className="flex-row justify-end gap-2">
+          <Text className="text-[#2A1800] font-lato text-base mr-4">Your Families List</Text>
+            {availableFamilies.length <= 4 ? (
+              // Show all dots if 3 or fewer groups
+              availableFamilies.map((family, index) => (
+                <Pressable
+                  key={family.id}
+                  onPress={() => handleTabChange(family.id)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    activeTab === family.id 
+                      ? 'bg-[#FAE5CA]' 
+                      : 'bg-white'
+                  }`}
+                >
+                  <Text className={`font-lato text-sm ${
+                    activeTab === family.id ? 'font-extrabold text-[#2A1800]' : 'font-medium text-[#2A1800]'
+                  }`}>
+                    {index + 1}
+                  </Text>
+                </Pressable>
+              ))
+            ) : (
+              // Show pagination pattern for more than 3 groups
+              <>
+                {/* First group */}
+                <Pressable
+                  onPress={() => handleTabChange(availableFamilies[0].id)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    activeTab === availableFamilies[0].id 
+                      ? 'bg-[#FAE5CA]' 
+                      : 'bg-white'
+                  }`}
+                >
+                  <Text className={`font-lato text-sm ${
+                    activeTab === availableFamilies[0].id ? 'font-extrabold text-[#2A1800]' : 'font-medium text-[#2A1800]'
+                  }`}>
+                    1
+                  </Text>
+                </Pressable>
+
+                {/* Second group */}
+                <Pressable
+                  onPress={() => handleTabChange(availableFamilies[1].id)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    activeTab === availableFamilies[1].id 
+                      ? 'bg-[#FAE5CA]' 
+                      : 'bg-white'
+                  }`}
+                >
+                  <Text className={`font-lato text-sm ${
+                    activeTab === availableFamilies[1].id ? 'font-extrabold text-[#2A1800]' : 'font-medium text-[#2A1800]'
+                  }`}>
+                    2
+                  </Text>
+                </Pressable>
+
+                {/* Third group */}
+                <Pressable
+                  onPress={() => handleTabChange(availableFamilies[2].id)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    activeTab === availableFamilies[2].id 
+                      ? 'bg-[#FAE5CA]' 
+                      : 'bg-white'
+                  }`}
+                >
+                  <Text className={`font-lato text-sm ${
+                    activeTab === availableFamilies[2].id ? 'font-extrabold text-[#2A1800]' : 'font-medium text-[#2A1800]'
+                  }`}>
+                    3
+                  </Text>
+                </Pressable>
+                <Text className="text-[#2A1800] font-lato text-lg font-medium px-2">...</Text>
+
+                {/* Last group */}
+                <Pressable
+                  onPress={() => handleTabChange(availableFamilies[availableFamilies.length - 1].id)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    activeTab === availableFamilies[availableFamilies.length - 1].id 
+                      ? 'bg-[#FAE5CA]' 
+                      : 'bg-white'
+                  }`}
+                >
+                  <Text className={`font-lato text-sm font-medium ${
+                    activeTab === availableFamilies[availableFamilies.length - 1].id ? 'text-[#2A1800]' : 'text-[#2A1800]'
+                  }`}>
+                    {availableFamilies.length}
+                  </Text>
+                </Pressable>
+              </>
+            )}
+          </View>
+        </View>
+      )}
       </ScrollView>
+
 
       {/* Daily Status Modal */}
       <Modal

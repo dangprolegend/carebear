@@ -42,7 +42,7 @@ export function Dropdown({ options, value, onValueChange, placeholder = "Select 
       >       
         <Text 
           className={cn(
-            "text-sm flex-1 font-bold",
+            "font-lato text-base flex-1 font-bold",
             selectedOption ? "text-gray-800" : "text-gray-500"
           )}
           numberOfLines={1}
@@ -92,7 +92,7 @@ export function Dropdown({ options, value, onValueChange, placeholder = "Select 
                         />
                       )}
                       <Text className={cn(
-                        "text-sm", 
+                        "text-base font-lato", 
                         value === item.value ? "text-amber-800 font-medium" : "text-gray-800", 
                         item.disabled && "text-gray-400"
                       )}>

@@ -2,7 +2,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
 import { useEffect, useCallback, useState } from 'react';
 import { useSSO, useAuth } from '@clerk/clerk-expo';
-import { Pressable, Image, TouchableOpacity, Alert, Platform } from 'react-native';
+import { Pressable, Image, TouchableOpacity, Alert, Platform, Text, View } from 'react-native';
 import { router } from 'expo-router';
 import googleButton from '../assets/images/google.png';
 import appleButton from '../assets/images/apple.png';
@@ -29,6 +29,12 @@ const strategyIcons = {
   oauth_google: googleButton,
   oauth_apple: appleButton,
   oauth_facebook: facebookButton,
+};
+
+const strategyLabels = {
+  oauth_google: 'Continue with Google',
+  oauth_apple: 'Continue with Apple',
+  oauth_facebook: 'Continue with Facebook',
 };
 
 export default function SignInWith({ strategy }: SignInWithProps) {
@@ -136,12 +142,15 @@ export default function SignInWith({ strategy }: SignInWithProps) {
     <Pressable 
       onPress={onPress} 
       disabled={loading}
-      className="flex w-11 h-11 p-0 justify-center items-center aspect-square rounded-full border border-[#DDD]"
+      className="flex-row items-center justify-center w-full py-4 px-6 rounded-full border border-black bg-white"
     >
-        <Image
-          source={strategyIcons[strategy]}
-          className="w-4 h-4 flex-shrink-0 aspect-square"
-        />
+      <Image
+        source={strategyIcons[strategy]}
+        className="w-5 h-5 mr-3"
+      />
+      <Text className="text-black font-lato text-base font-medium">
+        {strategyLabels[strategy]}
+      </Text>
     </Pressable>
   );
 }

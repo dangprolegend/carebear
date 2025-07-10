@@ -131,7 +131,7 @@ export default function HealthInputScreen() {
               style={{
                 minHeight: 43,
                 borderWidth: 1,
-                borderColor: '#e5e5e5',
+                borderColor: 'black',
                 borderRadius: 6,
                 paddingHorizontal: 12,
                 backgroundColor: 'white',
@@ -201,7 +201,7 @@ export default function HealthInputScreen() {
         <View className="flex flex-row justify-between items-start self-stretch mt-[56px]">
             <TouchableOpacity 
               disabled={true}
-              className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-[#DDD]"
+              className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-black"
             >
             <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
               Back
