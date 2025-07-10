@@ -1098,7 +1098,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                 style={{ width: 20, height: 20 }}
                 resizeMode="contain"
               />
-              <Text className="ml-2">
+              <Text className="ml-2 font-lato">
                 {selectedDate.toLocaleDateString('en-US', {
                   month: '2-digit',
                   day: '2-digit',
@@ -1401,7 +1401,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
             {showHighPrioritySection && (
               <View className="mb-0 pt-7">
                 <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
-                  <Text className="text-lg font-bold text-[#2A1800]">High Priority Today</Text>
+                  <Text style={{fontFamily: 'Lato'}} className="text-lg font-bold text-[#2A1800]">High Priority Today</Text>
                   <Link href="/dashboard/mydashboard/task/createTask" asChild>
                     <Pressable
                       className="w-10 h-10 items-center justify-center bg-black rounded-full"
@@ -1434,7 +1434,8 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                         color: '#808080', 
                         textAlign: 'center',
                         fontSize: 14,
-                        lineHeight: 20
+                        lineHeight: 20,
+                        fontFamily: 'Lato'
                       }}>
                         You have no assigned task.{'\n'}Add task and set priority
                       </Text>
@@ -1862,7 +1863,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                 <View className="bg-white rounded-xl p-4">
                   {filteredTasks.length === 0 ? (
                     <View className="items-center justify-center py-12">
-                      <Text className="text-gray-500">There is no task for today</Text>
+                      <Text style={{fontFamily: 'Lato', fontSize: 14 }} className="text-gray-500">There is no task for today</Text>
                     </View>
                   ) : (
                     groupTasksByTimeAndType(filteredTasks).map((group, index) => (
@@ -1907,8 +1908,8 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                       
                                       {/* Task title */}
                                       <Text
-                                        style={{ fontFamily: 'Lato', fontSize: 16 }}
-                                        className="text-sm font-bold text-[#2A1800] flex-shrink mr-2"
+                                        style={{fontFamily: 'Lato', fontSize: 16 }}
+                                        className="text-sm font-bold text-[#2A1800] flex-shrink mr-2 font-lato"
                                         numberOfLines={1}
                                       >
                                         {task.title}
@@ -1927,8 +1928,8 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                   <View className="flex-row items-center justify-between mb-2">
                                     {/* Time */}
                                     <Text 
-                                      className="text-[#666]"
-                                      style={{ fontSize: 14 }}
+                                      className="text-[#666] font-lato"
+                                      style={{fontFamily: 'Lato', fontSize: 14 }}
                                     >
                                       {new Date(task.datetime).toLocaleTimeString('en-US', {
                                         hour: 'numeric',
@@ -1955,8 +1956,8 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                   <View className="flex-row items-center justify-between mt-1">
                                     {/* Task Description */}
                                     <Text
-                                      style={{ fontFamily: 'Lato', fontSize: 14 }}
-                                      className="text-xs font-lato text-[#666] flex-1 mr-2"
+                                      style={{fontFamily: 'Lato', fontSize: 14 }}
+                                      className="text-xs font-lato text-[#666] flex-1 mr-2 font-lato"
                                       numberOfLines={2}
                                     >
                                       {task.description}

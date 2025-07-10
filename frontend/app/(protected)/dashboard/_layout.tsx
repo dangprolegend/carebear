@@ -184,7 +184,7 @@ export default function DashboardLayout() {
             </Pressable>
 
           {/* Dynamic Dashboard Title */}
-          <Text
+          <Text style={{ fontFamily: 'Lato' }}
             className="text-[18px] font-bold text-[#2A1800] font-['Lato'] text-[18px] tracking-[0.3px]"
           >
             {activeTitle}
@@ -280,8 +280,8 @@ export default function DashboardLayout() {
                       {renderIcon(tab.icon, isActive)}
 
                       {/* Tab Name */}
-                      <Text
-                        className={`text-xs mt-1 font-['Lato'] tracking-[0.3px] z-10 text-center ${
+                      <Text style={{ fontFamily: 'Lato' }}
+                        className={`text-xs mt-1 tracking-[0.3px] z-10 text-center ${
                           isActive ? 'font-bold text-[#1A0933]' : 'text-gray-500'
                         }`}
                         numberOfLines={1}

@@ -238,17 +238,17 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
     <View className="mt-4 pt-4 ml-2 mr-2">
 
       {/* Task Title */}
-      <Text className="font-semibold mb-2">Task Name</Text>
-      <TextInput
-        className="border border-[0.5px] rounded-lg px-3 py-3 mb-8"
+      <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Task Name</Text>
+      <TextInput style={{ fontFamily: 'Lato' }}
+        className="border border-[#2A1800] rounded-lg px-3 py-4 mb-8"
         placeholder="Task Name"
         value={manualForm.title}
         onChangeText={text => handleInputChange('title', text)}
       />
 
       {/* Assigned To */}
-      <Text className="font-semibold mb-2">Assigned To</Text>
-      <View className="border rounded-lg mb-8 px-3 py-3 bg-white relative">
+      <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Assigned To</Text>
+      <View className="border border-[#2A1800] rounded-lg mb-8 px-3 py-3 bg-white relative">
         <Pressable
           className="flex-row items-center justify-between"
           onPress={() => setShowAssigneeDropdown(prev => !prev)}
@@ -278,7 +278,7 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
               })()}
             </View>
           ) : (
-            <Text className="text-base">Select Assignee</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="text-base">Select Assignee</Text>
           )}
           <MaterialIcons name={showAssigneeDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
         </Pressable>
@@ -323,7 +323,7 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
       </View>
 
       {/* Start Date */}
-      <Text className="font-semibold mb-2">Start Date</Text>
+      <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Start Date</Text>
       <Pressable
         className="border rounded-lg px-3 py-3 mb-8 bg-white flex-row items-center justify-between"
         onPress={() => {
@@ -342,7 +342,7 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
           }
         }}
       >
-        <Text className="text-base text-black">
+        <Text style={{ fontFamily: 'Lato' }} className="text-base text-black">
           {manualForm.startDateString ? manualForm.startDateString : 'Select Start Date'}
         </Text>
         <MaterialIcons name="calendar-today" size={22} color="#888" />
@@ -377,7 +377,7 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
       )}
 
       {/* End Date */}
-      <Text className="font-semibold mb-2">End Date</Text>
+      <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">End Date</Text>
       <Pressable
         className="border rounded-lg px-3 py-3 mb-8 bg-white flex-row items-center justify-between"
         onPress={() => {
@@ -396,7 +396,7 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
           }
         }}
       >
-        <Text className="text-base text-black">
+        <Text style={{ fontFamily: 'Lato' }} className="text-base text-black">
           {manualForm.endDateString ? manualForm.endDateString : 'Select End Date'}
         </Text>
         <MaterialIcons name="calendar-today" size={22} color="#888" />
@@ -431,7 +431,7 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
       )}
 
       {/* Times of Day */}
-      <Text className="font-semibold mb-2">Times of Day</Text>
+      <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Times of Day</Text>
       <View className="border rounded-lg mb-8 px-3 py-3 bg-white relative">
         <Pressable
           className="flex-row items-center justify-between"
@@ -474,7 +474,7 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
       </View>
 
       {/* Recurrence */}
-      <Text className="font-semibold mb-2">Recurrence</Text>
+      <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Recurrence</Text>
       <View className="border rounded-lg mb-8 px-3 py-3 bg-white relative">
         <Pressable
           className="flex-row items-center justify-between"
@@ -520,9 +520,9 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
       </View>
 
             {/* Purpose */}
-            <Text className="font-semibold mb-2">Purpose</Text>
-            <TextInput
-              className="border border-[0.5px] rounded-lg px-3 py-3 mb-8"
+            <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Purpose</Text>
+            <TextInput style={{ fontFamily: 'Lato' }}
+              className="border border-[#2A1800] rounded-lg px-3 py-4 mb-8"
               placeholder="Purpose"
               value={manualForm.description || ''}
               onChangeText={text => handleInputChange('description', text)}
@@ -530,12 +530,12 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
 
             
             {/* Priority */}
-            <Text className="font-semibold mb-2">Priority</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Priority</Text>
             <View className="flex-row mb-8">
                       {['high', 'medium', 'low'].map((level) => (
                         <Pressable
                           key={level}
-                          className={`flex-1 flex-row items-center justify-center border border-[0.5px] rounded-lg py-3 mx-1 ${manualForm.priority === level ? 'border-[black] bg-[#FAE5CA]' : 'bg-white border-black'}`}
+                          className={`flex-1 flex-row items-center justify-center border border-[#2A1800] rounded-lg py-3 mx-1 ${manualForm.priority === level ? 'border-[black] bg-[#FAE5CA]' : 'bg-white border-black'}`}
                           onPress={() => handleInputChange('priority', level)}
                         >
                           <Image 
@@ -543,15 +543,15 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
                             style={{ width: 18, height: 18 }}
                             resizeMode="contain"
                           />
-                          <Text className={`ml-1 font-semibold capitalize ${manualForm.priority === level ? 'text-black' : 'text-black'}`}>{level}</Text>
+                          <Text style={{ fontFamily: 'Lato' }} className={`ml-1 font-bold capitalize ${manualForm.priority === level ? 'text-black' : 'text-black'}`}>{level}</Text>
                         </Pressable>
                       ))}
               </View>
 
       {/* Instructions */}
-      <Text className="font-semibold mb-2">Instructions</Text>
-      <TextInput
-        className="border border-[0.5px] rounded-lg bg-white px-3 py-2 mb-4 min-h-[80px]"
+      <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Instructions</Text>
+      <TextInput style={{ fontFamily: 'Lato' }}
+        className="border border-[#2A1800] rounded-lg bg-white px-3 py-2 mb-4 min-h-[80px]"
         placeholder="Instructions"
         value={manualForm.description || ''}
         onChangeText={text => handleInputChange('description', text)}
@@ -564,7 +564,7 @@ const ManualTaskForm = ({ currentUserID, currentGroupID, onTaskCreated }: Manual
         disabled={isLoading}  
         style={{ alignSelf: 'center', maxWidth: 160 }}
       >
-        {isLoading ? <ActivityIndicator color="white"/> : <Text className="text-white text-base font-semibold">Create Task</Text>}
+        {isLoading ? <ActivityIndicator color="white"/> : <Text style={{ fontFamily: 'Lato' }} className="text-white text-base font-bold">Create Task</Text>}
       </Pressable>
     </View>
   );

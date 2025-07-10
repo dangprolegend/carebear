@@ -70,8 +70,8 @@ export function FeedItemCard({ item, onPress, isLast = false, isFirst = false }:
         <View className="flex-1 pb-4">
           <View className="flex-row items-center justify-between mb-1">
             <View className="flex-row items-center">
-              <Text className="font-medium text-gray-900">{item.user.name}</Text>
-              <Text className="text-sm text-black ml-2">
+              <Text style={{ fontFamily: 'Lato' }} className="font-bold text-gray-900">{item.user.name}</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="text-s text-black ml-2">
                 {item.type === 'mood' 
                   ? 'updated mood and health' 
                   : item.task?.status === 'done' 
@@ -86,7 +86,7 @@ export function FeedItemCard({ item, onPress, isLast = false, isFirst = false }:
           
           {/* Time */}
           <View className="mb-2">
-            <Text className="text-sm text-gray-500">{timeAgo}</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="text-sm text-gray-500">{timeAgo}</Text>
           </View>
           
           {/* Mood Content */}
@@ -94,29 +94,29 @@ export function FeedItemCard({ item, onPress, isLast = false, isFirst = false }:
             <View className="mt-1 py-1">
               <View>
                 <View className="flex-row items-center flex-wrap mb-1">
-                  <Text className="text-gray-700 font-medium">I feel </Text>
+                  <Text style={{ fontFamily: 'Lato' }} className="text-gray-700 font-medium">I feel </Text>
                   {item.moods.map((mood, index) => (
                     <View key={mood + '-' + index} className="flex-row items-center">
                       <MoodIcon mood={mood} size="sm" />
-                      <Text className="text-gray-700 font-medium capitalize ml-1">{mood}</Text>
+                      <Text style={{ fontFamily: 'Lato' }} className="text-gray-700 font-bold capitalize ml-1">{mood}</Text>
                       {index < item.moods!.length - 1 && (
-                        <Text className="text-gray-700 font-medium">
+                        <Text style={{ fontFamily: 'Lato' }} className="text-gray-700 font-medium">
                           {index === item.moods!.length - 2 ? ' and ' : ', '}
                         </Text>
                       )}
                     </View>
                   ))}
-                  <Text className="text-gray-700 font-medium ml-1">today</Text>
+                  <Text style={{ fontFamily: 'Lato' }} className="text-gray-700 font-medium ml-1">today</Text>
                 </View>
                 
                 {/* Body feelings */}
                 {item.body && item.body.length > 0 && (
                   <View className="flex-row items-center flex-wrap mt-1">
-                    <Text className="text-gray-700 font-medium">My body feels </Text>
+                    <Text style={{ fontFamily: 'Lato' }} className="text-gray-700 font-medium">My body feels </Text>
                     {item.body.map((bodyFeeling, index) => (
                       <View key={bodyFeeling + '-' + index} className="flex-row items-center">
                         <BodyIcon body={bodyFeeling} size="sm" />
-                        <Text className="text-gray-700 font-medium capitalize ml-1">{bodyFeeling}</Text>
+                        <Text style={{ fontFamily: 'Lato' }} className="text-gray-700 font-bold capitalize ml-1">{bodyFeeling}</Text>
                         {index < item.body!.length - 1 && (
                           <Text className="text-gray-700 font-medium">
                             {index === item.body!.length - 2 ? ' and ' : ', '}

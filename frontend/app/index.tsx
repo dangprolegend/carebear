@@ -84,7 +84,7 @@ export default function WelcomeScreen() {
       <SafeAreaView>
         <View className="items-center justify-center h-screen bg-[#FAE5CA]">
           <ActivityIndicator size="large" color="#FAE5CA" />
-          <Text className="text-black font-lato text-lg mt-4">
+          <Text style={{ fontFamily: 'Lato' }} className="text-black font-lato text-lg mt-4">
             {error ? `Error: ${error}` : 'Loading...'}
           </Text>
         </View>

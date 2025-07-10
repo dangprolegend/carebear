@@ -190,7 +190,7 @@ const AiTaskInputScreen = () => {
     <View className="flex-1 bg-white">
       <View className="flex-row items-center px-1 border-b border-black-200 bg-white justify-between">
         <View className="w-8" />
-        <Text className="text-lg font-bold text-black-800">Create New Task</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="text-lg font-bold text-black-800">Create New Task</Text>
         <Pressable onPress={() => router.back()} className="p-4 ml-auto">
           <MaterialIcons name="close" size={26} color="black" />
         </Pressable>  
@@ -237,10 +237,10 @@ const AiTaskInputScreen = () => {
 
           {activeTab === 'generate' ? (
             <>
-              <Text className="text-sm text-black-600 mb-3 text-center px-4">
+              <Text style={{ fontFamily: 'Lato' }} className="text-s text-black-600 mb-3 text-center px-4">
                 Describe the task you'd like AI to help with
               </Text>
-              <TextInput
+              <TextInput style={{ fontFamily: 'Lato' }}
                 className="bg-white-50 border border-orange-100 rounded-xl p-4 text-base min-h-[100px] text-gray-900 mb-7"
                 placeholder="My grandmother needs to take Osteoarthritis around 11:30 am and 6pm everyday."
                 placeholderTextColor="#9ca3af"
@@ -252,7 +252,7 @@ const AiTaskInputScreen = () => {
             </>
           ) : (
             <View className="mb-7">
-                    <Text className="text-center text-sm text-black-500 my-3 pb-3">
+                    <Text style={{ fontFamily: 'Lato' }} className="text-center text-s text-black-500 my-3 pb-3">
             Or click the button below to scan your medications and let AI auto-fill the details
           </Text>
 
@@ -273,7 +273,7 @@ const AiTaskInputScreen = () => {
               ) : (
                 <MaterialIcons name="camera-alt" size={22} color="white" className="mr-2" />
               )}
-              <Text className="text-white text-base font-semibold">
+              <Text style={{ fontFamily: 'Lato' }} className="text-white text-base font-bold">
                 {isLoading ? "Processing..." : "Scan and Autofill with AI"}
               </Text>
             </Pressable>
@@ -285,7 +285,7 @@ const AiTaskInputScreen = () => {
           {/* Preview selected image for AI */}
           {selectedImageUri && (activeTab === 'generate' || (activeTab === 'scan' && !isLoading)) && (
             <View className="mb-5 items-center relative bg-slate-200 p-2 rounded-lg">
-              <Text className="text-xs text-slate-500 mb-1">
+              <Text style={{ fontFamily: 'Lato' }} className="text-xs text-slate-500 mb-1">
                 {activeTab === 'scan' ? 'Scanned medication:' : 'Image for AI processing:'}
               </Text>
               <Image
@@ -315,7 +315,7 @@ const AiTaskInputScreen = () => {
                 ) : (
                   <FontAwesome5 name="magic" size={18} color="white" className="mr-2" />
                 )}
-                <Text className="text-white text-base font-semibold">
+                <Text style={{ fontFamily: 'Lato' }} className="text-white text-base font-bold">
                   Generate Task with AI
                 </Text>
               </Pressable>
@@ -372,7 +372,7 @@ const AiTaskInputScreen = () => {
                   />
                 )}
                 </View>
-              <Text className="text-slate-600 mt-2">
+              <Text style={{ fontFamily: 'Lato' }} className="text-slate-600 mt-2">
               {`AI is processing and creating tasks...`}
               </Text>
             </View>
@@ -390,7 +390,7 @@ const AiTaskInputScreen = () => {
             </View>          ) : (
             <View className=" border-slate-200">
               {activeTab === 'generate' || (activeTab === 'scan' && !selectedImageUri) ? (
-                <Text className="text-center text-sm text-black">
+                <Text style={{ fontFamily: 'Lato' }} className="text-center text-s text-black">
                   Or fill manually below
                 </Text>
               ) : null}
@@ -418,6 +418,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#362209',
   },
   tabText: {
+    fontFamily: 'Lato',
     fontSize: 14,
     color: '#362209',
   }

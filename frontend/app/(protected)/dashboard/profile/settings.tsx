@@ -92,7 +92,7 @@ const DropdownSettingItem = ({
     >
       <View className="flex-row items-center flex-1 ml-2">
           <Image source={icon} className="w-5 h-5 mr-3" />
-          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">{title}</Text>
+          <Text style={{ fontFamily: 'Lato' }} className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">{title}</Text>
         </View>
       <MaterialIcons 
         name={isExpanded ? "keyboard-arrow-down" : "chevron-right"} 
@@ -123,13 +123,13 @@ const ToggleSetting = ({
 }) => (
   <View className="flex-row items-center justify-between w-full">
     <View className="flex-1 mr-4">
-      <Text 
+      <Text style={{ fontFamily: 'Lato' }} 
         className={`font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px] ${disabled ? 'text-gray-400' : 'text-black'}`}
       >
         {title}
       </Text>
       {description && (
-        <Text className={`text-xs mt-1 ${disabled ? 'text-gray-400' : 'text-gray-500'}`}>
+        <Text style={{ fontFamily: 'Lato' }}  className={`text-xs mt-1 ${disabled ? 'text-gray-400' : 'text-gray-500'}`}>
           {description}
         </Text>
       )}
@@ -665,7 +665,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
 
         {/* Profile */}
         <View className="mb-8 px-6 mt-8">
-          <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px] mb-4">Settings</Text>
+          <Text style={{ fontFamily: 'Lato' }} className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px] mb-4">Settings</Text>
 
           <View className="border border-[#2A1800] px-0.5 py-0.5 rounded-lg">
             <View className="bg-white rounded-lg">
@@ -678,47 +678,47 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
               >
                 <View className="mb-6 flex-row gap-4">
                   <View className="flex-1">
-                    <Label nativeID="firstName" className="mb-2 text-lg font-medium">
-                      <Text>First Name</Text>
+                    <Label nativeID="firstName" className="mb-2 text-lg font-bold">
+                      <Text style={{ fontFamily: 'Lato' }}>First Name</Text>
                     </Label>
-                    <Input
+                    <Input style={{ fontFamily: 'Lato' }}
                       nativeID="firstName"
                       placeholder="First Name"
                       value={firstName}
                       onChangeText={setFirstName}
-                      className="p-3 text-gray-500" 
+                      className="p-3 text-gray-500 border border-[#2A1800]" 
                     />
                   </View>
                   <View className="flex-1">
-                    <Label nativeID="lastName" className="mb-2 text-lg font-medium">
-                      <Text>Last Name</Text>
+                    <Label nativeID="lastName" className="mb-2 text-lg font-bold">
+                      <Text style={{ fontFamily: 'Lato' }} >Last Name</Text>
                     </Label>
-                    <Input
+                    <Input style={{ fontFamily: 'Lato' }}
                       nativeID="lastName"
                       placeholder="Last Name"
                       value={lastName}
                       onChangeText={setLastName}
-                      className="p-3 text-gray-500" 
+                      className="p-3 text-gray-500 border border-[#2A1800]" 
                     />
                   </View>
                 </View>
 
                 <View className="mb-6 flex-row gap-4">
                   <View className="flex-1">
-                    <Label nativeID="dobLabel" className="mb-2 text-lg font-medium">
-                      <Text>Date of birth</Text>
+                    <Label nativeID="dobLabel" className="mb-2 text-lg font-bold">
+                      <Text style={{ fontFamily: 'Lato' }}>Date of birth</Text>
                     </Label>
-                    <Input
+                    <Input style={{ fontFamily: 'Lato' }}
                       nativeID="dobLabel"
                       placeholder="YYYY-MM-DD"
                       value={dob}
                       onChangeText={setDob} 
-                      className="p-3 text-gray-500" 
+                      className="p-3 text-gray-500 border border-[#2A1800]" 
                     />
                   </View>
                   <View className="flex-1">
-                    <Label nativeID="genderLabel" className="mb-2 text-lg font-medium">
-                      <Text>Gender</Text>
+                    <Label nativeID="genderLabel" className="mb-2 text-lg font-bold">
+                      <Text style={{ fontFamily: 'Lato' }}>Gender</Text>
                     </Label>
                     <DropDownPicker
                       open={open}
@@ -731,6 +731,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                       listMode="SCROLLVIEW"
                       multiple={false}
                       style={{
+
                         minHeight: 43,
                         borderWidth: 1,
                         borderColor: '#2A1800',
@@ -739,6 +740,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                         backgroundColor: 'white',
                       }}
                       textStyle={{
+                        fontFamily : 'Lato',
                         fontSize: 16,
                         color: '#6b7280',
                       }}
@@ -751,9 +753,9 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                     aria-label="Select metric units (kg/cm)"
                     pressed={unitSystem === 'metric'}
                     onPressedChange={(pressed) => pressed && handleUnitChange('metric')}
-                    className={`py-2 px-4 border-b-2 ${unitSystem === 'metric' ? 'border-foreground' : 'border-transparent'}`}
+                    className={`py-2 px-4 border-b-2 ${unitSystem === 'metric' ? 'border-foreground bg-[#FAE5CA]' : 'border-transparent'}`}
                   >
-                    <Text className={unitSystem === 'metric' ? 'font-medium text-foreground' : 'text-muted-foreground'}>
+                    <Text style={{ fontFamily: 'Lato' }}  className={unitSystem === 'metric' ? 'font-medium text-foreground' : 'text-muted-foreground'}>
                       kg/cm
                     </Text>
                   </Toggle>
@@ -761,9 +763,9 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                     aria-label="Select imperial units (lb/ft)"
                     pressed={unitSystem === 'imperial'}
                     onPressedChange={(pressed) => pressed && handleUnitChange('imperial')}
-                    className={`py-2 px-4 border-b-2 ${unitSystem === 'imperial' ? 'border-foreground' : 'border-transparent'}`}
+                    className={`py-2 px-4 border-b-2 ${unitSystem === 'imperial' ? 'border-foreground bg-[#FAE5CA]' : 'border-transparent'}`}
                   >
-                    <Text className={unitSystem === 'imperial' ? 'font-medium text-foreground' : 'text-muted-foreground'}>
+                    <Text style={{ fontFamily: 'Lato' }}  className={unitSystem === 'imperial' ? 'font-medium text-foreground' : 'text-muted-foreground'}>
                       lb/ft
                     </Text>
                   </Toggle>
@@ -771,29 +773,29 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
 
                 <View className="mb-6 flex-row gap-4">
                   <View className="flex-1">
-                    <Label nativeID="weightLabel" className="mb-2 text-lg font-medium">
-                      <Text>Weight</Text>
+                    <Label nativeID="weightLabel" className="mb-2 text-lg font-bold">
+                      <Text style={{ fontFamily: 'Lato' }} >Weight</Text>
                     </Label>
-                    <Input
+                    <Input style={{ fontFamily: 'Lato' }} 
                       nativeID="weightLabel"
                       placeholder={unitSystem === 'metric' ? '00.0 kg' : '00.0 lb'}
                       value={weight}
                       onChangeText={setWeight}
                       keyboardType="numeric"
-                      className="p-3 text-gray-500" 
+                      className="p-3 text-gray-500 border border-[#2A1800]" 
                     />
                   </View>
                   <View className="flex-1">
-                    <Label nativeID="heightLabel" className="mb-2 text-lg font-medium">
-                      <Text>Height</Text>
+                    <Label nativeID="heightLabel" className="mb-2 text-lg font-bold">
+                      <Text style={{ fontFamily: 'Lato' }} >Height</Text>
                     </Label>
-                    <Input
+                    <Input style={{ fontFamily: 'Lato' }} 
                       nativeID="heightLabel"
                       placeholder={unitSystem === 'metric' ? '000.0 cm' : "0'00\""}
                       value={height}
                       onChangeText={setHeight}
                       keyboardType="numeric"
-                      className="p-3 text-gray-500" 
+                      className="p-3 text-gray-500 border border-[#2A1800]" 
                     />
                   </View>
                 </View>
@@ -809,14 +811,14 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                       <Text className="text-white text-center font-extrabold text-base">Updating...</Text>
                     </>
                   ) : (
-                    <Text className="text-white text-center font-extrabold text-base">Update Profile</Text>
+                    <Text style={{ fontFamily: 'Lato' }}  className="text-white text-center font-extrabold text-base">Update Profile</Text>
                   )}
                 </TouchableOpacity>
               </DropdownSettingItem>
 
               <View className="bg-[#FAE5CA] mx-2 h-px" />
 
-              <DropdownSettingItem
+              <DropdownSettingItem 
                 icon={Account}
                 title="Account"
                 iconColor="#2A1800"
@@ -826,8 +828,8 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                 <View className="flex flex-col items-start gap-6 px-6 py-0 self-stretch">
                   {/* Email Section */}
                   <View className="flex flex-col items-start gap-2 p-0 self-stretch">
-                    <Text className="text-[#2A1800] font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Email</Text>
-                    <TextInput
+                    <Text style={{ fontFamily: 'Lato' }}  className="text-[#2A1800] font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Email</Text>
+                    <TextInput style={{ fontFamily: 'Lato' }} 
                       className="w-full px-4 py-3 rounded-lg border border-[#2A1800] bg-white text-[#623405] font-lato text-[16px]"
                       placeholder={email}
                       placeholderTextColor="#623405"
@@ -839,7 +841,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                   {/* Connect Accounts Section */}
                   <View className="w-full rounded-xl p-4">
                     <View className="items-center mb-4">
-                      <Text className="text-[#2A1800] font-lato text-[16px] font-light leading-[24px] tracking-[-0.1px]">Connect with your other accounts</Text>
+                      <Text style={{ fontFamily: 'Lato' }}  style={{ fontFamily: 'Lato' }} className="text-[#2A1800] font-lato text-[16px] font-light leading-[24px] tracking-[-0.1px]">Connect with your other accounts</Text>
                     </View>
                     <View className="flex-row justify-center gap-6">
                       <TouchableOpacity
@@ -880,7 +882,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                 >
                   <View className="flex flex-col items-start gap-4 px-6 py-0 self-stretch">
                     {/* Do Not Disturb - Special handling */}
-                    <ToggleSetting
+                    <ToggleSetting 
                       title="Do Not Disturb"
                       value={doNotDisturb}
                       onValueChange={handleToggleDoNotDisturb}
@@ -920,7 +922,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
 
               <View className="bg-[#FAE5CA] mx-2 h-px" />
 
-              <SettingItem
+              <SettingItem style={{ fontFamily: 'Lato' }} 
                 icon={Help}
                 title="Help"
                 onPress={() => Alert.alert('Coming Soon', 'Help & Support will be available in a future update')}
@@ -942,7 +944,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                   <View className="w-10 h-10 rounded-full bg-white items-center justify-center">
                     <MaterialIcons name="logout" size={20} color="#2A1800" />
                   </View>
-                    <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">Log Out</Text>
+                    <Text style={{ fontFamily: 'Lato' }} className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">Log Out</Text>
                 </View>
               </TouchableOpacity>
               {/* Sign Out Modal */}
@@ -954,8 +956,8 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
               >
                 <View className="flex-1 bg-black/40 justify-center items-center">
                   <View className="bg-white rounded-xl p-6 w-80 items-center">
-                    <Text className="text-xl font-bold text-[#2A1800] mb-2">Sign Out</Text>
-                    <Text className="text-gray-700 text-base mb-6 text-center">
+                    <Text style={{ fontFamily: 'Lato' }} className="text-xl font-bold text-[#2A1800] mb-2">Sign Out</Text>
+                    <Text style={{ fontFamily: 'Lato' }} className="text-gray-700 text-base mb-6 text-center">
                       Are you sure you want to sign out?
                     </Text>
                     <View className="flex-row justify-between w-full">
@@ -963,13 +965,13 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                         onPress={handleSignOutCancel}
                         className="flex-1 mr-2 py-2 rounded-lg bg-gray-100 items-center"
                       >
-                        <Text className="text-gray-700 font-semibold text-base">Cancel</Text>
+                        <Text style={{ fontFamily: 'Lato' }} className="text-gray-700 font-semibold text-base">Cancel</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
                         onPress={handleSignOutConfirm}
                         className="flex-1 ml-2 py-2 rounded-lg bg-[#2A1800] items-center"
                       >
-                        <Text className="text-white font-semibold text-base">Sign Out</Text>
+                        <Text style={{ fontFamily: 'Lato' }} className="text-white font-semibold text-base">Sign Out</Text>
                       </TouchableOpacity>
                     </View>
                   </View>

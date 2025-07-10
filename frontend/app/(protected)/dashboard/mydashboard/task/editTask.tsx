@@ -327,11 +327,11 @@ const EditTaskScreen = () => {
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
-      <View className="flex-row items-center justify-between px-4 pt-8 pb-2 border-b border-gray-200 bg-white">
+      <View className="flex-row items-center justify-between px-4 pt-2 pb-2 border-b border-gray-200 bg-white">
         <Pressable onPress={() => router.back()} className="p-1">
           <MaterialIcons name="arrow-back" size={24} color="black" />
         </Pressable>
-        <Text className="text-lg font-bold text-black flex-1 text-center">Edit Task</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="text-lg font-bold text-black flex-1 text-center">Edit Task</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -343,8 +343,8 @@ const EditTaskScreen = () => {
         keyboardShouldPersistTaps="handled"
       >
         {/* Task Title */}
-        <Text className="font-semibold mb-2">Task Title</Text>
-        <TextInput
+        <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Task Title</Text>
+        <TextInput style={{ fontFamily: 'Lato' }}
           className="border rounded-lg px-3 py-3 mb-6 text-base"
           value={taskForm.title}
           onChangeText={(text) => handleInputChange('title', text)}
@@ -352,7 +352,7 @@ const EditTaskScreen = () => {
         />
 
         {/* Assignee */}
-        <Text className="font-semibold mb-2">Assign to</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Assign to</Text>
         <View className="border rounded-lg mb-6 px-3 py-3 bg-white relative">
           <Pressable
             className="flex-row items-center justify-between"
@@ -371,7 +371,7 @@ const EditTaskScreen = () => {
                     return (
                       <View className="flex-row items-center">
                         <View className="w-4 h-4 mr-2 animate-pulse bg-gray-300 rounded-full" />
-                        <Text className="text-base text-gray-500">Loading user...</Text>
+                        <Text style={{ fontFamily: 'Lato' }} className="text-base text-gray-500">Loading user...</Text>
                       </View>
                     );
                   }
@@ -389,7 +389,7 @@ const EditTaskScreen = () => {
                           className="mr-2"
                         />
                       )}
-                      <Text className="text-base">
+                      <Text style={{ fontFamily: 'Lato' }} className="text-base">
                         {selectedUser.label || 'Select Assignee'}
                       </Text>
                     </>
@@ -397,7 +397,7 @@ const EditTaskScreen = () => {
                 })()}
               </View>
             ) : (
-              <Text className="text-base text-gray-500">Select User</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="text-base text-gray-500">Select User</Text>
             )}
             <MaterialIcons name={showAssigneeDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
           </Pressable>
@@ -473,8 +473,8 @@ const EditTaskScreen = () => {
 
 
         {/* Description */}
-        <Text className="font-semibold mb-2">Description</Text>
-        <TextInput
+        <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Description</Text>
+        <TextInput style={{ fontFamily: 'Lato' }}
           className="border rounded-lg px-3 py-3 mb-6 text-base min-h-[80px]"
           value={taskForm.description}
           onChangeText={(text) => handleInputChange('description', text)}
@@ -484,7 +484,7 @@ const EditTaskScreen = () => {
         />
 
         {/* Start Date */}
-        <Text className="font-semibold mb-2">Start Date</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Start Date</Text>
         <Pressable
           className="border rounded-lg px-3 py-3 mb-6 bg-white flex-row items-center justify-between"
           onPress={() => {
@@ -506,7 +506,7 @@ const EditTaskScreen = () => {
             }
           }}
         >
-          <Text className="text-base text-black">
+          <Text style={{ fontFamily: 'Lato' }} className="text-base text-black">
             {taskForm.datetime
               ? new Date(taskForm.datetime).toLocaleDateString()
               : 'Select Start Date'}
@@ -547,7 +547,7 @@ const EditTaskScreen = () => {
         )}
 
         {/* End Date */}
-        <Text className="font-semibold mb-2">End Date</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">End Date</Text>
         <Pressable
           className="border rounded-lg px-3 py-3 mb-6 bg-white flex-row items-center justify-between"
           onPress={() => {
@@ -566,7 +566,7 @@ const EditTaskScreen = () => {
             }
           }}
         >
-          <Text className="text-base text-black">
+          <Text style={{ fontFamily: 'Lato' }} className="text-base text-black">
             {taskForm.endDate
               ? new Date(taskForm.endDate).toLocaleDateString()
               : 'Select End Date'}
@@ -604,13 +604,13 @@ const EditTaskScreen = () => {
         )}
 
         {/* Times of Day */}
-        <Text className="font-semibold mb-2">Times of Day</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Times of Day</Text>
         <View className="border rounded-lg mb-6 px-3 py-3 bg-white relative">
           <Pressable
             className="flex-row items-center justify-between"
             onPress={() => setShowTimesDropdown(prev => !prev)}
           >
-            <Text className="text-base">
+            <Text style={{ fontFamily: 'Lato' }} className="text-base">
               {taskForm.detail ? taskForm.detail : 'Select Time'}
             </Text>
             <MaterialIcons name={showTimesDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
@@ -640,7 +640,7 @@ const EditTaskScreen = () => {
                           setShowTimesDropdown(false);
                         }}
                       >
-                        <Text className={`text-base ${taskForm.detail === label ? 'font-bold text-blue-700' : 'text-black'}`}>{label}</Text>
+                        <Text style={{ fontFamily: 'Lato' }} className={`text-base ${taskForm.detail === label ? 'font-bold text-blue-700' : 'text-black'}`}>{label}</Text>
                       </Pressable>
                     );
                   });
@@ -651,13 +651,13 @@ const EditTaskScreen = () => {
         </View>
 
         {/* Recurrence */}
-        <Text className="font-semibold mb-2">Recurrence</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Recurrence</Text>
         <View className="border rounded-lg mb-6 px-3 py-3 bg-white relative">
           <Pressable
             className="flex-row items-center justify-between"
             onPress={() => setShowRecurrenceDropdown(!showRecurrenceDropdown)}
           >
-            <Text className="text-base">
+            <Text style={{ fontFamily: 'Lato' }} className="text-base">
               {['NONE', 'DAILY', 'WEEKLY', 'MONTHLY'].includes(taskForm.subDetail || '') && taskForm.subDetail
                 ? taskForm.subDetail.charAt(0) + taskForm.subDetail.slice(1).toLowerCase()
                 : 'Select Recurrence'}
@@ -696,12 +696,12 @@ const EditTaskScreen = () => {
         </View>
 
         {/* Priority */}
-        <Text className="font-semibold mb-2">Priority</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Priority</Text>
         <View className="flex-row mb-6">
           {['high', 'medium', 'low'].map((level) => (
             <Pressable
               key={level}
-              className={`flex-1 flex-row items-center justify-center border rounded-lg py-3 mx-1 ${taskForm.priority === level ? 'bg-[#FAE5CA] border-black' : 'bg-white border-slate-300'}`}
+              className={`flex-1 flex-row items-center justify-center border rounded-lg py-3 mx-1 ${taskForm.priority === level ? 'bg-[#FAE5CA] border-[#2A1800]' : 'bg-white border-[#2A1800]'}`}
               onPress={() => handleInputChange('priority', level)}
             >
               <Image 
@@ -712,7 +712,7 @@ const EditTaskScreen = () => {
                 } 
                 style={{ width: 18, height: 18 }} 
               />
-              <Text className={`ml-1 font-semibold capitalize ${taskForm.priority === level ? 'text-black' : 'text-black'}`}>
+              <Text style={{ fontFamily: 'Lato' }} className={`ml-1 font-semibold capitalize ${taskForm.priority === level ? 'text-black' : 'text-black'}`}>
                 {level}
               </Text>
             </Pressable>
@@ -726,7 +726,7 @@ const EditTaskScreen = () => {
             onPress={handleSaveTask}
             disabled={!formChanged || saving}
           >
-            <Text className="text-white text-lg text-base font-semibold">
+            <Text style={{ fontFamily: 'Lato' }} className="text-white text-lg text-base font-bold">
               {saving ? 'Saving...' : 'Save Changes'}
             </Text>
           </Pressable>

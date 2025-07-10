@@ -332,16 +332,16 @@ export default function Profile() {
       {/* User Info Section */}
       <View className="flex-row items-center w-5/6 self-center mt-8">
         <View className="flex-1 pr-4">
-          <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">
+          <Text style={{ fontFamily: 'Lato' }} className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">
             {userFullName}
           </Text>
-          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]" numberOfLines={1} ellipsizeMode="tail">
+          <Text style={{ fontFamily: 'Lato' }} className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]" numberOfLines={1} ellipsizeMode="tail">
             {user?.emailAddresses[0]?.emailAddress}
           </Text>
         </View>
         <View className="items-center px-4">
-          <Text className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">{numFamilies}</Text>
-          <Text className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">Family {getGroupText(numFamilies)}</Text>
+          <Text style={{ fontFamily: 'Lato' }} className="text-black font-lato text-[18px] font-extrabold leading-[32px] tracking-[0.3px]">{numFamilies}</Text>
+          <Text style={{ fontFamily: 'Lato' }} className="text-black font-lato text-[16px] font-normal leading-[24px] tracking-[-0.1px]">Family {getGroupText(numFamilies)}</Text>
         </View>
         <View className="pl-4">
           <Pressable onPress={() => router.push('/(protected)/dashboard/profile/settings')}>

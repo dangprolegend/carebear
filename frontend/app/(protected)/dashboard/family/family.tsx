@@ -691,7 +691,7 @@ const fetchUserRoleForGroup = async (userID: string, groupID: string) => {
     >
       <View className='flex flex-col items-center'>
       <Text className="text-2xl">{option.emoji}</Text>
-      <Text className="text-black font-lato text-base font-normal leading-6 tracking-[-0.1px]">
+      <Text style={{ fontFamily: 'Lato' }} className="text-black font-lato text-base font-normal leading-6 tracking-[-0.1px]">
         {option.label}
       </Text>
       </View>
@@ -791,11 +791,11 @@ const FamilyMemberCard = ({
         />
         <View className="flex flex-col justify-center items-start gap-2 flex-1">
           <View className="flex flex-row items-center gap-2">
-            <Text className="text-[#222] font-lato text-base font-extrabold leading-6 tracking-[0.3px]">
+            <Text style={{ fontFamily: 'Lato' }} className="text-[#222] text-base font-extrabold leading-6 tracking-[0.3px]">
               {member.fullName}
             </Text>
             {isCurrentUser ? (
-             <Text className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]">
+             <Text style={{ fontFamily: 'Lato' }} className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]">
                Me
              </Text>
            ) : (
@@ -809,16 +809,16 @@ const FamilyMemberCard = ({
           
           <View className="flex flex-row items-center gap-2">
             {((isCurrentUser && currentUserRole) || (!isCurrentUser && member.role)) && (
-             <Text className="overflow-hidden text-[#2A1800] truncate font-lato text-base font-normal leading-6 tracking-[-0.1px] mr-1">
+             <Text style={{ fontFamily: 'Lato' }} className="overflow-hidden text-[#2A1800] truncate font-lato text-base font-normal leading-6 tracking-[-0.1px] mr-1">
                {isCurrentUser ? getRoleDisplayName(currentUserRole) : getRoleDisplayName(member.role)}
              </Text>
            )}
 
             <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-              <Text className="text-xs">{getMoodEmoji(member.mood || '')}</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="text-xs">{getMoodEmoji(member.mood || '')}</Text>
             </View>
             <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
-              <Text className="text-xs">{getBodyEmoji(member.body || '')}</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="text-xs">{getBodyEmoji(member.body || '')}</Text>
             </View>
             {/* <View className="w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center">
               <Image source={Heart} className="w-3.5 h-3.5" />
@@ -886,7 +886,7 @@ const FamilyMemberCard = ({
       )}
       
       <ScrollView className="flex-1">
-      <Text className="text-[#2A1800] font-lato text-base font-extrabold px-8 pt-6">Your Families</Text>
+      <Text style={{ fontFamily: 'Lato' }} className="text-[#2A1800] font-lato text-base font-extrabold px-8 pt-6">Your Families</Text>
           {/* Family Management Header */}
           <View className="px-8 pt-3 mb-4 flex-row items-center justify-end">
             {/* Family Dropdown */}
@@ -946,7 +946,7 @@ const FamilyMemberCard = ({
                 
                 {!showAddMemberDropdown ? (
                   <>
-                    <Text className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px] flex-1">
+                    <Text style={{ fontFamily: 'Lato' }} className="text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px] flex-1">
                       Add new member
                     </Text>
                     <Pressable 
@@ -966,10 +966,10 @@ const FamilyMemberCard = ({
                 ) : (
                   <>
                     <View className="flex flex-row items-center gap-2">
-                      <Text className="text-[#222] font-lato text-base font-extrabold leading-6 tracking-[0.3px]">
+                      <Text style={{ fontFamily: 'Lato' }} className="text-[#222] font-lato text-base font-extrabold leading-6 tracking-[0.3px]">
                         Member's Name
                       </Text>
-                        <Text className='text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]'>
+                        <Text  style={{ fontFamily: 'Lato' }} className='text-[#222] font-lato text-base font-normal leading-6 tracking-[-0.1px]'>
                           Relation
                         </Text>
                     </View>
@@ -996,8 +996,8 @@ const FamilyMemberCard = ({
                 <View className="bg-white border border-[#2A1800] rounded-lg p-6 -mt-2">
                   {/* Default Relationship */}
                     <View className="mb-6">
-                      <Text className="text-[#2A1800] font-lato text-lg font-semibold mb-3">Default Relationship</Text>
-                      <TextInput
+                      <Text style={{ fontFamily: 'Lato' }} className="text-[#2A1800] font-lato text-lg font-semibold mb-3">Default Relationship</Text>
+                      <TextInput style={{ fontFamily: 'Lato' }}
                         className="border border-[#2A1800] rounded-lg p-3 text-[#222] font-lato text-base"
                         placeholder="Ex: Mother, Grandfather, Daughter"
                         placeholderTextColor="#623405"
@@ -1010,7 +1010,7 @@ const FamilyMemberCard = ({
 
                   {/* Bear Role */}
                   <View className="mb-6">
-                    <Text className="text-[#222] font-lato text-lg font-bold mb-4">Bear Role</Text>
+                    <Text style={{ fontFamily: 'Lato' }} className="text-[#222] font-lato text-lg font-bold mb-4">Bear Role</Text>
                     
                     {/* CareBear Option */}
                     <View className="mb-3">
@@ -1024,15 +1024,15 @@ const FamilyMemberCard = ({
                           <Image source={CareBear} className="w-14 h-14" />
                         </View>
                         <View className="flex-1">
-                          <Text className="text-[#222] font-lato text-lg font-semibold">CareBear</Text>
-                          <Text className="text-[#666] font-lato text-sm">Care giver & receiver</Text>
+                          <Text style={{ fontFamily: 'Lato' }} className="text-[#222] font-lato text-lg font-semibold">CareBear</Text>
+                          <Text style={{ fontFamily: 'Lato' }} className="text-[#666] font-lato text-sm">Care giver & receiver</Text>
                         </View>
                         {clickedRole === 'CareBear' && (
                           <Pressable
                             className="p-2"
                             onPress={() => toggleRoleDescription('CareBear')}
                           >
-                            <Text className="text-[#2A1800] font-lato text-lg">
+                            <Text style={{ fontFamily: 'Lato' }} className="text-[#2A1800] font-lato text-lg">
                               {expandedRole === 'CareBear' ? '^' : '›'}
                             </Text>
                           </Pressable>
@@ -1040,7 +1040,7 @@ const FamilyMemberCard = ({
                       </Pressable>
                       {expandedRole === 'CareBear' && (
                         <View className=" -mt-2 p-4 rounded-b-lg border-r border-l border-b border-[#2A1800]">
-                          <Text className="text-[#2A1800] font-lato text-sm leading-5">
+                          <Text style={{ fontFamily: 'Lato' }} className="text-[#2A1800] font-lato text-sm leading-5">
                             {getRoleDescription('CareBear')}
                           </Text>
                         </View>
@@ -1059,15 +1059,15 @@ const FamilyMemberCard = ({
                           <Image source={BabyBear} className="w-14 h-14" />
                         </View>
                         <View className="flex-1">
-                          <Text className="text-[#222] font-lato text-lg font-semibold">BabyBear</Text>
-                          <Text className="text-[#666] font-lato text-sm">Care receiver</Text>
+                          <Text style={{ fontFamily: 'Lato' }} className="text-[#222] font-lato text-lg font-semibold">BabyBear</Text>
+                          <Text style={{ fontFamily: 'Lato' }} className="text-[#666] font-lato text-sm">Care receiver</Text>
                         </View>
                         {clickedRole === 'BabyBear' && (
                           <Pressable
                             className="p-2"
                             onPress={() => toggleRoleDescription('BabyBear')}
                           >
-                            <Text className="text-[#2A1800] font-lato text-lg">
+                            <Text style={{ fontFamily: 'Lato' }} className="text-[#2A1800] font-lato text-lg">
                               {expandedRole === 'BabyBear' ? '^' : '›'}
                             </Text>
                           </Pressable>
@@ -1075,7 +1075,7 @@ const FamilyMemberCard = ({
                       </Pressable>
                       {expandedRole === 'BabyBear' && (
                         <View className=" -mt-2 p-4 rounded-b-lg border-r border-l border-b border-[#2A1800]">
-                          <Text className="text-[#2A1800] font-lato text-sm leading-5">
+                          <Text style={{ fontFamily: 'Lato' }} className="text-[#2A1800] font-lato text-sm leading-5">
                             {getRoleDescription('BabyBear')}
                           </Text>
                         </View>
@@ -1094,15 +1094,15 @@ const FamilyMemberCard = ({
                           <Image source={BearBoss} className="w-14 h-14" />
                         </View>
                         <View className="flex-1">
-                          <Text className="text-[#222] font-lato text-lg font-semibold">BearBoss</Text>
-                          <Text className="text-[#666] font-lato text-sm">Admin</Text>
+                          <Text style={{ fontFamily: 'Lato' }} className="text-[#222] font-lato text-lg font-semibold">BearBoss</Text>
+                          <Text style={{ fontFamily: 'Lato' }} className="text-[#666] font-lato text-sm">Admin</Text>
                         </View>
                         {clickedRole === 'BearBoss' && (
                           <Pressable
                             className="p-2"
                             onPress={() => toggleRoleDescription('BearBoss')}
                           >
-                            <Text className="text-[#2A1800] font-lato text-lg">
+                            <Text style={{ fontFamily: 'Lato' }} className="text-[#2A1800] font-lato text-lg">
                               {expandedRole === 'BearBoss' ? '^' : '›'}
                             </Text>
                           </Pressable>
@@ -1110,7 +1110,7 @@ const FamilyMemberCard = ({
                       </Pressable>
                       {expandedRole === 'BearBoss' && (
                         <View className=" -mt-2 p-4 rounded-b-lg border-r border-l border-b border-[#2A1800]">
-                          <Text className="text-[#2A1800] font-lato text-sm leading-5">
+                          <Text style={{ fontFamily: 'Lato' }} className="text-[#2A1800] font-lato text-sm leading-5">
                             {getRoleDescription('BearBoss')}
                           </Text>
                         </View>
@@ -1120,10 +1120,10 @@ const FamilyMemberCard = ({
 
                   {/* Email Input */}
                   <View className="mb-6">
-                    <Text className="text-[#222] font-lato text-lg font-semibold mb-3">
+                    <Text style={{ fontFamily: 'Lato' }} className="text-[#222] font-lato text-lg font-semibold mb-3">
                       Email<Text className="text-[#2A1800]">*</Text>
                     </Text>
-                    <TextInput
+                    <TextInput style={{ fontFamily: 'Lato' }}
                       className="border border-[#2A1800] rounded-lg p-3 text-[#222] font-lato text-base"
                       placeholder="abc@gmail.com"
                       placeholderTextColor="#623405"
@@ -1137,7 +1137,7 @@ const FamilyMemberCard = ({
                   {/* Display Save Status */}
                 {isDataSaved && (
                   <View className="mb-6 p-3 bg-green-50 rounded-lg border border-green-200">
-                    <Text className="text-green-700 font-lato text-sm text-center">
+                    <Text style={{ fontFamily: 'Lato' }} className="text-green-700 font-lato text-sm text-center">
                       ✓ Information saved! You can now send the invitation.
                     </Text>
                   </View>
@@ -1149,7 +1149,7 @@ const FamilyMemberCard = ({
                       className="flex-1 py-3 px-6 rounded-full border border-[#2A1800] bg-white flex items-center justify-center"
                       onPress={handleSaveMember}
                     >
-                      <Text className={`font-lato text-base font-medium ${
+                      <Text style={{ fontFamily: 'Lato' }} className={`font-lato text-base font-bold ${
                       isDataSaved ? 'text-green-700' : 'text-[#2A1800]'
                     }`}>
                       {isDataSaved ? '✓ Saved' : 'Save'}
@@ -1166,7 +1166,7 @@ const FamilyMemberCard = ({
                     {isSendingInvitation ? (
                       <View className="w-4 h-4 mr-1 bg-gray-300 rounded-full animate-pulse" />
                     ) : (
-                      <Text className="text-white font-lato text-base font-medium">Invite</Text>
+                      <Text style={{ fontFamily: 'Lato' }} className="text-white font-lato text-base font-bold">Invite</Text>
                     )}
                   </Pressable>
                   </View>
@@ -1183,10 +1183,10 @@ const FamilyMemberCard = ({
             <View className="flex-1 justify-center items-center bg-[#AF9D86]/70">
               <View className="bg-white rounded-lg p-6 mx-4 w-80">
                 <View className="items-center">
-                  <Text className="text-[#222] font-lato text-xl font-semibold text-center">
+                  <Text style={{ fontFamily: 'Lato' }} className="text-[#222] font-lato text-xl font-semibold text-center">
                     Invitation Sent Successfully!
                   </Text>
-                  <Text className="text-[#666] font-lato text-base text-center mt-4">
+                  <Text style={{ fontFamily: 'Lato' }} className="text-[#666] font-lato text-base text-center mt-4">
                     The invitation has been sent to the provided email address.
                   </Text>
                     <Image source={bearInvitation[currentImageIndex]} 
@@ -1198,7 +1198,7 @@ const FamilyMemberCard = ({
                   className="bg-[#2A1800] py-3 px-6 rounded-full flex items-center justify-center"
                   onPress={closeSuccessModal}
                 >
-                  <Text className="text-white font-lato text-base font-medium">OK</Text>
+                  <Text style={{ fontFamily: 'Lato' }} className="text-white font-lato text-base font-medium">OK</Text>
                 </Pressable>
               </View>
             </View>
@@ -1209,7 +1209,7 @@ const FamilyMemberCard = ({
       {availableFamilies.length > 0 && (
         <View className="px-8 py-4 bg-white">
           <View className="flex-row justify-end gap-2">
-          <Text className="text-[#2A1800] font-lato text-base mr-4">Your Families List</Text>
+          <Text style={{ fontFamily: 'Lato' }} className="text-[#2A1800] font-lato text-base mr-4">Your Families List</Text>
             {availableFamilies.length <= 4 ? (
               // Show all dots if 3 or fewer groups
               availableFamilies.map((family, index) => (
@@ -1241,7 +1241,7 @@ const FamilyMemberCard = ({
                       : 'bg-white'
                   }`}
                 >
-                  <Text className={`font-lato text-sm ${
+                  <Text style={{ fontFamily: 'Lato' }} className={`font-lato text-sm ${
                     activeTab === availableFamilies[0].id ? 'font-extrabold text-[#2A1800]' : 'font-medium text-[#2A1800]'
                   }`}>
                     1
@@ -1257,7 +1257,7 @@ const FamilyMemberCard = ({
                       : 'bg-white'
                   }`}
                 >
-                  <Text className={`font-lato text-sm ${
+                  <Text style={{ fontFamily: 'Lato' }} className={`font-lato text-sm ${
                     activeTab === availableFamilies[1].id ? 'font-extrabold text-[#2A1800]' : 'font-medium text-[#2A1800]'
                   }`}>
                     2
@@ -1273,7 +1273,7 @@ const FamilyMemberCard = ({
                       : 'bg-white'
                   }`}
                 >
-                  <Text className={`font-lato text-sm ${
+                  <Text style={{ fontFamily: 'Lato' }} className={`font-lato text-sm ${
                     activeTab === availableFamilies[2].id ? 'font-extrabold text-[#2A1800]' : 'font-medium text-[#2A1800]'
                   }`}>
                     3
@@ -1290,7 +1290,7 @@ const FamilyMemberCard = ({
                       : 'bg-white'
                   }`}
                 >
-                  <Text className={`font-lato text-sm font-medium ${
+                  <Text style={{ fontFamily: 'Lato' }} className={`font-lato text-sm font-medium ${
                     activeTab === availableFamilies[availableFamilies.length - 1].id ? 'text-[#2A1800]' : 'text-[#2A1800]'
                   }`}>
                     {availableFamilies.length}
@@ -1314,14 +1314,14 @@ const FamilyMemberCard = ({
       >
         <View className="flex-1 bg-[#AF9D86] bg-opacity-50 justify-center items-center">
           <View className="bg-white flex w-[345px] p-6 flex-col items-center gap-6 rounded-lg">
-            <Text className="text-black text-center font-lato text-2xl font-extrabold leading-8 tracking-[0.3px]">Daily Check-in</Text>
-            <Text className="text-black text-center font-lato text-base font-normal leading-6 tracking-[-0.1px] mt-2">
+            <Text style={{ fontFamily: 'Lato' }} className="text-black text-center font-lato text-2xl font-extrabold leading-8 tracking-[0.3px]">Daily Check-in</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="text-black text-center font-lato text-base font-normal leading-6 tracking-[-0.1px] mt-2">
               Before you continue, let's check in on how you're feeling today!
             </Text>
             
             {/* Mood Section */}
             <View className="w-full mb-6">
-              <Text className="text-lg font-semibold mb-3 text-center">How is your mood today?</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="text-lg font-semibold mb-3 text-center">How is your mood today?</Text>
               {/* First row - 3 moods */}
               <View className="flex-row justify-between mb-4">
                 {moods.slice(0, 3).map((mood) =>
@@ -1342,7 +1342,7 @@ const FamilyMemberCard = ({
             
             {/* Body Feeling Section */}
             <View className="w-full mb-6">
-              <Text className="text-lg font-semibold mb-3 text-center">How does your body feel?</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="text-lg font-semibold mb-3 text-center">How does your body feel?</Text>
               {/* First row - 3 body feelings */}
               <View className="flex-row justify-between mb-4">
                 {bodyFeelings.slice(0, 3).map((feeling) =>
@@ -1374,7 +1374,7 @@ const FamilyMemberCard = ({
               {isSubmittingStatus ? (
                 <View className="w-4 h-4 bg-white rounded-full animate-pulse" />
               ) : (
-                <Text className="text-white text-lg font-semibold">Done</Text>
+                <Text style={{ fontFamily: 'Lato' }} className="text-white text-lg font-semibold">Done</Text>
               )}
             </TouchableOpacity>
           </View>
