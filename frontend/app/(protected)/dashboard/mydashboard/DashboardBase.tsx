@@ -1263,7 +1263,8 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                     borderRadius: 8,
                     borderWidth: 1,
                     borderColor: '#2A1800',
-                    width: 157
+                    width: 157,
+                    zIndex: 10,
                   }}
                 >
                   {userGroups.map((group, index) => (
