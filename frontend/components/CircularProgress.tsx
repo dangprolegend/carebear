@@ -35,17 +35,18 @@ const CircularProgress = ({
                     cy={centerY}
                     r={radius}
                     fill="#198AE9"
-                    opacity={0.4}
+                    stroke="#2A1800"
+                    strokeWidth={4}
                   />
                 </Svg>
               </View>
               {/* Heart on top */}
-              <View
-                className="absolute top-0 left-0 rounded-full flex items-center justify-center"
-                style={{ width: size, height: size }}
-              >
-                <Heart size={size * 0.67} color='#ffffff'/>
-              </View>
+                <View
+                  className="absolute top-0 left-0 rounded-full flex items-center justify-center"
+                  style={{ width: size, height: size, zIndex: 100 }}
+                >
+                  <Heart size={size * 0.57} color="#2A1800" fill="#FFCC00" />
+                </View>
             </View>
           </Pressable>
         );
