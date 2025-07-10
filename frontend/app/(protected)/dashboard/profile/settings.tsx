@@ -18,6 +18,7 @@ import Google from '../../../../assets/images/google.png';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ImagePickerModal from '~/components/ImagePickerModal';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -155,6 +156,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
   const [isUpdating, setIsUpdating] = useState(false);
 
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imagePickerModalVisible, setImagePickerModalVisible] = useState(false);
 
   // Store original values to track changes
   const [originalValues, setOriginalValues] = useState({
@@ -214,47 +216,11 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
     const hasPermission = await requestPermissions();
     if (!hasPermission) return;
 
-    Alert.alert(
-      'Select Image',
-      'Choose how you want to select your profile image',
-      [
-        { text: 'Camera', onPress: () => openCamera() },
-        { text: 'Photo Library', onPress: () => openImageLibrary() },
-        { text: 'Cancel', style: 'cancel' }
-      ]
-    );
+    setImagePickerModalVisible(true);
   };
 
-  const openCamera = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission required', 'Please grant permission to access camera');
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      uploadImage(result.assets[0].uri);
-    }
-  };
-
-  const openImageLibrary = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      uploadImage(result.assets[0].uri);
-    }
+  const handleImageSelected = (imageUri: string) => {
+    uploadImage(imageUri);
   };
 
   const uploadImage = async (imageUri: string) => {
@@ -1012,6 +978,13 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
           </View>
         </View>
       </ScrollView>
+      
+      <ImagePickerModal
+        visible={imagePickerModalVisible}
+        onClose={() => setImagePickerModalVisible(false)}
+        onImageSelected={handleImageSelected}
+        userImageURL={userImageURL}
+      />
     </SafeAreaView>
   );
 }
