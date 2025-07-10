@@ -732,7 +732,7 @@ const SuccessModal = () => {
           {/* Animated gif images */}
           <Image
             source={images[currentImageIndex]}
-            className="w-[120px] h-[120px]"
+            className="w-[200px] h-[200px]"
             style={{ opacity: 1 }}
             resizeMode="contain"
           />
