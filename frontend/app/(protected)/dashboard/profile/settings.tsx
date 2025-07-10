@@ -19,6 +19,7 @@ import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePickerModal from '~/components/ImagePickerModal';
+import { Camera } from 'lucide-react-native';
 
 interface SettingsPageProps {
   onBack?: () => void;
@@ -633,11 +634,11 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
         {/* Header Section */}
         <View className="px-6 py-5 pt-12">
           {/* Avatar */}
-          <View className='flex flex-col mt-6 items-center gap-4'>
+          <View className='flex flex-col mt-4 items-center gap-4'>
             <View className="relative">
               <Image
                 source={{ uri: userImageURL }}
-                className='w-20 h-20 flex-shrink-0 aspect-square rounded-full border-2 border-[#2A1800] bg-cover bg-center'
+                className='w-32 h-32 flex-shrink-0 aspect-square rounded-full border-2 border-[#2A1800] bg-cover bg-center'
               />
               {/* Camera icon overlay */}
               <TouchableOpacity
@@ -648,7 +649,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
                 {isUploadingImage ? (
                   <Text className="text-white text-xs">...</Text>
                 ) : (
-                  <Image source={CameraIcon} className="w-3.5 h-3.5" />
+                  <Camera color='white' size='16'/>
                 )}
               </TouchableOpacity>
             </View>
