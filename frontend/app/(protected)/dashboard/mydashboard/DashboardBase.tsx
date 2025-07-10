@@ -1499,9 +1499,12 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                     {/* Filter Button (circular) */}
                     <Pressable 
                       onPress={() => setShowFilterModal(true)}
-                      className="w-10 h-10 items-center justify-center border border-black bg-white rounded-full"
                     >
-                      <MaterialIcons name="filter-list" size={20} color="#2A1800" />
+                      <Image
+                        source={require('../../../../assets/icons/filterbutton.png')}
+                        style={{ width: 32, height: 32 }}
+                        resizeMode="contain"
+                      />
                     </Pressable>
                     
                     {/* Group dropdown menu */}
@@ -1823,17 +1826,29 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                           {group.tasks.map((task, taskIndex) => {
                             // Check if task is in the past
                             const isPastTask = isTaskInPast(task.datetime);
+                            // Update the isTaskInPast function to check if task is missed (past and not completed)
+                            const isTaskMissed = (task: Task): boolean => {
+                              try {
+                                // Task is missed if it's in the past and not checked/completed
+                                const taskDate = new Date(task.datetime);
+                                return taskDate < new Date() && !task.checked && task.status !== 'done';
+                              } catch (e) {
+                                console.error("Error checking if task is missed:", e);
+                                return false;
+                              }
+                            };
                             
                             return (
                               <View
                                 key={taskIndex}
-                                className={`border border-[#FAE5CA] rounded-lg p-4 mb-4 ${isPastTask ? 'opacity-60' : ''}`}
+                                className={`border border-[#FAE5CA] rounded-lg p-4 mb-4 ${(isPastTask && !isTaskMissed(task)) ? 'opacity-60' : ''}`}
                                 style={{
                                   borderWidth: 1.5,
-                                  borderColor: '#2A1800',
+                                  borderColor: isTaskMissed(task) ? '#FF5555' : '#2A1800', // Red border for missed tasks
                                   borderRadius: 8,
                                   backgroundColor: '#FFFFFF',
                                   marginBottom: 16,
+                                  opacity: task.checked ? 0.6 : 1, // Only reduce opacity if completed
                                 }}
                               >
                                 <Pressable onPress={() => handleTaskPress(task)} className="flex-1">
@@ -1884,27 +1899,42 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                           
                                           {/* ROW 2: Time only */}
                                           <View className="flex-row items-center justify-between mb-2">
-                                            <Text
-                                              className="text-[#666]"
-                                              style={{ fontSize: 14 }}
-                                            >
-                                              {new Date(task.datetime).toLocaleTimeString('en-US', {
-                                                hour: 'numeric',
-                                                minute: '2-digit',
-                                                hour12: true
-                                              })}
-                                            </Text>
-
+                                            <View className="flex-row items-center">
+                                              <Text
+                                                className={`${isTaskMissed(task) ? 'text-[#FF5555]' : 'text-[#666]'}`}
+                                                style={{ fontSize: 14 }}
+                                              >
+                                                {new Date(task.datetime).toLocaleTimeString('en-US', {
+                                                  hour: 'numeric',
+                                                  minute: '2-digit',
+                                                  hour12: true
+                                                })}
+                                              </Text>
+                                              
+                                              {/* Add Missed label for past due tasks */}
+                                              {isTaskMissed(task) && (
+                                                <Text className="ml-2 text-[#FF5555]" style={{ fontSize: 12 }}>
+                                                  Missed
+                                                </Text>
+                                              )}
+                                            </View>
 
                                             {/* Checkbox moved to second row */}
                                             <Pressable
                                               onPress={() => console.log('Task completed:', task.title)}
-                                              className="w-6 h-6 border border-[#2A1800] rounded-md flex items-center justify-center"
+                                              style={{
+                                                width: 24,
+                                                height: 24,
+                                                borderRadius: 12, // Make it perfectly circular
+                                                borderWidth: 1.5,
+                                                borderColor: '#2A1800',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: task.checked ? '#2A1800' : 'transparent', // Black background when checked
+                                              }}
                                             >
                                               {task.checked ? (
-                                                <MaterialIcons name="check" size={16} color="#2A1800" />
-                                              ) : isPastTask ? (
-                                                <MaterialIcons name="error-outline" size={16} color="#F44336" />
+                                                <MaterialIcons name="check" size={16} color="#FFFFFF" /> // White check when checked
                                               ) : null}
                                             </Pressable>
                                             
@@ -1953,32 +1983,27 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                             />
                                           </View>
                                           
-                                          {/* ROW 2: Time and Checkbox */}
+                                          {/* In the ROW 2 with time */}
                                           <View className="flex-row items-center justify-between mb-2">
-                                            {/* Time */}
-                                            <Text 
-                                              className="text-[#666]"
-                                              style={{ fontSize: 14 }}
-                                            >
-                                              {new Date(task.datetime).toLocaleTimeString('en-US', {
-                                                hour: 'numeric',
-                                                minute: '2-digit',
-                                                hour12: true,
-                                                hourCycle: 'h12'
-                                              })}
-                                            </Text>
-                                            
-                                            {/* Checkbox */}
-                                            <Pressable
-                                              onPress={() => console.log('Task completed:', task.title)}
-                                              className="w-6 h-6 border border-[#2A1800] rounded-full flex items-center justify-center"
-                                            >
-                                              {task.checked ? (
-                                                <MaterialIcons name="check" size={16} color="#2A1800" />
-                                              ) : isPastTask ? (
-                                                <MaterialIcons name="error-outline" size={16} color="#F44336" />
-                                              ) : null}
-                                            </Pressable>
+                                            <View className="flex-row items-center">
+                                              <Text
+                                                className={`${isTaskMissed(task) ? 'text-[#FF5555]' : 'text-[#666]'}`}
+                                                style={{ fontSize: 14 }}
+                                              >
+                                                {new Date(task.datetime).toLocaleTimeString('en-US', {
+                                                  hour: 'numeric',
+                                                  minute: '2-digit',
+                                                  hour12: true
+                                                })}
+                                              </Text>
+                                              
+                                              {/* Add Missed label for past due tasks */}
+                                              {isTaskMissed(task) && (
+                                                <Text className="ml-2 text-[#FF5555]" style={{ fontSize: 12 }}>
+                                                  Missed
+                                                </Text>
+                                              )}
+                                            </View>
                                           </View>
                                           
                                           {/* ROW 3: Description and Bell */}
@@ -1999,7 +2024,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                             >
                                               <Image
                                                 source={require('../../../../assets/icons/bell-icon.png')}
-                                                style={{ width: 20, height: 20 }}
+                                                style={{ width: 24, height: 24 }}
                                                 resizeMode="contain"
                                               />
                                             </Pressable>
