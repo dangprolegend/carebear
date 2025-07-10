@@ -7,7 +7,7 @@ import axios from 'axios';
 import CalendarStrip from '~/components/CalendarStrip';
 import CircularProgress from '~/components/CircularProgress';
 import StravaConnectSection from '~/components/StravaConnectButton'; 
-import Settings from '../../../../assets/icons/settings.png';
+import Settings from '../../../../assets/icons/Tab-2.png';
 import Heart from '../../../../assets/icons/heart.png';
 import FeedLoading from '~/components/ui/feed-loading';
 
@@ -343,7 +343,7 @@ export default function Profile() {
         </View>
         <View className="pl-4">
           <Pressable onPress={() => router.push('/(protected)/dashboard/profile/settings')}>
-            <Image source={Settings} className="w-6 h-6" />
+            <Image source={Settings} className="w-8 h-8" />
           </Pressable>
         </View>
       </View>
