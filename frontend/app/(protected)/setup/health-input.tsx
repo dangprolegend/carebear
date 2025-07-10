@@ -54,7 +54,7 @@ export default function HealthInputScreen() {
       };
 
       await axios.patch(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/onboarding`, updateData);
-      router.push('/setup/join-family');
+      router.push('/setup/roles-info');
     } catch (error) {
       console.error('Error updating user information:', error);
       alert('Failed to update user information.');
@@ -70,10 +70,10 @@ export default function HealthInputScreen() {
 
       {/* Form fields */}
 
-      <View className="mb-6 flex flex-row gap-4">
+      <View className="mb-6 flex flex-row gap-[32px]">
         {/* First Name */}
         <View className="flex-1">
-          <Label nativeID="firstName" className="mb-2 text-lg font-medium">
+          <Label nativeID="firstName" className="mb-4 text-lg font-medium">
             First Name
           </Label>
             <Input
@@ -81,12 +81,12 @@ export default function HealthInputScreen() {
               placeholder="First Name"
               value={firstName}
               onChangeText={setFirstName}
-              className="p-3 text-gray-500" 
+              className="p-3 text-gray-500 border-[#2A1800]" 
             />
         </View>
         {/* Last Name */}
         <View className="flex-1">
-          <Label nativeID="firstName" className="mb-2 text-lg font-medium">
+          <Label nativeID="firstName" className="mb-4 text-lg font-medium">
             Last Name
           </Label>
           <Input
@@ -94,15 +94,15 @@ export default function HealthInputScreen() {
               placeholder="Last Name"
               value={lastName}
               onChangeText={setLastName}
-              className="p-3 text-gray-500" 
+              className="p-3 text-gray-500 border-[#2A1800]" 
             />
         </View>
       </View>
 
-      <View className="mb-6 flex flex-row gap-4">
+      <View className="mb-12 flex flex-row gap-[32px]">
         {/* Date of Birth */}
         <View className="flex-1">
-          <Label nativeID="dobLabel" className="mb-2 text-lg font-medium">
+          <Label nativeID="dobLabel" className="mb-4 text-lg font-medium">
             Date of birth
           </Label>
             <Input
@@ -110,12 +110,12 @@ export default function HealthInputScreen() {
               placeholder="YYYY-MM-DD"
               value={dob}
               onChangeText={setDob} 
-              className="p-3 text-gray-500" 
+              className="p-3 text-gray-500 border-[#2A1800]" 
             />
         </View>
         {/* Gender */}
         <View className="flex-1">
-          <Label nativeID="genderLabel" className="mb-2 text-lg font-medium">
+          <Label nativeID="genderLabel" className="mb-4 text-lg font-medium">
             Gender
           </Label>
           <DropDownPicker
@@ -131,7 +131,7 @@ export default function HealthInputScreen() {
               style={{
                 minHeight: 43,
                 borderWidth: 1,
-                borderColor: 'black',
+                borderColor: '#2A1800',
                 borderRadius: 6,
                 paddingHorizontal: 12,
                 backgroundColor: 'white',
@@ -145,12 +145,12 @@ export default function HealthInputScreen() {
       </View>
 
       {/* Unit toggle */}
-      <View className="mb-6 flex flex-row justify-center gap-2">
+      <View className="mb-6 flex flex-row justify-center gap-3">
          <Toggle
            aria-label="Select metric units (kg/cm)"
            pressed={unitSystem === 'metric'}
            onPressedChange={(pressed) => pressed && handleUnitChange('metric')}
-           className={`py-2 px-4 border-b-2 ${unitSystem === 'metric' ? 'border-foreground' : 'border-transparent'}`}
+           className={`py-2 px-4 border-b-2 ${unitSystem === 'metric' ? 'border-black bg-[#FAE5CA]' : 'border-transparent'}`}
          >
            <Text className={unitSystem === 'metric' ? 'font-medium text-foreground' : 'text-muted-foreground'}>
              kg/cm
@@ -160,7 +160,7 @@ export default function HealthInputScreen() {
            aria-label="Select imperial units (lb/ft)"
            pressed={unitSystem === 'imperial'}
            onPressedChange={(pressed) => pressed && handleUnitChange('imperial')}
-           className={`py-2 px-4 border-b-2 ${unitSystem === 'imperial' ? 'border-foreground' : 'border-transparent'}`}
+           className={`py-2 px-4 border-b-2 ${unitSystem === 'imperial' ? 'border-foreground bg-[#FAE5CA]' : 'border-transparent'}`}
          >
            <Text className={unitSystem === 'imperial' ? 'font-medium text-foreground' : 'text-muted-foreground'}>
              lb/ft
@@ -179,7 +179,7 @@ export default function HealthInputScreen() {
           value={weight}
           onChangeText={setWeight}
           keyboardType="numeric"
-          className="p-3 text-gray-500" 
+          className="p-3 text-gray-500 border-[#2A1800]" 
         />
       </View>
 
@@ -194,14 +194,14 @@ export default function HealthInputScreen() {
           value={height}
           onChangeText={setHeight}
           keyboardType="numeric"
-          className="p-3 text-gray-500" 
+          className="p-3 text-gray-500 border-[#2A1800]" 
         />
       </View>
 
         <View className="flex flex-row justify-between items-start self-stretch mt-[56px]">
             <TouchableOpacity 
               disabled={true}
-              className="flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-black"
+              className="flex min-w-[160px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-black"
             >
             <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
               Back
@@ -209,7 +209,7 @@ export default function HealthInputScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            className="bg-[#2A1800] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+            className="bg-[#2A1800] inline-flex min-w-[160px] py-4 px-8 justify-center items-center gap-1 rounded-full"
             onPress={handleSubmit}
           >
             <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Next</Text>

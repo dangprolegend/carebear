@@ -171,19 +171,17 @@ export default function DashboardLayout() {
         {/* Header */}
         <View className="flex-row items-center justify-between px-4">
           {/* Home Button */}
-          <Pressable
-            onPress={() => {
-              if (segments.includes('family')) {
-                // Navigate to logout page if on family group page
-                router.replace('/home/abc' as any);
-              } else {
-                // Navigate to dashboard for other pages
-                router.replace('/dashboard/mydashboard/dashboard');
-              }
-            }}
-          >
-            <MaterialIcons name="keyboard-arrow-left" size={24} color="#2A1800" />
-          </Pressable>
+            <Pressable
+              onPress={() => {
+                router.back;
+              }}
+            >
+              <Image
+                source={require('../../../assets/icons/Vector.png')}
+                style={{ paddingLeft: 25, width: 15, height: 15 }}
+                resizeMode="contain"
+              />
+            </Pressable>
 
           {/* Dynamic Dashboard Title */}
           <Text

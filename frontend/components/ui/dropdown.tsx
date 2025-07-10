@@ -53,7 +53,7 @@ export function Dropdown({ options, value, onValueChange, placeholder = "Select 
         <MaterialIcons 
           name={isOpen ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
           size={18} 
-          color="#AC6924" 
+          color="#2A1800" 
         />
       </Pressable>
 
