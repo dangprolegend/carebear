@@ -376,7 +376,6 @@ export default function Profile() {
           onClose={() => setIsTaskModalVisible(false)}
           userID={userID || ''}
           groupID={primaryGroupId || ''}
-          taskCompletion={taskCompletion}
         />
 
     </ScrollView>
