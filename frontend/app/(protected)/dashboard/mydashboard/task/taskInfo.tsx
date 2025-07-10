@@ -10,6 +10,9 @@ import FeedLoading from '~/components/ui/feed-loading';
 import redFlag from '~/assets/icons/redflag.png';
 import yellowFlag from '~/assets/icons/yellowflag.png';
 import blueFlag from '~/assets/icons/blueflag.png';
+import {Camera} from 'lucide-react-native';
+import {Pen} from 'lucide-react-native';
+import { Trash2} from 'lucide-react-native';
 
 const PRIORITY_FLAG = {
   high: { icon: redFlag },
@@ -196,15 +199,15 @@ const TaskInfoScreen = () => {
         </Pressable>
       </View>
 
-      {/* Banner */}
-      <View className="bg-[#2A1800] mx-4 mt-4 rounded-lg py-4 pl-1 pr-1 items-center">
-        <Text className="text-white text-base font-medium text-center">Show us you took it-just a quick photo!</Text>
-      </View>
-
       {/* Scrollable content with image and info */}
       <ScrollView className="flex-1 bg-white" contentContainerStyle={{ paddingBottom: 32 }}>
+
         {/* Image section - full width, scrolls with content */}
-        <View className="mt-4 w-full aspect-[4/3] bg-gray-100 relative items-center justify-center">
+        <View className="w-full aspect-[4/3] bg-gray-100 relative items-center justify-center">
+          {/* Banner absolutely positioned on top of the image */}
+          <View className="absolute top-3 left-4 right-4 z-10 bg-[#2A1800] rounded-lg py-3 px-2 items-center opacity-90">
+            <Text className="text-white text-lg font-medium text-center">Show us you took it-just a quick photo!</Text>
+          </View>
           {taskImage ? (
             <Image 
               source={{ 
@@ -223,7 +226,7 @@ const TaskInfoScreen = () => {
               className="absolute bottom-3 right-3 bg-[#2A1800] rounded-full p-2"
               onPress={takePhoto}
             >
-              <MaterialIcons name="photo-camera" size={24} color="white" />
+              <Camera color="white" size={24} />
             </Pressable>
           )}
         </View>
@@ -231,7 +234,7 @@ const TaskInfoScreen = () => {
         {/* Edit and Delete Buttons */}
         <View className="flex-row justify-end px-4 mt-2">
             <Pressable 
-            className="mr-4 p-2 flex-row items-center" 
+            className="mr-8 mt-4 p-2 flex-row items-center border border-[#2A1800] rounded-full aspect-square w-8 h-8 justify-center" 
             onPress={() => {
               // Navigate to the edit task screen with the taskId
               router.push({
@@ -240,10 +243,10 @@ const TaskInfoScreen = () => {
               });
             }}
             >
-            <MaterialIcons className = "border rounded-full p-1" name="edit" size={20} color="#2A1800" />
+            <Pen size='16'/>
             </Pressable>
           <Pressable 
-            className="p-2 flex-row items-center" 
+            className="mt-4 p-2 flex-row items-center border border-[#2A1800] rounded-full aspect-square w-8 h-8 justify-center" 
             onPress={() => {
               Alert.alert(
                 "Delete Task",
@@ -271,21 +274,21 @@ const TaskInfoScreen = () => {
               );
             }}
           >
-            <MaterialIcons className = "border rounded-full p-1" name="delete" size={20} color="#2A1800" />
+            <Trash2 size={16}/>
           </Pressable>
         </View>
 
         {/* Info section */}
         <View className="px-4 pt-4">
-          <View className="mb-3">
+          <View className="mb-3 p-3">
             <Text className="font-bold mb-2">Instructions</Text>
             <Text>{task.description || 'No instructions provided.'}</Text>
           </View>
-          <View className="mb-3">
+          <View className="mb-3 p-3">
             <Text className="font-bold mb-2">Purpose</Text>
             <Text>{task.purpose || task.description || 'No purpose provided.'}</Text>
           </View>
-          <View className="mb-3">
+          <View className="mb-3 p-3">
             <Text className="font-bold mb-2">Start and End Date</Text>
             {/* Debug logs for reminder and dates */}
             {(() => {
@@ -309,7 +312,7 @@ const TaskInfoScreen = () => {
                 : 'N/A'}
             </Text>
           </View>
-          <View className="mb-3 flex-row items-center">
+          <View className="mb-3 flex-row items-center p-3">
             <Text>
                 <Text className="font-bold">Assigned </Text>
                 to{' '}
