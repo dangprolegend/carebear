@@ -1837,84 +1837,177 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                 }}
                               >
                                 <Pressable onPress={() => handleTaskPress(task)} className="flex-1">
-                                  {/* ROW 1: Avatar, Title, Flag */}
-                                  <View className="flex-row items-center justify-between mb-2">
-                                    <View className="flex-row items-center flex-1">
-                                      {/* Avatar of assignee */}
-                                      <Image
-                                        source={{ uri: getAvatarUrl(task.assignedTo) }}
-                                        className="w-6 h-6 rounded-full mr-3"
-                                      />
-                                      
-                                      {/* Task title */}
-                                      <Text
-                                        style={{ fontFamily: 'Lato', fontSize: 16 }}
-                                        className="text-sm font-bold text-[#2A1800] flex-shrink mr-2"
-                                        numberOfLines={1}
-                                      >
-                                        {task.title}
-                                      </Text>
-                                    </View>
+                                  {/* Check if task is assigned to current user */}
+                                  {(() => {
+                                    // Determine if task is assigned to current user
+                                    const currentUserId = getCurrentUserID();
+                                    let isAssignedToMe = false;
                                     
-                                    {/* Flag at far right */}
-                                    <Image
-                                      source={getPriorityFlagIcon(task.priority as string)}
-                                      style={{ width: 20, height: 20 }}
-                                      resizeMode="contain"
-                                    />
-                                  </View>
-                                  
-                                  {/* ROW 2: Time and Checkbox */}
-                                  <View className="flex-row items-center justify-between mb-2">
-                                    {/* Time */}
-                                    <Text 
-                                      className="text-[#666]"
-                                      style={{ fontSize: 14 }}
-                                    >
-                                      {new Date(task.datetime).toLocaleTimeString('en-US', {
-                                        hour: 'numeric',
-                                        minute: '2-digit',
-                                        hour12: true,
-                                        hourCycle: 'h12'
-                                      })}
-                                    </Text>
+                                    if (currentUserId && task.assignedTo) {
+                                      const assignedToId = typeof task.assignedTo === 'object' && task.assignedTo !== null
+                                        ? (
+                                            typeof task.assignedTo === 'object' && task.assignedTo !== null
+                                              ? (('id' in task.assignedTo && (task.assignedTo as any).id) ||
+                                                 ('_id' in task.assignedTo && (task.assignedTo as any)._id) ||
+                                                 ('userID' in task.assignedTo && (task.assignedTo as any).userID))
+                                              : undefined
+                                          )
+                                        : task.assignedTo;
+                                        
+                                      isAssignedToMe = assignedToId === currentUserId;
+                                    }
                                     
-                                    {/* Checkbox */}
-                                    <Pressable
-                                      onPress={() => console.log('Task completed:', task.title)}
-                                      className="w-6 h-6 border border-[#2A1800] rounded-full flex items-center justify-center"
-                                    >
-                                      {task.checked ? (
-                                        <MaterialIcons name="check" size={16} color="#2A1800" />
-                                      ) : isPastTask ? (
-                                        <MaterialIcons name="error-outline" size={16} color="#F44336" />
-                                      ) : null}
-                                    </Pressable>
-                                  </View>
-                                  
-                                  {/* ROW 3: Description and Bell */}
-                                  <View className="flex-row items-center justify-between mt-1">
-                                    {/* Task Description */}
-                                    <Text
-                                      style={{ fontFamily: 'Lato', fontSize: 14 }}
-                                      className="text-xs font-lato text-[#666] flex-1 mr-2"
-                                      numberOfLines={2}
-                                    >
-                                      {task.description}
-                                    </Text>
-                                    
-                                    {/* Bell icon */}
-                                    <Pressable
-                                      onPress={() => console.log('Notification for:', task.title)}
-                                      className="w-6 h-6 flex items-center justify-center"
-                                    >
-                                      <Image
-                                        source={require('../../../../assets/icons/bell-icon.png')}
-                                        style={{ width: 20, height: 20 }}
-                                        resizeMode="contain"
-                                      />
-                                    </Pressable>
-                                  </View>
+                                    if (isAssignedToMe) {
+                                      // LAYOUT FOR TASKS ASSIGNED TO ME - MATCHING THE IMAGE
+                                      return (
+                                        <>
+                                          {/* ROW 1: Flag and Title */}
+                                          <View className="flex-row items-center justify-between mb-2">
+                                            <View className="flex-row items-center flex-1">
+                                              {/* Flag on left */}
+                                              <Image
+                                                source={getPriorityFlagIcon(task.priority as string)}
+                                                style={{ width: 20, height: 20, marginRight: 8 }}
+                                                resizeMode="contain"
+                                              />
+                                              
+                                              {/* Title */}
+                                              <Text
+                                                style={{ fontFamily: 'Lato', fontSize: 16 }}
+                                                className="text-sm font-bold text-[#2A1800] flex-1"
+                                                numberOfLines={1}
+                                              >
+                                                {task.title}
+                                              </Text>
+                                            </View>
+                                          </View>
+                                          
+                                          {/* ROW 2: Time only */}
+                                          <View className="flex-row items-center justify-between mb-2">
+                                            <Text
+                                              className="text-[#666]"
+                                              style={{ fontSize: 14 }}
+                                            >
+                                              {new Date(task.datetime).toLocaleTimeString('en-US', {
+                                                hour: 'numeric',
+                                                minute: '2-digit',
+                                                hour12: true
+                                              })}
+                                            </Text>
+
+
+                                            {/* Checkbox moved to second row */}
+                                            <Pressable
+                                              onPress={() => console.log('Task completed:', task.title)}
+                                              className="w-6 h-6 border border-[#2A1800] rounded-md flex items-center justify-center"
+                                            >
+                                              {task.checked ? (
+                                                <MaterialIcons name="check" size={16} color="#2A1800" />
+                                              ) : isPastTask ? (
+                                                <MaterialIcons name="error-outline" size={16} color="#F44336" />
+                                              ) : null}
+                                            </Pressable>
+                                            
+                                          </View>
+                                          
+                                          {/* ROW 3: Description and Bell */}
+                                          <View className="flex-row items-center justify-between mt-1">
+                                            <Text
+                                              style={{ fontFamily: 'Lato', fontSize: 14 }}
+                                              className="text-xs text-[#666] flex-1 mr-2"
+                                              numberOfLines={2}
+                                            >
+                                              {task.description}
+                                            </Text>
+                                          </View>
+                                        </>
+                                      );
+                                    } else {
+                                      // EXISTING LAYOUT FOR TASKS ASSIGNED TO OTHERS - NO CHANGES
+                                      return (
+                                        <>
+                                          {/* ROW 1: Avatar, Title, Flag */}
+                                          <View className="flex-row items-center justify-between mb-2">
+                                            <View className="flex-row items-center flex-1">
+                                              {/* Avatar of assignee */}
+                                              <Image
+                                                source={{ uri: getAvatarUrl(task.assignedTo) }}
+                                                className="w-6 h-6 rounded-full mr-3"
+                                              />
+                                              
+                                              {/* Task title */}
+                                              <Text
+                                                style={{ fontFamily: 'Lato', fontSize: 16 }}
+                                                className="text-sm font-bold text-[#2A1800] flex-shrink mr-2"
+                                                numberOfLines={1}
+                                              >
+                                                {task.title}
+                                              </Text>
+                                            </View>
+                                            
+                                            {/* Flag at far right */}
+                                            <Image
+                                              source={getPriorityFlagIcon(task.priority as string)}
+                                              style={{ width: 20, height: 20 }}
+                                              resizeMode="contain"
+                                            />
+                                          </View>
+                                          
+                                          {/* ROW 2: Time and Checkbox */}
+                                          <View className="flex-row items-center justify-between mb-2">
+                                            {/* Time */}
+                                            <Text 
+                                              className="text-[#666]"
+                                              style={{ fontSize: 14 }}
+                                            >
+                                              {new Date(task.datetime).toLocaleTimeString('en-US', {
+                                                hour: 'numeric',
+                                                minute: '2-digit',
+                                                hour12: true,
+                                                hourCycle: 'h12'
+                                              })}
+                                            </Text>
+                                            
+                                            {/* Checkbox */}
+                                            <Pressable
+                                              onPress={() => console.log('Task completed:', task.title)}
+                                              className="w-6 h-6 border border-[#2A1800] rounded-full flex items-center justify-center"
+                                            >
+                                              {task.checked ? (
+                                                <MaterialIcons name="check" size={16} color="#2A1800" />
+                                              ) : isPastTask ? (
+                                                <MaterialIcons name="error-outline" size={16} color="#F44336" />
+                                              ) : null}
+                                            </Pressable>
+                                          </View>
+                                          
+                                          {/* ROW 3: Description and Bell */}
+                                          <View className="flex-row items-center justify-between mt-1">
+                                            {/* Task Description */}
+                                            <Text
+                                              style={{ fontFamily: 'Lato', fontSize: 14 }}
+                                              className="text-xs font-lato text-[#666] flex-1 mr-2"
+                                              numberOfLines={2}
+                                            >
+                                              {task.description}
+                                            </Text>
+                                            
+                                            {/* Bell icon */}
+                                            <Pressable
+                                              onPress={() => console.log('Notification for:', task.title)}
+                                              className="w-6 h-6 flex items-center justify-center"
+                                            >
+                                              <Image
+                                                source={require('../../../../assets/icons/bell-icon.png')}
+                                                style={{ width: 20, height: 20 }}
+                                                resizeMode="contain"
+                                              />
+                                            </Pressable>
+                                          </View>
+                                        </>
+                                      );
+                                    }
+                                  })()}
                                 </Pressable>
                               </View>
                             );
