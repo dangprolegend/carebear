@@ -225,7 +225,7 @@ const TaskInfoScreen = () => {
               className="absolute bottom-3 right-3 bg-[#2A1800] rounded-full p-2"
               onPress={takePhoto}
             >
-              <Camera color="white" size={24} />
+              <Camera color="#2A1800" size={24} />
             </Pressable>
           )}
         </View>
@@ -242,7 +242,7 @@ const TaskInfoScreen = () => {
               });
             }}
             >
-            <Pen size='16'/>
+            <Pen size='16' color="#2A1800"/>
             </Pressable>
           <Pressable 
             className="mt-4 p-2 flex-row items-center border border-[#2A1800] rounded-full aspect-square w-8 h-8 justify-center" 
