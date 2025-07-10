@@ -728,7 +728,7 @@ const FamilyMemberCard = ({
       >
         <Image
           source={{ uri: member.imageURL }}
-          className="w-10 h-10 rounded-full flex-shrink-0"
+          className="w-10 h-10 rounded-full flex-shrink-0 border border-[#2A1800]"
         />
         <View className="flex flex-col justify-center items-start gap-2 flex-1">
           <View className="flex flex-row items-center gap-2">

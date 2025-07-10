@@ -1342,7 +1342,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
             {showHighPrioritySection && (
               <View className="mb-0 pt-7">
                 <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
-                  <Text className="text-lg font-semibold text-[#2A1800]">High Priority Today</Text>
+                  <Text className="text-lg font-bold text-[#2A1800]">High Priority Today</Text>
                   <Link href="/dashboard/mydashboard/task/createTask" asChild>
                     <Pressable
                       className="w-10 h-10 items-center justify-center bg-black rounded-full"
@@ -1461,7 +1461,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
             <View className="flex-1 mt-6">
               <View className="mb-0">
                 <View className="w-full h-[56px] flex-row items-center justify-between border-t border-[#FAE5CA] px-6 py-4">
-                  <Text className="text-lg font-semibold text-[#2A1800]">Today Schedule</Text>
+                  <Text className="text-lg font-bold text-[#2A1800]">Today Schedule</Text>
                 </View>
 
                 {/* Group Selector - Moved below the header */}
@@ -1683,7 +1683,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                       </View>
                                       <Image
                                         source={{ uri: member.avatar }}
-                                        style={{ width: 24, height: 24, borderRadius: 12 }}
+                                        style={{ width: 24, height: 24, borderRadius: 12, borderColor: '#2A1800', borderWidth: 1}}
                                       />
                                     </Pressable>
                                   );
@@ -1787,7 +1787,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                       </View>
                                       <Image
                                         source={{ uri: member.avatar }}
-                                        style={{ width: 24, height: 24, borderRadius: 12 }}
+                                        style={{ width: 24, height: 24, borderRadius: 12, borderColor: '#2A1800', borderWidth: 1}}
                                       />
                                     </Pressable>
                                   );
@@ -1843,7 +1843,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                       {/* Avatar of assignee */}
                                       <Image
                                         source={{ uri: getAvatarUrl(task.assignedTo) }}
-                                        className="w-6 h-6 rounded-full mr-3"
+                                        className="w-6 h-6 rounded-full mr-3 border border-[#2A1800]"
                                       />
                                       
                                       {/* Task title */}

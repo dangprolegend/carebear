@@ -272,7 +272,7 @@ const NotificationScreen = () => {
           backgroundColor: n.isCreatedToday ? '#FFF8EF' : 'white', // Only highlight tasks created today
         }}
       >
-        <Image source={{ uri: n.avatar }} className="w-8 h-8 rounded-full mt-1 mr-2" />
+        <Image source={{ uri: n.avatar }} className="w-8 h-8 rounded-full mt-1 mr-2 border border-[#2A1800]" />
         <View className="flex-1">
           <Text className="text-[15px]">
             <Text className="font-bold">{n.senderName}</Text>{' '}

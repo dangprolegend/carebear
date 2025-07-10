@@ -106,4 +106,7 @@ export default function RootLayout() {
   );
 }
 
+// Remove previous attempt to patch Text/TextInput (not supported in React Native)
+// Instead, recommend using a custom AppText component or Tailwind global font config
+
 
