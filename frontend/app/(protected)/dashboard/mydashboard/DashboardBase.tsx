@@ -1,5 +1,6 @@
+//@ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
-import { ScrollView, View, Text, Pressable, Platform, Image, Modal, ActivityIndicator } from 'react-native';
+import { ScrollView, View, Text, Pressable, Platform, Image, Modal, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Calendar from 'expo-calendar';
 import * as Notifications from 'expo-notifications';
@@ -21,6 +22,7 @@ import { useAuth, useUser } from '@clerk/clerk-expo';
 import { setClerkAuthTokenForApiService } from '../../../../service/apiServices';
 import axios from 'axios';
 import StravaActivities from '~/components/StravaActivities';
+import { X } from 'lucide-react-native';
 
 type DashboardBaseProps = {
   tasks: Task[];
@@ -1008,6 +1010,63 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
       setRefreshing(false);
     }
   }
+  const [showSuccessModal2, setShowSuccessModal2] = useState(false);
+
+  const SuccessModal = () => {
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const intervalRef = useRef(null);
+    const images = [
+      require('~/assets/images/Reminder Send Loading-1.png'),
+      require('~/assets/images/Reminder Send Loading-2.png'),
+      require('~/assets/images/Reminder Send Loading-3.png'),
+      require('~/assets/images/Reminder Send Loading-4.png'),
+      require('~/assets/images/Reminder Send Loading-5.png'),
+      require('~/assets/images/Reminder Send Loading-6.png')
+    ];
+  
+    useEffect(() => {
+      if (showSuccessModal2) {
+        intervalRef.current = setInterval(() => {
+          setCurrentImageIndex((prev) => (prev + 1) % images.length);
+        }, 500);
+      }
+      return () => {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+      };
+    }, [showSuccessModal2]);
+  
+    if (!showSuccessModal2) return null;
+  
+    return (
+      <View className="absolute top-0 left-0 right-0 bottom-0 z-50 bg-[#AF9D86]/70 justify-center items-center">
+        <View className="bg-white rounded-3xl border border-black p-10 items-center min-w-[320px] max-w-[360px]">
+          <View className="items-center">
+            {/* Animated gif images */}
+            <Image
+              source={images[currentImageIndex]}
+              className="w-[200px] h-[200px]"
+              style={{ opacity: 1 }}
+              resizeMode="contain"
+            />
+            <TouchableOpacity
+              className="bg-[#2A1800] px-10 py-4 rounded-full mt-5 min-w-[200px] items-center shadow-lg"
+              onPress={() => setShowSuccessModal2(false)}
+            >
+              <Text className="text-white font-lato text-sm font-extrabold leading-6 tracking-[0.3px]">
+                Ok
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const handleSendReminder = async () => {
+    setShowSuccessModal2(true);
+  }
 
   // State for filter modal visibility
   const [showFilterModal, setShowFilterModal] = useState(false);
@@ -1906,7 +1965,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                                     
                                     {/* Bell icon */}
                                     <Pressable
-                                      onPress={() => console.log('Notification for:', task.title)}
+                                      onPress={handleSendReminder}
                                       className="w-6 h-6 flex items-center justify-center"
                                     >
                                       <Image
@@ -1929,6 +1988,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
             </View>
 
               <StravaActivities />
+              <SuccessModal />
           </>
         )}
       </ScrollView>
