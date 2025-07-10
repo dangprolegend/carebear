@@ -52,7 +52,7 @@ export default function JoinFamilyScreen() {
             value={groupId}
             onChangeText={setGroupId}
             autoCapitalize="characters"
-            className="p-3"
+            className="p-3 border border-[#2A1800]"
           />
         </View>
         {/* Description Text */}
@@ -64,14 +64,14 @@ export default function JoinFamilyScreen() {
       <View className="flex flex-row justify-between items-center mb-16">
         <TouchableOpacity
           onPress={() => router.push('/(protected)/dashboard/family/create-family')}
-          className="flex py-4 px-12 justify-center items-center rounded-full border border-[#DDD]"
+          className="flex py-4 px-12 min-w-[160px] justify-center items-center rounded-full border border-[#2A1800]"
         >
           <Text className='text-[#0F172A] font-lato text-[16px] font-extrabold leading-6 tracking-[-0.1px]'>
             Back
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className="bg-[#2A1800] flex py-4 px-12 justify-center items-center rounded-full"
+          className="bg-[#2A1800] min-w-[160px] flex py-4 px-12 justify-center items-center rounded-full"
           onPress={handleJoin}
         >
           <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">
