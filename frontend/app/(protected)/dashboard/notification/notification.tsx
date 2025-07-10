@@ -275,10 +275,10 @@ const NotificationScreen = () => {
         <Image source={{ uri: n.avatar }} className="w-8 h-8 rounded-full mt-1 mr-2 border border-[#2A1800]" />
         <View className="flex-1">
           <Text className="text-[15px]">
-            <Text className="font-bold">{n.senderName}</Text>{' '}
-            <Text className="font-normal text-black">{n.message}</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="font-bold">{n.senderName}</Text>{' '}
+            <Text style={{ fontFamily: 'Lato' }} className="font-normal text-black">{n.message}</Text>
           </Text>
-          <Text className="text-xs text-gray-500 mt-0.5">{n.time}</Text>
+          <Text style={{ fontFamily: 'Lato' }} className="text text-gray-500 mt-0.5">{n.time}</Text>
           
           {n.taskTitle ? (
             <Pressable 
@@ -294,7 +294,7 @@ const NotificationScreen = () => {
               }}
             >
               <Image source={flagImage} className="w-5 h-5" />
-              <Text className="ml-1 font-bold text-[15px]">{n.taskTitle}</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="ml-1 font-bold text-[15px]">{n.taskTitle}</Text>
               <MaterialIcons name="chevron-right" size={16} color="#999" style={{ marginLeft: 4 }} />
             </Pressable>
           ) : null}
@@ -325,14 +325,14 @@ const NotificationScreen = () => {
   return (
     <View className="flex-1 bg-white">
     <View className="flex-row items-center justify-between px-4 pt-4 pb-2 bg-white">
-      <Text className="text-lg font-bold text-black flex-1 text-center">Notifications</Text>
+      <Text style={{ fontFamily: 'Lato' }} className="text-lg font-bold text-black flex-1 text-center">Notifications</Text>
     </View >
       <ScrollView className="flex-1 ml-5 mr-5" contentContainerStyle={{ paddingBottom: 32 }}>
         {notifications.length === 0 && <Text className="px-4 text-gray-400 mt-4">No notifications</Text>}
         {groupedNotifications.map((group: DateGroup, idx: number) => (
           <View key={idx} className="mb-4">
             {/* Special styling for "Today" section */}
-            <Text 
+            <Text style={{ fontFamily: 'Lato' }}
               className={`font-semibold text-lg px-4 py-2 ${
                 group.dateLabel === 'Today' 
                   ? 'text-[#362209] bg-[#FFF8EF]' 

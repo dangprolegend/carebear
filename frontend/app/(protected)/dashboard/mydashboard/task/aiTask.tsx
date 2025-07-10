@@ -235,7 +235,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         <View className="flex-1 bg-white">
              <View className="flex-row items-center justify-between px-4 pt-12 pb-4 border-b border-slate-200">
                 <Pressable onPress={() => router.back()} className="p-1 mr-auto"><MaterialIcons name="arrow-back-ios" size={22} color="black" /></Pressable>
-                <Text className="text-lg font-semibold text-slate-800">AI Generated Tasks</Text>
+                <Text style={{ fontFamily: 'Lato' }} className="text-lg font-semibold text-slate-800">AI Generated Tasks</Text>
                 <View className="w-8" />
             </View>
             <View className="flex-1 justify-center items-center p-5">
@@ -244,7 +244,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
                     className="py-3 px-6 rounded-lg items-center mt-5 bg-blue-500 active:bg-blue-600"
                     onPress={() => router.back()}
                 >
-                    <Text className="text-white text-base font-semibold">Go Back</Text>
+                    <Text style={{ fontFamily: 'Lato' }} className="text-white text-base font-semibold">Go Back</Text>
                 </Pressable>
             </View>
         </View>
@@ -261,7 +261,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
             className={`flex-1 py-3 items-center ${activeTab === idx ? 'border-b-2 border-black' : ''}`}
             onPress={() => setActiveTab(idx)}
           >
-            <Text className={`font-bold ${activeTab === idx ? 'text-black' : 'text-black'}`}>{`Task ${idx + 1}`}</Text>
+            <Text style={{ fontFamily: 'Lato' }} className={`font-bold ${activeTab === idx ? 'text-black' : 'text-black'}`}>{`Task ${idx + 1}`}</Text>
           </Pressable>
         ))}
       </View>
@@ -273,7 +273,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <Text className="font-semibold mt-8 mb-2">Task Name</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-semibold mt-8 mb-2">Task Name</Text>
         <TextInput
           className="border rounded-lg px-3 py-3 mb-8"
           placeholder="Task Name"
@@ -282,7 +282,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         />
 
         {/* Assigned To */}
-        <Text className="font-semibold mb-2">Assigned To</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-semibold mb-2">Assigned To</Text>
         <View className="border rounded-lg mb-8 px-3 py-3 bg-white relative">
           <Pressable
             className="flex-row items-center justify-between"
@@ -305,7 +305,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
                           className="mr-2"
                         />
                       )}
-                      <Text className="text-base">
+                      <Text style={{ fontFamily: 'Lato' }} className="text-base">
                         {selectedUser?.label || 'Select Assignee'}
                       </Text>
                     </>
@@ -313,7 +313,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
                 })()}
               </View>
             ) : (
-              <Text className="text-base">Select Assignee</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="text-base">Select Assignee</Text>
             )
             }
             <MaterialIcons name={showAssigneeDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
@@ -347,7 +347,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
                             />
                     </View>
                     <View>
-                      <Text className={`text-base ${formTasks[activeTab]?.assignedTo === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>
+                      <Text style={{ fontFamily: 'Lato' }} className={`text-base ${formTasks[activeTab]?.assignedTo === user.value ? 'font-bold text-blue-700' : 'text-black'}`}>
                         {user.label}
                       </Text>
                     </View>
@@ -359,7 +359,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         </View>
 
         {/* Start Date */}
-        <Text className="font-semibold mb-2">Start Date</Text>
+        <Text  style={{ fontFamily: 'Lato' }} className="font-semibold mb-2">Start Date</Text>
         <Pressable
           className="border rounded-lg px-3 py-3 mb-8 bg-white flex-row items-center justify-between"
           onPress={() => {
@@ -381,7 +381,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
             }
           }}
         >
-          <Text className="text-base text-black">
+          <Text style={{ fontFamily: 'Lato' }} className="text-base text-black">
             {formTasks[activeTab]?.datetime
               ? new Date(formTasks[activeTab].datetime).toLocaleDateString()
               : 'Select Start Date'}
@@ -421,7 +421,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         )}
 
         {/* End Date */}
-        <Text className="font-semibold mb-2">End Date</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-semibold mb-2">End Date</Text>
         <Pressable
           className="border rounded-lg px-3 py-3 mb-8 bg-white flex-row items-center justify-between"
           onPress={() => {
@@ -440,7 +440,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
             }
           }}
         >
-          <Text className="text-base text-black">
+          <Text style={{ fontFamily: 'Lato' }} className="text-base text-black">
             {formTasks[activeTab]?.endDate
               ? new Date(formTasks[activeTab].endDate).toLocaleDateString()
               : 'Select End Date'}
@@ -477,13 +477,13 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         )}
 
         {/* Times of Day */}
-        <Text className="font-semibold mb-2">Times of Day</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-semibold mb-2">Times of Day</Text>
         <View className="border rounded-lg mb-8 px-3 py-3 bg-white relative">
           <Pressable
             className="flex-row items-center justify-between"
             onPress={() => setShowTimesDropdown(prev => !prev)}
           >
-            <Text className="text-base">
+            <Text style={{ fontFamily: 'Lato' }} className="text-base">
               {formTasks[activeTab]?.detail ? formTasks[activeTab]?.detail : 'Select Time'}
             </Text>
             <MaterialIcons name={showTimesDropdown ? 'keyboard-arrow-up' : 'keyboard-arrow-down'} size={22} color="#888" />
@@ -513,7 +513,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
                           setShowTimesDropdown(false);
                         }}
                       >
-                        <Text className={`text-base ${formTasks[activeTab]?.detail === label ? 'font-bold text-blue-700' : 'text-black'}`}>{label}</Text>
+                        <Text style={{ fontFamily: 'Lato' }} className={`text-base ${formTasks[activeTab]?.detail === label ? 'font-bold text-blue-700' : 'text-black'}`}>{label}</Text>
                       </Pressable>
                     );
                   });
@@ -524,13 +524,13 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         </View>
 
         {/* Recurrence */}
-        <Text className="font-semibold mb-2">Recurrence</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-semibold mb-2">Recurrence</Text>
         <View className="border rounded-lg mb-8 px-3 py-3 bg-white relative">
           <Pressable
             className="flex-row items-center justify-between"
             onPress={() => setShowRecurrenceDropdown(!showRecurrenceDropdown)}
           >
-            <Text className="text-base">
+            <Text style={{ fontFamily: 'Lato' }} className="text-base">
               {['NONE', 'DAILY', 'WEEKLY', 'MONTHLY'].includes(formTasks[activeTab]?.subDetail || '') && formTasks[activeTab]?.subDetail
                 ? formTasks[activeTab]?.subDetail.charAt(0) + formTasks[activeTab]?.subDetail.slice(1).toLowerCase()
                 : 'Select Recurrence'}
@@ -569,7 +569,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         </View>
 
         {/* Purpose */}
-        <Text className="font-semibold mb-2">Purpose</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-semibold mb-2">Purpose</Text>
         <TextInput
           className="border rounded-lg px-3 py-3 mb-8"
           placeholder="Purpose"
@@ -578,7 +578,7 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
         />
 
         {/* Priority */}
-        <Text className="font-semibold mb-2">Priority</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-semibold mb-2">Priority</Text>
         <View className="flex-row mb-8">
           {['high', 'medium', 'low'].map((level) => (
             <Pressable
@@ -587,13 +587,13 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
               onPress={() => handleInputChange('priority', level)}
             >
               <MaterialIcons name="flag" size={18} color={level === 'high' ? 'red' : level === 'medium' ? 'gold' : 'blue'} />
-              <Text className={`ml-1 font-semibold capitalize ${formTasks[activeTab]?.priority === level ? 'text-black' : 'text-black'}`}>{level}</Text>
+              <Text style={{ fontFamily: 'Lato' }} className={`ml-1 font-semibold capitalize ${formTasks[activeTab]?.priority === level ? 'text-black' : 'text-black'}`}>{level}</Text>
             </Pressable>
           ))}
         </View>
 
         {/* Instructions */}
-        <Text className="font-semibold mb-2">Instructions</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="font-semibold mb-2">Instructions</Text>
         <TextInput
           className="border rounded-lg px-3 py-3 mb-4 min-h-[80px]"
           placeholder="Instructions"
@@ -609,14 +609,14 @@ const AiGeneratedTasksReviewScreen: React.FC<AiGeneratedTasksReviewScreenProps> 
             onPress={handleSaveTask}
             disabled={!tabDirty[activeTab]}
           >
-            <Text className="text-black text-base font-semibold">Save Task</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="text-black text-base font-semibold">Save Task</Text>
           </Pressable>
           <Pressable
             className={`flex-1 py-3 rounded-full items-center ml-2 ${tabDirty.some(Boolean) ? 'bg-black' : 'bg-slate-300'}`}
             onPress={handleSaveAllTasks}
             disabled={!tabDirty.some(Boolean)}
           >
-            <Text className="text-white text-base font-semibold">Create All</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="text-white text-base font-semibold">Create All</Text>
           </Pressable>
         </View>
       </ScrollView>

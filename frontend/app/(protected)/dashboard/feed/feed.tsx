@@ -281,7 +281,7 @@ const loadFeedData = async () => {
       
       <View className="px-3 py-3">        
         <View className="flex-row justify-between items-center">
-          <Text className="font-semibold left-4 text-lg text-gray-900 font-['Lato']">
+          <Text style={{ fontFamily: 'Lato' }} className="font-semibold left-4 text-lg text-gray-900 font-['Lato']">
             {!!isToday(new Date()) ? "Today" : new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </Text>
           <View className="w-32">            
@@ -316,8 +316,8 @@ const loadFeedData = async () => {
             {groupItemsByDate(filteredData).map((group, groupIndex) => (
               <View key={group.dateLabel} className="mb-6">
                 {groupIndex ? (
-                  <View className="mb-4 pl-2">
-                    <Text className="text-lg font-semibold text-black font-['Lato']">
+                  <View className="mb-4">
+                    <Text style={{ fontFamily: 'Lato' }} className="text-lg font-semibold text-black font-['Lato']">
                       {typeof group.dateLabel === 'string' ? group.dateLabel : ''}
                     </Text>
                   </View>

@@ -79,7 +79,7 @@ const FeedLoading: React.FC<FeedLoadingProps> = ({
               resizeMode="contain"
             />
             
-            <Text className="text-[#623405] text-lg mt-4 font-medium">
+            <Text className="text-[#623405] text-lg mt-4 font-medium" style={{ fontFamily: 'Lato' }}>
               Loading...
             </Text>
           </View>

@@ -161,7 +161,7 @@ const TaskInfoScreen = () => {
   if (error || !task) {
     return (
       <View className="flex-1 justify-center items-center">
-        <Text className="text-red-500">{error || 'Task not found.'}</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="text-red-500">{error || 'Task not found.'}</Text>
       </View>
     );
   }
@@ -198,7 +198,7 @@ const TaskInfoScreen = () => {
 
       {/* Banner */}
       <View className="bg-[#2A1800] mx-4 mt-4 rounded-lg py-4 pl-1 pr-1 items-center">
-        <Text className="text-white text-base font-medium text-center">Show us you took it-just a quick photo!</Text>
+        <Text style={{ fontFamily: 'Lato' }} className="text-white text-base font-medium text-center">Show us you took it-just a quick photo!</Text>
       </View>
 
       {/* Scrollable content with image and info */}
@@ -216,7 +216,7 @@ const TaskInfoScreen = () => {
           ) : photoUri ? (
             <Image source={{ uri: photoUri }} className="absolute w-full h-full" resizeMode="cover" />
           ) : (
-            <Text className="text-gray-400 text-center mt-5 pt-0">No photo captured</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="text-gray-400 text-center mt-5 pt-0">No photo captured</Text>
           )}
           {!taskImage && (
             <Pressable
@@ -278,22 +278,22 @@ const TaskInfoScreen = () => {
         {/* Info section */}
         <View className="px-4 pt-4">
           <View className="mb-3">
-            <Text className="font-bold mb-2">Instructions</Text>
-            <Text>{task.description || 'No instructions provided.'}</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Instructions</Text>
+            <Text style={{ fontFamily: 'Lato' }}>{task.description || 'No instructions provided.'}</Text>
           </View>
           <View className="mb-3">
-            <Text className="font-bold mb-2">Purpose</Text>
-            <Text>{task.purpose || task.description || 'No purpose provided.'}</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Purpose</Text>
+            <Text style={{ fontFamily: 'Lato' }}>{task.purpose || task.description || 'No purpose provided.'}</Text>
           </View>
           <View className="mb-3">
-            <Text className="font-bold mb-2">Start and End Date</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="font-bold mb-2">Start and End Date</Text>
             {/* Debug logs for reminder and dates */}
             {(() => {
               if (task.reminder) {
               }
               return null;
             })()}
-            <Text>
+            <Text style={{ fontFamily: 'Lato' }}>
               {task.reminder?.start_date
                 ? (() => {
                     const start = new Date(task.reminder.start_date);
@@ -310,8 +310,8 @@ const TaskInfoScreen = () => {
             </Text>
           </View>
           <View className="mb-3 flex-row items-center">
-            <Text>
-                <Text className="font-bold">Assigned </Text>
+            <Text style={{ fontFamily: 'Lato' }}>
+                <Text style={{ fontFamily: 'Lato' }} className="font-bold">Assigned </Text>
                 to{' '}
             </Text>
             {assignedToUser ? (
@@ -320,22 +320,22 @@ const TaskInfoScreen = () => {
                   source={{ uri: assignedToUser.imageURL || 'https://via.placeholder.com/32' }}
                   className="w-6 h-6 rounded-full mx-1"
                 />
-                <Text className="font-bold">{assignedToUser.fullName || 'Unknown'}</Text>
+                <Text style={{ fontFamily: 'Lato' }} className="font-bold">{assignedToUser.fullName || 'Unknown'}</Text>
               </>
             ) : (
-              <Text className="font-bold">Unassigned</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="font-bold">Unassigned</Text>
             )}
-            <Text> by{' '}</Text>
+            <Text style={{ fontFamily: 'Lato' }}> by{' '}</Text>
             {assignedByUser ? (
               <>
                 <Image
                   source={{ uri: assignedByUser.imageURL || 'https://via.placeholder.com/32' }}
                   className="w-6 h-6 rounded-full mx-1"
                 />
-                <Text className="font-bold">{assignedByUser.fullName || 'Unknown'}</Text>
+                <Text style={{ fontFamily: 'Lato' }} className="font-bold">{assignedByUser.fullName || 'Unknown'}</Text>
               </>
             ) : (
-              <Text className="font-bold">Nobody</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="font-bold">Nobody</Text>
             )}
           </View>
         </View>
@@ -349,7 +349,7 @@ const TaskInfoScreen = () => {
             onPress={handleMarkDone}
             disabled={!photoUri || uploading}
           >
-            <Text className="text-white text-lg font-semibold">{uploading ? 'Marking...' : 'Mark Done'}</Text>
+            <Text style={{ fontFamily: 'Lato' }} className="text-white text-lg font-semibold">{uploading ? 'Marking...' : 'Mark Done'}</Text>
           </Pressable>
         </View>
       )}

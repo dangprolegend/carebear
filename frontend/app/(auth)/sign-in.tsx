@@ -102,10 +102,10 @@ import {
       <SafeAreaView> 
          <View className="items-center justify-center h-screen bg-white">
           <View className="flex flex-col items-start w-[345px]"> 
-            <Text className="text-black font-lato text-[32px] font-extrabold leading-9 tracking-[0.3px]">
+            <Text style={{ fontFamily: 'Lato' }} className="text-black font-lato text-[32px] font-extrabold leading-9 tracking-[0.3px]">
                 Sign In
             </Text> 
-            <Text className="mt-[40px] text-black font-lato text-[16px] font-extrabold leading-9 tracking-[0.3px]">
+            <Text style={{ fontFamily: 'Lato' }} className="mt-[40px] text-black font-lato text-[16px] font-extrabold leading-9 tracking-[0.3px]">
               Email
             </Text>
     
@@ -121,7 +121,7 @@ import {
             />
           </View>
 
-          <Text className=" text-black font-lato text-[16px] font-extrabold leading-9 tracking-[0.3px]">
+          <Text style={{ fontFamily: 'Lato' }} className=" text-black font-lato text-[16px] font-extrabold leading-9 tracking-[0.3px]">
               Password
           </Text>
           <View className='w-full mt-[8px]'>
@@ -142,7 +142,7 @@ import {
           <View className=" ml-9 flex flex-col justify-center items-center gap-8 self-stretch mt-[40px] w-[350px]">
             <View className='flex flex-row justify-center items-center gap-2 self-stretch'>
               <Image source={Line} className="w-[150px]"/>
-              <Text className="text-black font-lato text-base font-light leading-6 tracking-[-0.1px]">or</Text>
+              <Text style={{ fontFamily: 'Lato' }} className="text-black font-lato text-base font-light leading-6 tracking-[-0.1px]">or</Text>
               <Image source={Line} className="w-[150px]"/>
             </View>
             <View className="flex flex-col gap-4 w-full">
@@ -157,7 +157,7 @@ import {
                   className="bg-[##2A1800] inline-flex min-w-[350px] py-4 px-8 justify-center items-center gap-1 rounded-full mt-[68px]"
                   onPress={handleSubmit(onSignIn)}
                 >
-                  <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Sign In</Text>
+                  <Text style={{ fontFamily: 'Lato' }} className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Sign In</Text>
                 </TouchableOpacity>
                 <View className='flex flex-row items-center gap-3'>
                   <Text className='text-black font-lato text-base font-light leading-6 tracking-[-0.1px]'>
