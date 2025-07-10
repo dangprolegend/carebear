@@ -9,7 +9,8 @@ import {
   setCurrentGroupIDForApiService 
 } from '../../../../service/apiServices';
 import { Task } from './task';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import FeedLoading from '../../../../components/ui/feed-loading';
 
 const MemberDashboard = () => {
   const router = useRouter();
@@ -84,10 +85,12 @@ const MemberDashboard = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#FAE5CA" />
-        <Text className="mt-4 text-gray-600">Loading member dashboard...</Text>
-      </View>
+      <FeedLoading 
+        visible={true}
+        dataReady={false}
+        fastTransition={true}
+        onFinish={() => {}}
+      />
     );
   }
 
