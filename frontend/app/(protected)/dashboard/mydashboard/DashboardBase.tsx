@@ -1405,7 +1405,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                           // Regular buttons for active tasks
                           <View className="flex-row justify-between mt-2">
                             <Pressable
-                              onPress={() => handleSkipTaskPopup(task)}
+                              onPress={() => handleSkipTask(task)}
                               className="py-2 px-6 rounded-full border border-[#2A1800]"
                             >
                               <Text className="text-[#2A1800]">Skip</Text>
