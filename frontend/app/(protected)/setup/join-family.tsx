@@ -29,7 +29,7 @@ export default function JoinFamilyScreen() {
       const updateData = { groupID: groupId };
 
       await axios.patch(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/joinGroup`, updateData);
-      router.push('/setup/congrats');
+      router.push('/setup/roles-info'); 
     } catch (error) {
       console.error('Error joining group:', error);
       alert('Failed to join group');
@@ -79,7 +79,7 @@ export default function JoinFamilyScreen() {
 
       <View className="flex flex-row justify-between items-start self-stretch mt-[56px]">
           <TouchableOpacity 
-            onPress={() => router.push('/setup/roles-info')}
+            onPress={() => router.push('/setup/health-input')}
             className="flex min-w-[160px] py-4 px-8 justify-center items-center gap-1 rounded-full border border-black"
           >
           <Text className='text-[#0F172A] font-lato text-[16px] leading-6 font-semibold tracking-[-0.1px]'>

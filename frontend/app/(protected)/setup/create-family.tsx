@@ -28,7 +28,7 @@ export default function CreateFamilyGroupScreen() {
       const data = { name: groupName };
 
       await axios.post(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/createGroup`, data);
-      router.push('/setup/congrats');
+      router.push('/setup/roles-info');
     } catch (error) {
       console.error('Error creating group:', error);
       alert('Failed to create group');

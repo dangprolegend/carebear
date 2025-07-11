@@ -10,11 +10,11 @@ export default function RolesInfo() {
 
   const handleNext = () => {
     // Navigate to the next setup step
-    router.push('/(protected)/setup/join-family');
+    router.push('/(protected)/setup/congrats');
   };
 
   const handleBack = () => {
-    router.push('/(protected)/setup/health-input');
+    router.push('/(protected)/setup/join-family');
   };
 
   return (

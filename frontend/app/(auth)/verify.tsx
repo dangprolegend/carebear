@@ -8,7 +8,6 @@ import {
     TouchableOpacity,
   } from 'react-native';
   import CustomInput from '@/components/CustomInput';
-  import CustomButton from '@/components/CustomButton';
   
   import { useForm } from 'react-hook-form';
   import { z } from 'zod';
@@ -124,7 +123,7 @@ import { router, Stack } from 'expo-router';
               </TouchableOpacity>
 
                 <TouchableOpacity
-                    className="bg-[#0F172A] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
+                    className="bg-[#2A1800] inline-flex min-w-[80px] py-4 px-8 justify-center items-center gap-1 rounded-full"
                     onPress={handleSubmit(onVerify)}
                   >
                     <Text className="text-white text-center font-lato text-[16px] font-extrabold leading-[24px] tracking-[0.3px]">Next</Text>

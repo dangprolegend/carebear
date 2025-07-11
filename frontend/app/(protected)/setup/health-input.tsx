@@ -54,7 +54,7 @@ export default function HealthInputScreen() {
       };
 
       await axios.patch(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/onboarding`, updateData);
-      router.push('/setup/roles-info');
+      router.push('/setup/join-family');
     } catch (error) {
       console.error('Error updating user information:', error);
       alert('Failed to update user information.');
