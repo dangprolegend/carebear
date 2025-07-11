@@ -76,6 +76,10 @@ const DashboardBase = ({ tasks = [], showHighPrioritySection = true, title = 'Da
   const [weekBodyStatuses, setWeekBodyStatuses] = useState<{[date: string]: string}>({});
   const [isLoadingStatuses, setIsLoadingStatuses] = useState(false);
 
+  // Add state for skip modal and skip task
+  const [showSkipModal, setShowSkipModal] = useState(false);
+  const [skipTask, setSkipTask] = useState<Task | null>(null);
+
   // Near line 60, where other state variables are declared
   const [groupsLoading, setGroupsLoading] = useState<boolean>(false);
 
@@ -584,6 +588,7 @@ useEffect(() => {
       console.error('Error skipping task:', error);
     } finally {
       setRefreshing(false);
+      setShowSkipModal(false);
     }
   };
 
@@ -1064,8 +1069,41 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
     );
   };
 
+  const SkipModal = () => {
+    if (!showSkipModal) return null;
+  
+    return (
+      <View className="absolute top-0 left-0 right-0 bottom-0 z-50 bg-[#AF9D86]/70 justify-center items-center">
+        <View className="bg-white rounded-3xl border border-black p-10 items-center min-w-[320px] max-w-[360px]">
+          <Text className="text-black text-center font-lato text-base font-extrabold leading-6 tracking-[0.3px]">Skip this step?</Text>
+          <Text className="text-black text-center font-lato text-base font-normal leading-6 tracking-[-0.1px] mt-2">If you skip, the person who assigned it will be notified.</Text>
+          <View className="mt-6 flex flex-row items-start gap-6 self-stretch">
+            <TouchableOpacity 
+              className='flex min-w-[64px] px-4 py-1.5 justify-center items-center gap-2 flex-1 self-stretch rounded-full border border-[#2A1800] bg-white'
+              onPress={() => setShowSkipModal(false)}
+            >
+              <Text className="text-[#2A1800] font-lato text-sm font-extrabold leading-6 tracking-[0.3px]">Keep Task</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              className="flex min-w-[64px] px-4 py-2 justify-center items-center gap-2 flex-1 rounded-full bg-[#2A1800]"
+              onPress={() => skipTask && handleSkipTask(skipTask)}
+            >
+              <Text className="text-white font-lato text-sm font-extrabold leading-6 tracking-[0.3px]">Skip</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const handleSendReminder = async () => {
     setShowSuccessModal2(true);
+  }
+
+  const handleSkipTaskPopup = async (task: Task) => {
+    setSkipTask(task);
+    setShowSkipModal(true);
   }
 
   // State for filter modal visibility
@@ -1367,7 +1405,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
                           // Regular buttons for active tasks
                           <View className="flex-row justify-between mt-2">
                             <Pressable
-                              onPress={() => handleSkipTask(task)}
+                              onPress={() => handleSkipTaskPopup(task)}
                               className="py-2 px-6 rounded-full border border-[#2A1800]"
                             >
                               <Text className="text-[#2A1800]">Skip</Text>
@@ -2112,6 +2150,7 @@ const handleTaskAssigneeChange = (member: {id: string, name: string, avatar: str
 
               <StravaActivities />
               <SuccessModal />
+              <SkipModal />
           </>
         )}
       </ScrollView>
