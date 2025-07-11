@@ -10,12 +10,12 @@ interface MoodIconProps {
 }
 
 const moodEmojis = {
-  happy: '😊',
-  excited: '🤩',
-  sad: '😟',
-  angry: '😠',
-  nervous: '😐',
-  peaceful: '🧘',
+  happy: '😆',
+  excited: '😊',
+  sad: '🙂',
+  angry: '😌',
+  nervous: '😞',
+  peaceful: '😭',
 };
 
 
