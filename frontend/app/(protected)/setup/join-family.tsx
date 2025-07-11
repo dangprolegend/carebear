@@ -29,7 +29,7 @@ export default function JoinFamilyScreen() {
       const updateData = { groupID: groupId };
 
       await axios.patch(`https://carebear-carebearvtmps-projects.vercel.app/api/users/${userID}/joinGroup`, updateData);
-      router.push('/setup/roles-info');
+      router.push('/setup/congrats');
     } catch (error) {
       console.error('Error joining group:', error);
       alert('Failed to join group');

@@ -644,7 +644,7 @@ export default function SettingsPage({ onBack }: SettingsPageProps) {
               <TouchableOpacity
                 onPress={pickImage}
                 disabled={isUploadingImage}
-                className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#2A1800] rounded-full flex items-center justify-center border-2 border-white"
+                className="absolute -bottom-1 -right-1 w-10 h-10 bg-[#2A1800] rounded-full flex items-center justify-center border-2 border-white"
               >
                 {isUploadingImage ? (
                   <Text className="text-white text-xs">...</Text>
