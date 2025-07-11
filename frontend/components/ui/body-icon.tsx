@@ -10,12 +10,12 @@ interface BodyIconProps {
 }
 
 const bodyEmojis = {
-  energized: '⚡',
-  sore: '🤕',
-  tired: '😴',
+  energized: '💪',
+  sore: '😶',
+  tired: '😙',
   sick: '🤒',
-  relaxed: '😌',
-  tense: '😬',
+  relaxed: '😩',
+  tense: '🤧',
 };
 
 
