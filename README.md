@@ -1,35 +1,21 @@
-Welcome to Carebear App Development Build
+**Welcome to Carebear App**
+<img width="1920" height="1080" alt="compressed_515682198_4123117341296078_4984295388695913920_n" src="https://github.com/user-attachments/assets/8127d5e0-5ec6-4328-87e7-4ddd1527c92c" />
 
-*How to build*
-1. Instal cli 
-```
-npm install -g eas-cli
-```
-2. Login using carebear.vtmp@gmail.com (password like email password)
-```
-eas login
-```
-3. start build
-```
-eas build --profile development --platform android
-```
-4. Check build status and error (if have): https://expo.dev/accounts/vtmp-group-4/projects/care/builds
+***Our mission:***
+We grow up supported by our families, free to chase the world — yet often forget that those who care for us are also quietly facing their own struggles. In the rush of life, staying close and checking in becomes harder, even when our love for them hasn’t changed. This question is like a statement for our generation today, especially who have to live and work far away from home. That's when CareBear comes to support you with the journey!
 
+**CareBear is a mobile app to help connect your family members through:**
+1. Healthcare Task Generation and Management: AI, Scan Prescription or Manual Input
+2. Push Notification: Remind 5 minutes before tasks deadline
+3. Strava Connect: Track health data
+4. Interactive UI/UX
++ Family Group
++ Dashboard
++ Settings/ Profile
++ Feed
++ Notification
++ Authentication
++ Setup/ Create Family Group/ Join Family Group 
    
-*How to run*
-1. After run, you will receive an **.apk** package in terminal -> click on it and download
-2. Open Android Studio, run your mobile app in **device manager**
-<img width="794" alt="Screenshot 2025-06-17 at 08 15 29" src="https://github.com/user-attachments/assets/1ed8c175-8db9-471e-95eb-18b876d363ed" />
 
-- mine is Pixel 6 Pro, I press the play button
-
-3. Drag the **.apk** package into simulator 
-4. Wait for it to downloaded into simulator
-5. run this command **without** pressing s (expogo) or a (android)
-```
-npx expo start -c 
-```
-- Note: DO NOT PRESS ANY BUTTON AT THIS TIME
-
-6. You will see the update in android simulator, from now on, you won't need to build again unless you use new native library. You only need to run **npx expo start -c** and open the simulator and you can start code
 
